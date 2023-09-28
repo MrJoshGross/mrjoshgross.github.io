@@ -39,7 +39,7 @@ a:visited{
 }
 
 li{
-    display: inline;
+    display: inline-flex;
     padding: 2%;
     color: var(--light-blue);
     font-size: x-large;
