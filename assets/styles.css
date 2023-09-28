@@ -1,0 +1,48 @@
+/*theme colors*/
+:root{
+    --dark-orange: rgb(121, 61, 0);
+    --orange: rgb(255, 100, 0);
+    --light-orange: rgb(255,180,130);
+    --dark-blue: rgb(0,0,128);
+    --blue: rgb(0, 23, 236);
+    --light-blue: rgb(136, 148, 255);
+    --sand: rgb(231, 213, 188);
+    --dark-sand: rgb(86, 63, 31);
+    --smoke: rgb(27, 27, 27);
+    --steel: rgb(80, 80, 80);
+    --pearl: rgb(220, 220, 220);
+}
+
+body{
+    background-color: var(--pearl);
+    color: var(--orange);
+}
+
+ul{
+    background-color: var(--smoke);
+    padding: 2%;
+    text-decoration: none;
+}
+
+a{
+    text-decoration: none;
+    color: var(--blue);
+}
+
+a:visited{
+    text-decoration: none;
+    color: var(--blue);
+}
+
+li{
+    display: inline;
+    padding: 2%;
+    color: var(--light-blue);
+    font-size: x-large;
+    text-shadow: 2px 2px var(--dark-blue);
+    font-weight: bold;
+    text-decoration: none;
+}
+li:hover{
+    background-color:var(--steel);
+}
