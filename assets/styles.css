@@ -18,6 +18,10 @@ body{
     color: var(--orange);
 }
 
+h1{
+    font-size:xx-large;
+}
+
 ul{
     background-color: var(--smoke);
     padding: 2%;
