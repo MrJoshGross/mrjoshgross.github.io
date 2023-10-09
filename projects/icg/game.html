@@ -1,0 +1,62 @@
+<title>Computer Science at William Penn Senior High School</title>
+<header>
+    <iframe width="100%" src="/header" frameBorder="0"></iframe>
+    <link rel="stylesheet" href="/assets/styles.css">
+</header>
+<h1>
+    Idle Clicker Game
+</h1>
+<a href="/projects/icg">Back to project page</a>
+<div style="background-color: aliceblue; font-size: larger; border: 2px solid black; width: 40%; font-weight: bold;">
+    <span id="money">Money: none (none/s)</span><button style="float: right;"onclick="addMoney()">Get Money</button><br>
+    <span id="houses">Houses: none</span><button style="float: right;" id="houseButton" onclick="addHouse()">Get House</button><br>
+    <span id="people">People: none</span><br>
+</div>
+
+<script>
+    let money = 0;
+    let moneyText = null;
+    let moneyPerSecond = 0;
+    let houses = 0;
+    let houseCost = 5;
+    let houseText = null;
+    let houseButton = null;
+    let people = 0;
+    let maxPeople = 0;
+    let peopleText = null;
+
+    let frameRate = 30;
+    
+    function start(){
+        setInterval(update, 1000.0/frameRate);
+        moneyText = document.getElementById("money");
+        houseText = document.getElementById("houses");
+        peopleText = document.getElementById("people");
+        houseButton = document.getElementById("houseButton");
+    }
+
+    function addMoney(){
+        money++;
+    }
+
+    function addHouse(){
+        if(money >= houseCost){
+            money -= houseCost;
+            houses++;
+            houseCost *= 2;
+            maxPeople += 2;
+            people += 2;
+        }
+    }
+
+    function update(){
+        moneyPerSecond = people*0.1;
+        money += (moneyPerSecond / frameRate);
+        houseButton.disabled = money < houseCost;
+        moneyText.innerHTML = `Money (${moneyPerSecond.toFixed(1)}/s): ${money.toFixed(2)}`;
+        houseText.innerHTML = `Houses (cost: ${houseCost}): ${houses}`;
+        peopleText.innerHTML = `People: ${people} currently, max of ${maxPeople}`;
+    }
+
+    start();
+</script>
