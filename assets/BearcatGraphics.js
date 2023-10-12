@@ -3,6 +3,8 @@
  * @author https://github.com/mrjoshgross
  */
 class BearcatGraphics{
+    static RADTODEG = Math.PI / 180;
+    
     constructor(width, height, canvasName){
         if(width == null) width = 600;
         if(height == null) height = 450;
@@ -67,6 +69,10 @@ class BearcatGraphics{
         this.canvas.strokeStyle = color;
     }
 
+    setOpacity(percent){
+        this.canvas.globalAlpha = percent;
+    }
+
     /**
      * @param {number} thickness 
      */
@@ -75,31 +81,45 @@ class BearcatGraphics{
     }
 
     /**
-     * Draws a filled rectangle whose topleft corner is at (x,y).
+     * Draws a filled rectangle centered at (x,y).
      * Color is the canvas' fillStyle.
      * @param {number} x 
      * @param {number} y 
      * @param {number} width 
-     * @param {number} height 
+     * @param {number} height
+     * @param {number} rotation  
      */
-    drawFilledRectangle(x, y, width, height){
-        this.canvas.fillRect(x, y, width, height)
+    drawFilledRectangle(x, y, width, height, rotation){
+        
+        if(rotation){
+            this.canvas.translate(x,y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x,-y);
+        }
+        this.canvas.fillRect(x-width/2, y-height/2, width, height);
+        if(rotation) this.resetCanvasRotation();
     }
 
     /**
-     * Draws a framed rectangle whose topleft corner is at (x,y).
+     * Draws a framed rectangle centered at (x,y).
      * Color is the canvas' strokeStyle.
      * @param {number} x 
      * @param {number} y 
      * @param {number} width 
      * @param {number} height 
      */
-    drawFramedRectangle(x, y, width, height){
-        this.canvas.strokeRect(x, y, width, height);
+    drawFramedRectangle(x, y, width, height, rotation){
+        if(rotation){
+            this.canvas.translate(x,y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x,-y);
+        }
+        this.canvas.strokeRect(x-width/2, y-height/2, width, height);
+        if(rotation) this.resetCanvasRotation();
     }
 
     /**
-     * Draws a framed and filled rectangle, whose topleft corner is at (x,y).
+     * Draws a framed and filled rectangle, centered at (x,y).
      * Fill color is the canvas' fillStyle.
      * Frame color is the canvas' strokeStyle.
      * @param {number} x 
@@ -107,9 +127,15 @@ class BearcatGraphics{
      * @param {number} width 
      * @param {number} height 
      */
-    drawFillFramedRectangle(x, y, width, height){
+    drawFillFramedRectangle(x, y, width, height, rotation){
+        if(rotation){
+            this.canvas.translate(x,y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x,-y);
+        }
         this.drawFilledRectangle(x, y, width, height);
         this.drawFramedRectangle(x, y, width, height);
+        if(rotation) this.resetCanvasRotation();
     }
 
     drawFilledCircle(x, y, radius){
@@ -129,29 +155,115 @@ class BearcatGraphics{
         this.drawFramedCircle(x, y, radius);
     }
 
-    drawFilledTriangle(x, y, length){
+    drawFilledOval(x, y, xRadius, yRadius, rotation){
         this.canvas.beginPath();
-        this.canvas.moveTo(x-(length/2), y+(length/2));
-        this.canvas.lineTo(x, y-(length/2));
-        this.canvas.lineTo(x+(length/2), y+(length/2));
-        this.canvas.lineTo(x-(length/2), y+(length/2));
+        this.canvas.ellipse(x, y, xRadius, yRadius, rotation*BearcatGraphics.RADTODEG, 0, 2*Math.PI);
         this.canvas.fill();
     }
 
-    drawFramedTriangle(x, y, length){
+    drawFramedOval(x, y, xRadius, yRadius, rotation){
         this.canvas.beginPath();
-        this.canvas.moveTo(x-(length/2), y+(length/2));
-        this.canvas.lineTo(x, y-(length/2));
-        this.canvas.lineTo(x+(length/2), y+(length/2));
-        this.canvas.lineTo(x-(length/2), y+(length/2));
-        this.canvas.lineTo(x, y-(length/2)); // silly
+        this.canvas.ellipse(x, y, xRadius, yRadius, rotation*BearcatGraphics.RADTODEG, 0, 2*Math.PI);
         this.canvas.stroke();
     }
 
-    drawFillFramedTriangle(x, y, length){
-        this.drawFilledTriangle(x, y, length);
-        this.drawFramedTriangle(x, y, length);
-        
+    drawFillFramedOval(x, y, xRadius, yRadius, rotation){
+        this.drawFilledOval(x, y, xRadius, yRadius, rotation);
+        this.drawFramedOval(x, y, xRadius, yRadius, rotation);
+    }
+
+    drawFilledEquilateralTriangle(x, y, length, rotation){
+        let h = Math.sqrt(3*length*length)/2;
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.canvas.beginPath();
+        this.canvas.moveTo(x-(length/2), y+(h/3));
+        this.canvas.lineTo(x, y-(2*h/3));
+        this.canvas.lineTo(x+(length/2), y+(h/3));
+        this.canvas.lineTo(x-(length/2), y+(h/3));
+        this.canvas.fill();
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    drawFramedEquilateralTriangle(x, y, length, rotation){
+        let h = Math.sqrt(3*length*length)/2;
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.canvas.beginPath();
+        this.canvas.moveTo(x-(length/2), y+(h/3));
+        this.canvas.lineTo(x, y-(2*h/3));
+        this.canvas.lineTo(x+(length/2), y+(h/3));
+        this.canvas.lineTo(x-(length/2), y+(h/3));
+        this.canvas.lineTo(x, y-(2*h/3)); // silly
+        this.canvas.stroke();
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    drawFillFramedEquilateralTriangle(x, y, length, rotation){
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.drawFilledEquilateralTriangle(x, y, length);
+        this.drawFramedEquilateralTriangle(x, y, length);
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    drawFilledRightTriangle(x, y, length, rotation){
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.canvas.beginPath();
+        this.canvas.moveTo(x-(length/3), y+(length/3));
+        this.canvas.lineTo(x-(length/3), y-(2*length/3));
+        this.canvas.lineTo(x+(2*length/3), y+(length/3));
+        this.canvas.lineTo(x-(length/3), y+(length/3));
+        this.canvas.fill();
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    drawFramedRightTriangle(x, y, length, rotation){
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.canvas.beginPath();
+        this.canvas.moveTo(x-(length/3), y+(length/3));
+        this.canvas.lineTo(x-(length/3), y-(2*length/3));
+        this.canvas.lineTo(x+(2*length/3), y+(length/3));
+        this.canvas.lineTo(x-(length/3), y+(length/3));
+        this.canvas.lineTo(x-(length/3), y-(2*length/3)); // silly
+        this.canvas.stroke();
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    drawFillFramedRightTriangle(x, y, length, rotation){
+        if(rotation){
+            this.canvas.translate(x, y);
+            this.rotateCanvas(rotation);
+            this.canvas.translate(-x, -y);
+        }
+        this.drawFilledRightTriangle(x, y, length);
+        this.drawFramedRightTriangle(x, y, length);
+        if(rotation) this.resetCanvasRotation();
+    }
+
+    rotateCanvas(degrees){
+        this.canvas.rotate(degrees*BearcatGraphics.RADTODEG);
+    }
+
+    resetCanvasRotation(){
+        this.canvas.setTransform(1, 0, 0, 1, 0, 0);
     }
 }
 
