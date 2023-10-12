@@ -8,7 +8,7 @@
     canvas.setFillColor("green");
     canvas.setBorderColor("darkgreen");
     canvas.setLineThickness(10);
-    canvas.drawFillFramedRectangle(canvas.width/2, canvas.height/2, 100, 100);
+    canvas.drawFillFramedRectangle(canvas.width/2, canvas.height/2, 100, 100, 45);
     canvas.setFillColor("white");
     canvas.setBorderColor("black");
     canvas.drawFramedCircle(canvas.width/2 + 50, canvas.height/2 + 50, 50);
@@ -20,13 +20,38 @@
     canvas.setFillColor("white");
     canvas.setBorderColor("black");
     canvas.drawFramedCircle(canvas.width/4 + 50, canvas.height/2 + 50, 50);
-
+    
     canvas.setFillColor("green");
     canvas.setBorderColor("darkgreen");
     canvas.drawFilledRectangle(3*canvas.width/4, canvas.height/2, 100, 100);
     canvas.setFillColor("white");
     canvas.setBorderColor("black");
     canvas.drawFilledCircle(3*canvas.width/4 + 50, canvas.height/2 + 50, 50);
-    canvas.drawFramedTriangle(100, 100, 50);
-    canvas.drawFillFramedTriangle(200, 100, 50);
+    canvas.drawFillFramedRightTriangle(100, 100, 50, 45);
+    canvas.drawFillFramedEquilateralTriangle(100, 100, 50, 30);
+
+    canvas.drawFilledRectangle(0, 0, canvas.width, canvas.height);
+    let fps = 10;
+    setInterval(update, 1000/fps);
+
+    canvas.setFillColor("lightblue");
+    let delta = 1/fps;
+    canvas.setOpacity(0.5);
+    canvas.setLineThickness(5);
+    function update(){
+        canvas.setFillColor("lightblue");
+        delta += 360/fps;
+        canvas.drawFillFramedCircle(100, 100, 50);
+        canvas.drawFillFramedCircle(200, 100, 50);
+        canvas.drawFillFramedCircle(300, 100, 50);
+        canvas.setFillColor("red");
+        canvas.drawFillFramedRightTriangle(100, 100, 50, delta);
+        canvas.drawFillFramedEquilateralTriangle(200, 100, 50, delta);
+        canvas.drawFillFramedRectangle(300, 100, 60, 50, delta);
+        canvas.drawFillFramedOval(300, 100, 50, 1, delta);
+        canvas.setFillColor("black");
+        canvas.drawFillFramedCircle(100, 100, 5, delta);
+        canvas.drawFillFramedCircle(200, 100, 5, delta);
+        canvas.drawFillFramedCircle(300, 100, 5, delta);
+    }
 </script>
