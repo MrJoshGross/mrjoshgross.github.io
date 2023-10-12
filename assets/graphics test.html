@@ -1,0 +1,32 @@
+<script src="BearcatGraphics.js"></script>
+<script>
+    let canvas = new BearcatGraphics();
+
+    canvas.setFillColor("red");
+    canvas.drawFilledRectangle(0, 0, canvas.width, canvas.height);
+
+    canvas.setFillColor("green");
+    canvas.setBorderColor("darkgreen");
+    canvas.setLineThickness(10);
+    canvas.drawFillFramedRectangle(canvas.width/2, canvas.height/2, 100, 100);
+    canvas.setFillColor("white");
+    canvas.setBorderColor("black");
+    canvas.drawFramedCircle(canvas.width/2 + 50, canvas.height/2 + 50, 50);
+    canvas.drawFillFramedCircle(canvas.width/2 + 50, canvas.height/2 + 50, 50);
+
+    canvas.setFillColor("green");
+    canvas.setBorderColor("darkgreen");
+    canvas.drawFilledRectangle(canvas.width/4, canvas.height/2, 100, 100);
+    canvas.setFillColor("white");
+    canvas.setBorderColor("black");
+    canvas.drawFramedCircle(canvas.width/4 + 50, canvas.height/2 + 50, 50);
+
+    canvas.setFillColor("green");
+    canvas.setBorderColor("darkgreen");
+    canvas.drawFilledRectangle(3*canvas.width/4, canvas.height/2, 100, 100);
+    canvas.setFillColor("white");
+    canvas.setBorderColor("black");
+    canvas.drawFilledCircle(3*canvas.width/4 + 50, canvas.height/2 + 50, 50);
+    canvas.drawFramedTriangle(100, 100, 50);
+    canvas.drawFillFramedTriangle(200, 100, 50);
+</script>
