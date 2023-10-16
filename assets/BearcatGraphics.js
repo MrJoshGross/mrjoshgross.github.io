@@ -4,7 +4,23 @@
  */
 class BearcatGraphics{
     static RADTODEG = Math.PI / 180;
-    
+    static EVENT_TYPES = {
+        CLICK: "click",
+        DOUBLECLICK: "dblclick",
+        DRAG: "drag",
+        DRAGSTART: "dragstart",
+        DRAGEND: "dragend",
+        KEYDOWN: "keydown",
+        KEYPRESS: "keypress",
+        KEYUP: "keyup",
+        WHEEL: "wheel",
+        MOUSEENTER: "mouseenter",
+        MOUSEMOVE: "mousemove",
+        MOUSELEAVE: "mouseleave",
+        MOUSEDOWN: "mousedown",
+        MOUSEUP: "mouseup",
+    };
+
     constructor(width, height, canvasName){
         if(width == null) width = 600;
         if(height == null) height = 450;
@@ -14,6 +30,12 @@ class BearcatGraphics{
         this.setBorderColor("black");
         this.width = width;
         this.height = height;
+        this.fps = 60;
+        this.mouseX = -1;
+        this.mouseY = -1;
+        this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e)=>{this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e)});
+        this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, ()=>{this.mouseX = -1; this.mouseY = -1});
+        setInterval(this.update, 1000/this.fps);
     }
 
     /**
@@ -27,7 +49,8 @@ class BearcatGraphics{
         let canvas = this.#buildCanvas(width, height, canvasName);
         document.body.appendChild(canvas);
         console.log("Created canvas sucessfully!");
-        return document.getElementById(canvasName).getContext("2d");
+        this.canvasElement = document.getElementById(canvasName);
+        return this.canvasElement.getContext("2d");
     }
     
     /**
@@ -264,6 +287,38 @@ class BearcatGraphics{
 
     resetCanvasRotation(){
         this.canvas.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    addEventListener(type, func, params){
+        this.canvasElement.addEventListener(type, func);
+    }
+
+    getMouseX(e){
+        return e.x - this.canvasElement.getBoundingClientRect().left;
+    }
+
+    getMouseY(e){
+        return e.y - this.canvasElement.getBoundingClientRect().top;
+    }
+
+    mouseIsInScreen(){
+        return this.mouseX > -1 && this.mouseX <= this.width && this.mouseY > -1 && this.mouseY <= this.height;
+    }
+
+    setUpdateFunction(func){
+        this.update = func;
+        setInterval(func, 1000 / this.fps);
+    }
+
+    getRandomColor(){
+        let r = Math.floor(Math.random() * 255);
+        let g = Math.floor(Math.random() * 255);
+        let b = Math.floor(Math.random() * 255);
+        return "#"+r.toString(16)+g.toString(16)+b.toString(16);
+    }
+
+    getRandomInteger(max){
+        return Math.floor(Math.random() * max);
     }
 }
 
