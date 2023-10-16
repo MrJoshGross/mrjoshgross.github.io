@@ -48,14 +48,14 @@
                 y: canvas.getMouseY(e),
 
                 // radius of the circle is a random number between 1 and 100 pixels
-                radius: canvas.getRandomInteger(canvas.getMouseX(e) < canvas.width - canvas.getMouseX(e) ? canvas.getMouseX(e) : canvas.width - canvas.getMouseX(e) - canvas.canvasElement.lineWidth/2),
+                radius: canvas.getRandomInteger(Math.min(canvas.getMouseY(e), canvas.getMouseX(e), canvas.width - canvas.getMouseX(e) - canvas.canvasElement.lineWidth/2, canvas.height - canvas.getMouseY(e))),
 
                 // color is a random color
                 color: canvas.getRandomColor(),
 
-                xAccel: 5.0,
+                xAccel: -20 + canvas.getRandomInteger(40),
 
-                yAccel: 0.0
+                yAccel: -20 + canvas.getRandomInteger(40),
             }
         );
     }
@@ -86,10 +86,9 @@
             canvas.drawFilledCircle(circle.x, circle.y, circle.radius);
             circle.x += circle.xAccel;
             circle.y += circle.yAccel;
-            circle.xAccel *= 0.999;
             circle.yAccel += (9.8/canvas.fps);
             if(circle.x < circle.radius || circle.x > canvas.width - circle.radius) circle.xAccel *=-1;
-            if(circle.y > canvas.height - circle.radius) circle.yAccel *=-0.9;
+            if(circle.y < circle.radius || circle.y > canvas.height - circle.radius) circle.yAccel *=-1;
         }
     }
 
