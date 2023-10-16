@@ -64,11 +64,13 @@
     function update(){
         drawBackground();
 
-        drawAllCircles();
-
         drawRotatingTriangle();
         
         drawRotatingRectangle();
+
+        drawAllCircles();
+
+        drawPolygon();
 
         drawCursor();
 
@@ -77,43 +79,57 @@
 
     function drawBackground(){
         canvas.setFillColor("white");
-        canvas.drawFilledRectangle(0, 0, canvas.width*2, canvas.height*2);
+        canvas.drawRect(0, 0, canvas.width*2, canvas.height*2);
     }
 
     function drawAllCircles(){
         for(let circle of circles){
             canvas.setFillColor(circle.color);
-            canvas.drawFilledCircle(circle.x, circle.y, circle.radius);
+            canvas.drawCircle(circle.x, circle.y, circle.radius);
             circle.x += circle.xAccel;
             circle.y += circle.yAccel;
             circle.yAccel += (9.8/canvas.fps);
-            if(circle.x < circle.radius || circle.x > canvas.width - circle.radius) circle.xAccel *=-1;
-            if(circle.y < circle.radius || circle.y > canvas.height - circle.radius) circle.yAccel *=-1;
+            if(circle.x - circle.radius <= 0 || circle.x + circle.radius >= canvas.width) circle.xAccel *=-1;
+            if(circle.y - circle.radius <= 0 || circle.y + circle.radius >= canvas.height) circle.yAccel *=-1;
         }
     }
 
     function drawRotatingTriangle(){
         canvas.setFillColor("lightblue");
-        canvas.drawFillFramedCircle(100, 100, 50);
+        canvas.drawCircle(100, 100, 50);
         canvas.setFillColor("red");
-        canvas.drawFillFramedEquilateralTriangle(100, 100, 50, rotation);
+        canvas.drawIsoscelesTriangle(100, 100, 50, 100, FILLFRAME, rotation);
         canvas.setFillColor("black");
-        canvas.drawFilledCircle(100, 100, 5);
+        canvas.drawCircle(100, 100, 5);     
     }
 
     function drawRotatingRectangle(){
         canvas.setFillColor("lightblue");
-        canvas.drawFillFramedCircle(300, 100, 50);
+        canvas.drawCircle(300, 100, 50);
         canvas.setFillColor("red");
-        canvas.drawFillFramedRectangle(300, 100, 60, 50, -rotation);
+        canvas.drawSquare(300, 100, 65, FILLFRAME, -rotation);
         canvas.setFillColor("black");
-        canvas.drawFillFramedCircle(300, 100, 5);
+        canvas.drawCircle(300, 100, 5);
+    }
+
+    function drawPolygon(){
+        canvas.setFillColor("brown");
+        canvas.setBorderColor("red");
+        let p1 = new Point(100, 50);
+        let p2 = new Point(75, 250);
+        let p3 = new Point(220, 0);
+        let p4 = new Point(60, 300);
+        let p5 = new Point(60, 300);
+        let p6 = new Point(60, 300);
+        canvas.drawPolygon([p1, p2, p3, p4], 0, p4);
+        canvas.drawStar(200, 200, 100);
+        canvas.setBorderColor("black");
     }
 
     function drawCursor(){
         if(canvas.mouseIsInScreen()){
             canvas.setFillColor("green");
-            canvas.drawFilledCircle(canvas.mouseX, canvas.mouseY, 5);
+            canvas.drawOval(canvas.mouseX, canvas.mouseY, 5, 5);
         }
     }
 
