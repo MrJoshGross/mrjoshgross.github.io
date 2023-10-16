@@ -51,7 +51,11 @@
                 radius: canvas.getRandomInteger(100),
 
                 // color is a random color
-                color: canvas.getRandomColor()
+                color: canvas.getRandomColor(),
+
+                xAccel: 5.0,
+
+                yAccel: 0.0
             }
         );
     }
@@ -80,6 +84,12 @@
         for(let circle of circles){
             canvas.setFillColor(circle.color);
             canvas.drawFilledCircle(circle.x, circle.y, circle.radius);
+            circle.x += circle.xAccel;
+            circle.y += circle.yAccel;
+            circle.xAccel *= 0.999;
+            circle.yAccel += (9.8/canvas.fps)*0.999;
+            if(circle.x < 0 || circle.x > canvas.width) circle.xAccel *=-1;
+            if(circle.y < 0 || circle.y > canvas.height) circle.yAccel *=-1;
         }
     }
 
