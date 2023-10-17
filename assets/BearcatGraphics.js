@@ -209,8 +209,10 @@ class BearcatGraphics {
     }
 
     drawImage(path, x, y, width, height, rotation){
+        const image = new Image(width, height)
+        image.src = path;
         if (rotation) this.#rotateLocal(x, y, rotation);
-        this.canvas.drawImage(path, x+width/2, y+height/2);
+        this.canvas.drawImage(image, x+width/2, y+height/2, width, height);
         if (rotation) this.resetCanvasRotation();
     }
     #rotateLocal(x, y, rotation) {
