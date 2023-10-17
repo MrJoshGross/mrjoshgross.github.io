@@ -95,7 +95,7 @@ class BearcatGraphics {
     
 
     drawRectangle(x, y, width, height, style = FILLFRAME, rotation){
-        if (rotation) this.#rotateLocal(x, y, rotation);
+        if (rotation) this.#rotate(x, y, rotation);
         if(style === FILL) this.canvas.fillRect(x - width / 2, y - height / 2, width, height)
         else if(style === FRAME) this.canvas.strokeRect(x - width / 2, y - height / 2, width, height)
         else if(style === FILLFRAME){
@@ -108,9 +108,9 @@ class BearcatGraphics {
     drawSquare = (x, y, length, style = FILLFRAME, rotation) => this.drawRectangle(x, y, length, length, style, rotation);
 
     drawOval(x, y, xRadius, yRadius, style = FILLFRAME, rotation = 0){
-        if(rotation) this.#rotateLocal(x, y, rotation);
+        if(rotation) this.#rotate(x, y, rotation);
         this.canvas.beginPath();
-        this.canvas.ellipse(x, y, xRadius, yRadius, rotation * BearcatGraphics.RADTODEG, 0, 2 * Math.PI);
+        this.canvas.ellipse(x, y, xRadius, yRadius, 0, 0, 2 * Math.PI);
         this.canvas.fill();
         if(style === FILL) this.canvas.fill();
         else if(style === FRAME) this.canvas.stroke();
@@ -122,7 +122,7 @@ class BearcatGraphics {
         if(rotation) this.resetCanvasRotation();
     }
     
-    drawCircle = (x, y, radius, style = FILLFRAME) => this.drawOval(x, y, radius, radius, style);
+    drawCircle = (x, y, radius, style = FILLFRAME, rotation) => this.drawOval(x, y, radius, radius, style, rotation);
 
     drawEquilateralTriangle(x, y, length, style = FILLFRAME, rotation) {
         let h = Math.sqrt(3 * length * length) / 2;
@@ -162,7 +162,7 @@ class BearcatGraphics {
     drawPolygon(points, style, rotation, rotateAroundPoint){
         if(rotation) {
             let p = rotateAroundPoint === undefined ? this.findCenter(points) : rotateAroundPoint;
-            this.#rotateLocal(p.x, p.y, rotation);
+            this.#rotate(p.x, p.y, rotation);
         }
         this.canvas.beginPath();
         this.canvas.moveTo(points[0].x, points[0].y);
@@ -180,6 +180,20 @@ class BearcatGraphics {
         if(rotation) this.resetCanvasRotation();
     }
 
+    drawLine(p1, p2, style, rotation){
+        if (rotation) this.#rotate((p1.x+p2.x)/2, (p1.y+p2.y)/2, rotation);
+        this.canvas.beginPath();
+        this.canvas.moveTo(p1.x, p1.y);
+        this.canvas.lineTo(p2.x, p2.y);
+        if(style==FRAME)this.canvas.stroke();
+        else if(style==FILL)this.canvas.fill();
+        else if(style==FILLFRAME){
+            this.canvas.stroke();
+            this.canvas.fill();
+        }
+        if(rotation) this.resetCanvasRotation();
+    }
+
     findCenter(points){
         let xAverage = 0;
         let yAverage = 0;
@@ -191,7 +205,7 @@ class BearcatGraphics {
     }
 
     #drawTriangle(x, y, p1, p2, p3, style, rotation) {
-        if (rotation) this.#rotateLocal(x, y, rotation);
+        if (rotation) this.#rotate(x, y, rotation);
         this.canvas.beginPath();
         this.canvas.moveTo(p1.x, p1.y);
         this.canvas.lineTo(p2.x, p2.y);
@@ -211,11 +225,17 @@ class BearcatGraphics {
     drawImage(path, x, y, width, height, rotation){
         const image = new Image(width, height)
         image.src = path;
-        if (rotation) this.#rotateLocal(x, y, rotation);
+        if (rotation) this.#rotate(x, y, rotation);
         this.canvas.drawImage(image, x+width/2, y+height/2, width, height);
         if (rotation) this.resetCanvasRotation();
     }
-    #rotateLocal(x, y, rotation) {
+
+    #rotate(x, y, rotation) {
+        if(rotation.x && rotation.y){
+            this.canvas.translate(rotation.x, rotation.y);
+            this.canvas.rotate(rotation.amount * BearcatGraphics.RADTODEG);
+            this.canvas.translate(-rotation.x, -rotation.y);
+        }
         this.canvas.translate(x, y);
         this.canvas.rotate(rotation * BearcatGraphics.RADTODEG);
         this.canvas.translate(-x, -y);
