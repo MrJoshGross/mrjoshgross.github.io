@@ -94,7 +94,7 @@ class BearcatGraphics {
     setLineThickness = (thickness) => this.canvas.lineWidth = thickness;
     
 
-    drawRect(x, y, width, height, style = FILLFRAME, rotation){
+    drawRectangle(x, y, width, height, style = FILLFRAME, rotation){
         if (rotation) this.#rotateLocal(x, y, rotation);
         if(style === FILL) this.canvas.fillRect(x - width / 2, y - height / 2, width, height)
         else if(style === FRAME) this.canvas.strokeRect(x - width / 2, y - height / 2, width, height)
@@ -105,7 +105,7 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
     
-    drawSquare = (x, y, length, style = FILLFRAME, rotation) => this.drawRect(x, y, length, length, style, rotation);
+    drawSquare = (x, y, length, style = FILLFRAME, rotation) => this.drawRectangle(x, y, length, length, style, rotation);
 
     drawOval(x, y, xRadius, yRadius, style = FILLFRAME, rotation = 0){
         if(rotation) this.#rotateLocal(x, y, rotation);
@@ -132,14 +132,14 @@ class BearcatGraphics {
         this.#drawTriangle(x, y, p1, p2, p3, style, rotation);
     }
 
-    drawIsoscelesTriangle(x, y, base, height, style, rotation){
+    drawIsoscelesTriangle(x, y, base, height, style = FILLFRAME, rotation){
         let p1 = new Point(x - (base / 2), y + (height / 3));
         let p2 = new Point(x, y - (2 * height / 3));
         let p3 = new Point(x + (base / 2), y + (height / 3));
         this.#drawTriangle(x, y, p1, p2, p3, style, rotation);
     }
 
-    drawRightTriangle(x, y, length, style, rotation){
+    drawRightTriangle(x, y, length, style = FILLFRAME, rotation){
         let p1 = new Point(x - (length / 3), y + (length / 3));
         let p2 = new Point(x - (length / 3), y - (2 * length / 3));
         let p3 = new Point(x + (2 * length / 3), y + (length / 3));
