@@ -7,32 +7,38 @@
     // canvas object
     let canvas = null;
 
-    // rotation amount in degrees
+    // current rotation in degrees
     let rotation = 0;
 
+    // rotation delta in degrees
+    let rotationAmount = 0;
+
+    // debugging toggle
+    let debug = false;
+
     // rate at which expanding element expands or shrinks
-    let expandAmount = 1;
+    let expandAmount = 0;
 
     // minimum size of expanding element
-    let minExpandAmount = 30;
+    let minExpandAmount = 50;
 
     // maximum size of expanding element
-    let maxExpandAmount = 100;
+    let maxExpandAmount = 200;
 
     // side of expanding element
-    let expander = minExpandAmount;
+    let expander = (maxExpandAmount+minExpandAmount)/2;
 
     // movement speed of "player"
     let movementSpeed = 4;
 
     // player x position
-    let px = 300;
+    let px = 200;
 
     // player x movement direction: x = 0 if not moving, -1 if moving left, 1 if moving right
     let pMovingX = 0;
 
     // player y position
-    let py = 300;
+    let py = 200;
 
     // player y movement direction: y = 0 if not moving, -1 if moving up, 1 if moving down
     let pMovingY = 0;
@@ -74,12 +80,6 @@
     // when a key is pressed down
     function onKeyDown(e) {
         switch (e.key) {
-            case "ArrowUp":
-                expandAmount *= 2;
-                break;
-            case "ArrowDown":
-                expandAmount /= 2;
-                break;
             case "a":
                 if(pMovingX == 0) pMovingX = -1;
                 break;
@@ -118,12 +118,14 @@
     // when a key is released
     function onKeyUp(e) {
         switch (e.key) {
-            case "ArrowUp":
-                expandAmount *= 2;
+            case "e":
+                expandAmount = !expandAmount;
                 break;
-            case "ArrowDown":
-                expandAmount /= 2;
+            case "f":
+                debug = !debug;
                 break;
+            case "q":
+                rotationAmount = !rotationAmount;
             case "a":
                 if(pMovingX == -1) pMovingX = 0;
                 break;
@@ -177,24 +179,24 @@
 
             // drawPolygon();
 
-            drawCursor();
-
             // drawImage();
 
             // drawStar();
 
-            drawHouse();
+            drawHouse(px, py, expander, rotation);
 
             drawLeftTree();
 
             drawRightTree();
+
+            drawCursor();
             
             if (expander > maxExpandAmount || expander < minExpandAmount) expandAmount *= -1;
 
             px += movementSpeed * pMovingX;
             py += movementSpeed * pMovingY;
             expander += expandAmount;
-            rotation += 1;
+            rotation += rotationAmount;
         }
 
         function drawBackground() {
@@ -204,20 +206,54 @@
             canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height, FILL);
         }
 
-        function drawHouse(){
+        function drawHouse(houseCenterX, houseCenterY, houseWidth, rotationAmount){
+            let rotation = null;
+            if(rotationAmount) rotation = {x: houseCenterX, y: houseCenterY, amount: rotationAmount};
+            let houseHeight = houseWidth;
+            let roofWidth = houseWidth;
+            let roofHeight = Math.sqrt(3*houseWidth*houseWidth)/2;
+            let roofCenterX = houseCenterX;
+            let roofCenterY = houseCenterY-(houseHeight/2 + roofHeight/3);
+            let doorCenterX = houseCenterX;
+            let doorCenterY = houseCenterY+houseHeight/4;
+            let doorWidth = houseWidth/3;
+            let doorHeight = houseHeight/2;
+            let knobRadius = doorWidth/10;
+            let knobCenterX = doorCenterX+doorWidth/4;
+            let knobCenterY = doorCenterY;
+            let windowCenterX = houseCenterX;
+            let windowCenterY = houseCenterY - houseHeight/4;
+            let windowWidth = doorWidth+doorWidth/4;
+            let windowHeight = 2*doorWidth/3;
+            let frameThickness = windowHeight/10;
             canvas.setFillColor("red");
-            canvas.drawRectangle(200,200,100,100,FILL);
+            canvas.drawSquare(houseCenterX, houseCenterY, houseWidth, FILL, rotationAmount);
             canvas.setFillColor("green");
-            canvas.drawEquilateralTriangle(200,125,100,FILL);
+            canvas.drawEquilateralTriangle(roofCenterX, roofCenterY, roofWidth, FILL, rotation);
             canvas.setFillColor("brown");
-            canvas.drawRectangle(200, 225, 30, 50,FILL);
+            canvas.drawRectangle(doorCenterX, doorCenterY, doorWidth, doorHeight, FILL, rotation);
             canvas.setFillColor("yellow");
-            canvas.drawCircle(205, 215, 3, FILL);
+            canvas.drawCircle(knobCenterX, knobCenterY, knobRadius, FILL, rotation);
             canvas.setFillColor("white");
-            canvas.drawRectangle(200, 175, 30, 30);
+            canvas.drawRectangle(windowCenterX, windowCenterY, windowWidth, windowHeight, FILLFRAME, rotation);
             canvas.setFillColor("black");
-            canvas.drawRectangle(200, 175, 1, 30);
-            canvas.drawRectangle(200, 175, 1, 30, FILLFRAME, 90);
+            canvas.drawRectangle(windowCenterX, windowCenterY, windowWidth, frameThickness, FILL, rotation);
+            canvas.drawRectangle(windowCenterX, windowCenterY, frameThickness, windowHeight, FILL, rotation);
+            if(debug){
+                canvas.setFillColor("white");
+                canvas.drawCircle(houseCenterX, houseCenterY, 5, FILLFRAME, rotation);
+                canvas.setLineThickness(1);
+                canvas.setFillColor("blue");
+                canvas.drawCircle(roofCenterX, roofCenterY, 3, FILLFRAME, rotation);
+                canvas.drawCircle(doorCenterX, doorCenterY, 3, FILLFRAME, rotation);
+                canvas.drawCircle(knobCenterX, knobCenterY, 3, FILLFRAME, rotation);
+                canvas.drawCircle(windowCenterX, windowCenterY, 3, FILLFRAME, rotation);
+                canvas.drawLine({x: houseCenterX, y: houseCenterY}, {x: roofCenterX, y: roofCenterY}, FRAME, rotation);
+                canvas.drawLine({x: houseCenterX, y: houseCenterY}, {x: doorCenterX, y: doorCenterY}, FRAME, rotation);
+                canvas.drawLine({x: houseCenterX, y: houseCenterY}, {x: knobCenterX, y: knobCenterY}, FRAME, rotation);
+                canvas.drawLine({x: houseCenterX, y: houseCenterY}, {x: windowCenterX, y: windowCenterY}, FRAME, rotation);
+                canvas.setLineThickness(5);
+            }
         }
 
         function drawLeftTree(){
