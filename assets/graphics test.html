@@ -169,20 +169,25 @@
         function update() {
             drawBackground();
 
-            drawRotatingTriangle();
+            // drawRotatingTriangle();
 
-            drawRotatingRectangle();
+            // drawRotatingRectangle();
 
-            drawAllCircles();
+            // drawAllCircles();
 
-            drawPolygon();
+            // drawPolygon();
 
             drawCursor();
 
-            drawImage();
+            // drawImage();
 
-            drawStar();
+            // drawStar();
 
+            drawHouse();
+
+            drawLeftTree();
+
+            drawRightTree();
             
             if (expander > maxExpandAmount || expander < minExpandAmount) expandAmount *= -1;
 
@@ -193,8 +198,44 @@
         }
 
         function drawBackground() {
+            canvas.setFillColor("green");
+            canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height * 2, FILL);
+            canvas.setFillColor("blue");
+            canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height, FILL);
+        }
+
+        function drawHouse(){
+            canvas.setFillColor("red");
+            canvas.drawRectangle(200,200,100,100,FILL);
+            canvas.setFillColor("green");
+            canvas.drawEquilateralTriangle(200,125,100,FILL);
+            canvas.setFillColor("brown");
+            canvas.drawRectangle(200, 225, 30, 50,FILL);
+            canvas.setFillColor("yellow");
+            canvas.drawCircle(205, 215, 3, FILL);
             canvas.setFillColor("white");
-            canvas.drawRect(0, 0, canvas.width * 2, canvas.height * 2);
+            canvas.drawRectangle(200, 175, 30, 30);
+            canvas.setFillColor("black");
+            canvas.drawRectangle(200, 175, 1, 30);
+            canvas.drawRectangle(200, 175, 1, 30, FILLFRAME, 90);
+        }
+
+        function drawLeftTree(){
+            canvas.setFillColor("brown");
+            canvas.drawRectangle(75, 200, 20, 100, FILL);
+            canvas.setFillColor("green");
+            canvas.drawCircle(75, 150, 30, FILL);
+            canvas.drawCircle(50, 175, 30, FILL);
+            canvas.drawCircle(100, 175, 30, FILL);
+        }
+
+        function drawRightTree(){
+            canvas.setFillColor("brown");
+            canvas.drawRectangle(375, 200, 20, 100, FILL);
+            canvas.setFillColor("green");
+            canvas.drawCircle(375, 150, 30, FILL);
+            canvas.drawCircle(350, 175, 30, FILL);
+            canvas.drawCircle(400, 175, 30, FILL);
         }
 
         function drawAllCircles() {
