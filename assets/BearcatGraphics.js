@@ -4,6 +4,7 @@
  */
 class BearcatGraphics {
     static RADTODEG = Math.PI / 180;
+    static STAR_ROTATION_CORRECTION = -18; // determine the correct formula iot not need this
     static EVENT_TYPES = {
         CLICK: "click",
         DOUBLECLICK: "dblclick",
@@ -146,14 +147,14 @@ class BearcatGraphics {
     }
 
     drawStar(x, y, length, style = FILLFRAME, rotation, rotateAroundPoint){
-        
+        if(!rotation) rotation = BearcatGraphics.STAR_ROTATION_CORRECTION; // determine the correct formula iot not need this
         let points = [];
         for(let i = 0; i < 5; i++){
             // outer
-            points.push(new Point(x + length*Math.cos((2*Math.PI*i/5)), y + length*Math.sin((2*Math.PI*i/5))));
+            points.push(new Point(x + length*Math.cos(((2*Math.PI*i)/5)), y + length*Math.sin(((2*Math.PI*i)/5))));
 
             // inner
-            points.push(new Point(x + length/3*Math.cos((2*Math.PI*i/5 + 2*Math.PI/10)), y + length/3*Math.sin((2*Math.PI*i/5 + 2*Math.PI/10))));
+            points.push(new Point(x + 2*length/5*Math.cos((2*Math.PI*i/5 + Math.PI/5)), y + 2*length/5*Math.sin((2*Math.PI*i/5 + Math.PI/5))));
         }
         this.drawPolygon(points, style, rotation, rotateAroundPoint);
     }
@@ -161,7 +162,6 @@ class BearcatGraphics {
     drawPolygon(points, style, rotation, rotateAroundPoint){
         if(rotation) {
             let p = rotateAroundPoint === undefined ? this.findCenter(points) : rotateAroundPoint;
-            this.drawCircle(p.x, p.y, 5)
             this.#rotateLocal(p.x, p.y, rotation);
         }
         this.canvas.beginPath();
@@ -169,7 +169,7 @@ class BearcatGraphics {
         for(let i = 1; i < points.length; i++)
             this.canvas.lineTo(points[i].x, points[i].y);
         this.canvas.lineTo(points[0].x, points[0].y);
-        // if (style === FRAME || style === FILLFRAME) this.canvas.lineTo(p2.x, p2.y); // prevents jagged p1 corner on stroke
+        if (style === FRAME || style === FILLFRAME) this.canvas.lineTo(points[1].x, points[1].y); // prevents jagged p1 corner on stroke
         if(style === FILL) this.canvas.fill();
         else if(style === FRAME) this.canvas.stroke();
         else if(style === FILLFRAME){
@@ -208,6 +208,11 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    drawImage(path, x, y, width, height, rotation){
+        if (rotation) this.#rotateLocal(x, y, rotation);
+        this.canvas.drawImage(path, x+width/2, y+height/2);
+        if (rotation) this.resetCanvasRotation();
+    }
     #rotateLocal(x, y, rotation) {
         this.canvas.translate(x, y);
         this.canvas.rotate(rotation * BearcatGraphics.RADTODEG);
@@ -216,7 +221,10 @@ class BearcatGraphics {
 
     resetCanvasRotation = () => this.canvas.setTransform(1, 0, 0, 1, 0, 0);
 
-    addEventListener = (type, func) => this.canvasElement.addEventListener(type, func);
+    addEventListener = (type, func) => {
+        if(type == BearcatGraphics.EVENT_TYPES.KEYDOWN || type == BearcatGraphics.EVENT_TYPES.KEYPRESS || type == BearcatGraphics.EVENT_TYPES.KEYUP) window.addEventListener(type, func);
+        this.canvasElement.addEventListener(type, func);
+    }
 
     getMouseX = (e) => e.x - this.canvasElement.getBoundingClientRect().left;
 
