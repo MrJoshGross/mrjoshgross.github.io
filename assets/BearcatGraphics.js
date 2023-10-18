@@ -266,6 +266,10 @@ class BearcatGraphics {
         return "#" + r.toString(16) + g.toString(16) + b.toString(16);
     }
 
+    getRandomDecimal = () => Math.random();
+
+    getRandomDecimal = (max) => Math.random() / (1 / max);
+
     getRandomInteger = (max) => Math.floor(Math.random() * max);
 }
 
