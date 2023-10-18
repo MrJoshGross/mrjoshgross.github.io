@@ -10,6 +10,33 @@
     // current rotation in degrees
     let rotation = 0;
 
+    // rotation of sun or moon in sky
+    let skyRotation = 0;
+
+    // num stars to generate
+    let numStars = 400;
+    
+    // stars array
+    let stars = [];
+
+    // rotation of stars in sky
+    let starRotation = 0;
+
+    // x position of clouds
+    let cloudPosition = 0;
+
+    // star pulse amount (+/-x for size)
+    let starPulse = 1;
+
+    // star pulse in/decrement speed
+    let starPulseDelta = 0.01;
+
+    // minimum size of star pulse
+    let starPulseMin = 0.5;
+
+    // maximum size of star pulse
+    let starPulseMax = 1;
+
     // rotation delta in degrees
     let rotationAmount = 0;
 
@@ -30,6 +57,9 @@
 
     // movement speed of "player"
     let movementSpeed = 4;
+
+    // toggle day or nighttime display
+    let isDaytime = true;
 
     // player x position
     let px = 200;
@@ -70,11 +100,11 @@
         // everytime a key is pressed down, call our key down function
         canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
 
-        // everytime a key is key held down, call our key up function
-        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, onKeyPress);
-
         // everytime a key is released, call our key up function
         canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, onKeyUp);
+
+        // fill star with skys
+        initStars();
     }
 
     // when a key is pressed down
@@ -92,28 +122,11 @@
             case "s":
                 if(pMovingY == 0) pMovingY = 1;
                 break;
+            case "z":
+                isDaytime = !isDaytime;
+                break;
         }
     }
-
-    // when a key is held down
-    function onKeyPress(e) {
-        // switch (e.key) {
-        //     case "a":
-        //         if(pMovingX == 0) pMovingX = -1;
-        //         break;
-        //     case "d":
-        //         if(pMovingX == 0) pMovingX = 1;
-        //         break;
-        //     case "w":
-        //         if(pMovingY == 0) pMovingY = -1;
-        //         break;
-        //     case "s":
-        //         if(pMovingY == 0) pMovingY = 1;
-        //         break;
-        // }
-    }
-
-
 
     // when a key is released
     function onKeyUp(e) {
@@ -169,19 +182,12 @@
 
         // every frame (1/60th of a second) draw everything
         function update() {
+
+            isDaytime ? drawDaytimeSky() : drawNighttimeSky();
+
+            drawClouds();
+
             drawBackground();
-
-            // drawRotatingTriangle();
-
-            // drawRotatingRectangle();
-
-            // drawAllCircles();
-
-            // drawPolygon();
-
-            // drawImage();
-
-            // drawStar();
 
             drawHouse(px, py, expander, rotation);
 
@@ -197,13 +203,62 @@
             py += movementSpeed * pMovingY;
             expander += expandAmount;
             rotation += rotationAmount;
+            skyRotation += 0.1;
+            starRotation += 0.8;
+            cloudPosition += 0.8;
+            starPulse+= starPulseDelta;
+            
+            if(starPulse < starPulseMin || starPulse > starPulseMax){
+                starPulseDelta *= -1;
+            }
+
+            if(skyRotation >= 170){
+                isDaytime = !isDaytime;
+                skyRotation = -30;
+            }
+        }
+
+        function drawClouds(){
+            drawCloud((cloudPosition)%(canvas.width+125)-75, 100, 25);
+            drawCloud((cloudPosition/2)%(canvas.width+60)-40, 70, 15);
+            drawCloud((cloudPosition/3)%(canvas.width+40)-22, 30, 10);
         }
 
         function drawBackground() {
             canvas.setFillColor("green");
-            canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height * 2, FILL);
+            canvas.drawRectangle(canvas.width/2, 3*canvas.height/4, canvas.width, canvas.height/2, FILL);
+        }
+
+        function drawDaytimeSky(){
             canvas.setFillColor("blue");
             canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height, FILL);
+            canvas.setFillColor("orange");
+            canvas.drawCircle(100, 100, 50, FILL, {x: canvas.width/2, y: canvas.height/2, amount: skyRotation});
+        }
+
+        function drawCloud(x, y, radius){
+            canvas.setFillColor("white");
+            canvas.drawCircle(x-radius/2, y, radius, FILL);
+            canvas.drawCircle(x+radius/2, y, radius, FILL);
+            canvas.drawCircle(x, y-radius/2, radius, FILL);
+        }
+
+        function drawNighttimeSky(){
+            canvas.setFillColor("black");
+            canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height, FILL);
+            canvas.setFillColor("lightyellow");
+            canvas.drawCircle(100, 100, 50, FILL, {x: canvas.width/2, y: canvas.height/2, amount: skyRotation});
+            drawStars();
+        }
+
+        function initStars(){
+            for(let i = 0; i < numStars; i++)
+                stars.push({x: canvas.getRandomInteger(canvas.width+canvas.width), y: canvas.getRandomInteger(canvas.height), size: canvas.getRandomInteger(3)});
+        }
+
+        function drawStars(){
+            let starRotationPoint = {x: canvas.width/2, y: canvas.height/2, amount: starRotation/32};
+            for(let star of stars) canvas.drawStar(star.x, star.y, star.size+(star.size/starPulse), FILL, starRotationPoint);
         }
 
         function drawHouse(houseCenterX, houseCenterY, houseWidth, rotationAmount){
@@ -267,11 +322,11 @@
 
         function drawRightTree(){
             canvas.setFillColor("brown");
-            canvas.drawRectangle(375, 200, 20, 100, FILL);
+            canvas.drawRectangle(375, 200, 20, 50, FILL);
             canvas.setFillColor("green");
-            canvas.drawCircle(375, 150, 30, FILL);
-            canvas.drawCircle(350, 175, 30, FILL);
-            canvas.drawCircle(400, 175, 30, FILL);
+            canvas.drawEquilateralTriangle(375, 175, 90, FILL);
+            canvas.drawEquilateralTriangle(375, 150, 60, FILL);
+            canvas.drawEquilateralTriangle(375, 125, 30, FILL);
         }
 
         function drawAllCircles() {
