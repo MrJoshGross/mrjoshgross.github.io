@@ -1,0 +1,173 @@
+<!--Import graphics functionality-->
+<script src="BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let canvas = null;
+
+    let enemies = null;
+
+    let enemyRadius = 25;
+
+    let playerRadius = 25;
+
+    let enemyMovementSpeed = 6;
+
+    let enemyRespawnRate;
+
+    let enemyRespawnCounter = 0;
+
+    let waveNumber = 1;
+
+    let numThisWave = 5;
+
+    let numLeft = 5;
+
+    let gameOver = false;
+
+    // call to set everything up
+    init();
+
+    // function that sets everything up
+    function init() {
+
+        // create canvas to display graphics in and do other setup stuff
+        canvas = new BearcatGraphics();
+
+        // every frame, call our update function
+        canvas.setUpdateFunction(update);
+
+        // set thickness of shape borders
+        canvas.setLineThickness(5);
+
+        // get rid of mouse cursor when in window
+        canvas.canvasElement.style.cursor = "none";
+
+        enemies = new Array();
+        enemyRespawnRate = 2*canvas.fps;
+    }
+
+        // every frame (1/60th of a second) draw everything
+        function update() {
+            drawBackground();
+            if(!gameOver){
+                drawPlayer(canvas.mouseX, canvas.mouseY, playerRadius);
+                drawEnemies();
+                handleCollisions();
+            }
+            updateGUI();
+        }
+
+        function updateGUI(){
+            canvas.setFillColor("white");
+            canvas.drawRectangle(canvas.width/2, 20, canvas.width, 25, FILL);
+            canvas.canvas.font = "15pt Arial";
+            canvas.setFillColor("black");
+            canvas.canvas.fillText("Wave number: " + waveNumber, 0, 25);
+            canvas.canvas.fillText("Left this wave: " + numLeft, 200, 25);
+            canvas.canvas.fillText("In this wave: " + numThisWave, 400, 25);
+        }
+
+        function handleCollisions(){
+            let playerPoint = new Point(canvas.mouseX, canvas.mouseY);
+            for(let enemy of enemies){
+                if(enemy.x <= -enemyRadius) {
+                    console.log("destroying enemy");
+                    handleEnemyDestruction();
+                }
+                let enemyPoint = new Point(enemy.x, enemy.y);
+                if(enemyPoint.distanceTo(playerPoint) < enemyRadius + playerRadius){
+                    gameOver = true;
+                    break;
+                }
+            }
+        }
+
+        function handleEnemyDestruction(){
+            console.log("destroying enemy");
+            enemies.shift();
+            numLeft--;
+            if(numLeft == 0){
+                numThisWave += 2;
+                numLeft = numThisWave;
+                waveNumber++;
+                enemyMovementSpeed *= 1.3;
+                enemyRadius *= 1.3;
+            }
+        }
+
+        function drawEnemies(){
+            for(let enemy of enemies){
+                enemy.x -= enemyMovementSpeed;
+                drawEnemy(enemy);
+            }
+            if(enemyRespawnCounter >= enemyRespawnRate){
+                enemyRespawnCounter = 0;
+                createNewEnemy();
+            } else enemyRespawnCounter++;
+        }
+
+        function drawBackground(){
+            for(let y = 0; y < 40; y++){
+                for(let x = 0; x < 40; x++){
+                    canvas.setFillColor((x&y ? "black": "white"));
+                    canvas.drawSquare(20*x, 20*y, 20);
+                }
+            }
+        }
+
+        function createNewEnemy(){
+            enemies.push({x: canvas.width + enemyRadius, y: canvas.getRandomIntegerInRange(enemyRadius, canvas.height-enemyRadius)});
+        }
+
+        function drawEnemy(enemy){
+            let size = enemyRadius;
+            let leftEyeX = enemy.x-size/2;
+            let eyeY = enemy.y-size/2;
+            let rightEyeX = enemy.x+size/2;
+            let eyeSize = size/2;
+            let eyeInnerY = eyeY + eyeSize/2; 
+            let eyeInnerSize = eyeSize/2;
+            let eyebrowWidth = size;
+            let eyebrowHeight = eyeInnerSize/2;
+            let eyebrowY = eyeY-eyeSize;
+            let leftEyebrowX = leftEyeX;
+            let rightEyebrowX = rightEyeX;
+
+            canvas.setFillColor("gray");
+            canvas.drawCircle(enemy.x, enemy.y, size);
+            canvas.setFillColor("white");
+            canvas.drawCircle(leftEyeX, eyeY, eyeSize);
+            canvas.setFillColor("black");
+            canvas.drawCircle(leftEyeX, eyeInnerY, eyeInnerSize);
+            canvas.setFillColor("white");
+            canvas.drawCircle(rightEyeX, eyeY, eyeSize);
+            canvas.setFillColor("black");
+            canvas.drawCircle(rightEyeX, eyeInnerY, eyeInnerSize);
+            canvas.drawRectangle(leftEyebrowX, eyebrowY, eyebrowWidth, eyebrowHeight);
+            canvas.drawRectangle(rightEyebrowX, eyebrowY, eyebrowWidth, eyebrowHeight);
+        }
+
+        function drawPlayer(x, y, size){
+            let leftEyeX = x-size/2;
+            let eyeY = y-size/2;
+            let rightEyeX = x+size/2;
+            let eyeSize = size/2;
+            let eyeInnerY = eyeY + eyeSize/2; 
+            let eyeInnerSize = eyeSize/2;
+
+            canvas.setFillColor("yellow");
+            canvas.drawCircle(x, y, size);
+            canvas.setFillColor("white");
+            canvas.drawCircle(leftEyeX, eyeY, eyeSize);
+            canvas.setFillColor("black");
+            canvas.drawCircle(leftEyeX, eyeInnerY, eyeInnerSize);
+            canvas.setFillColor("white");
+            canvas.drawCircle(rightEyeX, eyeY, eyeSize);
+            canvas.setFillColor("black");
+            canvas.drawCircle(rightEyeX, eyeInnerY, eyeInnerSize);
+        }
+
+</script>
