@@ -271,6 +271,8 @@ class BearcatGraphics {
     getRandomDecimal = (max) => Math.random() / (1 / max);
 
     getRandomInteger = (max) => Math.floor(Math.random() * max);
+
+    getRandomIntegerInRange = (min, max) => min + this.getRandomInteger(max-min);
 }
 
 let COLORS = {
@@ -307,6 +309,5 @@ class Point{
         this.x = x;
         this.y = y;
     }
-
-    distanceTo = (other) => Math.sqrt(((other.y-this.y)*(other.y-this.y))/((other.x-this.x)*(other.x-this.x)));
+    distanceTo = (other) => Math.sqrt(((other.y-this.y)*(other.y-this.y))+((other.x-this.x)*(other.x-this.x)));
 }
