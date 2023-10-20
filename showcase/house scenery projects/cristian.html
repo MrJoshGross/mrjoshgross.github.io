@@ -1,0 +1,212 @@
+
+<!--Import graphics functionality-->
+<script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script>
+
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let canvas = null;
+
+    // rotation amount in degrees
+    let rotation = 0;
+
+    // array of circles to draw
+    let circles = [];
+    
+    // call to set everything up
+    init();
+
+    // function that sets everything up
+    function init(){
+
+        // create canvas to display graphics in and do other setup stuff
+        canvas = new BearcatGraphics();
+
+        // every frame, call our update function
+        canvas.setUpdateFunction(update);
+
+        // set thickness of shape borders
+        canvas.setLineThickness(5);
+
+        // get rid of mouse cursor when in window
+        canvas.canvasElement.style.cursor = "none";
+
+        // everytime the mouse is clicked, call our mouse click function
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.CLICK, onMouseClick);
+    }
+
+    // when the mouse is clicked
+    function onMouseClick(e){
+
+        // create a new circle and add it to the list of circles to show on screen
+        circles.push(
+            {
+                // set circle x coordinate to mouse x coordinate when clicked
+                x: canvas.getMouseX(e), 
+
+                // set circle y coordinate to mouse y coordinate when clicked
+                y: canvas.getMouseY(e),
+
+                // radius of the circle is a random number between 1 and 100 pixels
+                radius: canvas.getRandomInteger(100),
+
+                // color is a random color
+                color: canvas.getRandomColor()
+            }
+        );
+    }
+
+    // every frame (1/60th of a second) draw everything
+    function update(){
+        drawBackground();
+
+        drawTrees(500, 250);
+        drawTrees(50, 250);
+
+        drawClouds(100, 100, rotation);
+        drawClouds(450, 100, 2*rotation);
+
+        drawSun(300, 70);
+
+        drawMoon();
+
+        
+        
+
+
+        drawHouse(300, 300);
+              
+
+        drawCursor();
+
+        rotation += 1;
+    }
+
+    function drawBackground(){
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(0, 0, canvas.width*2, canvas.height*2);
+        canvas.setFillColor("green");
+        canvas.drawRectangle(50, 500, canvas.width*5, canvas.height*1);
+    }
+
+    function drawHouse(x, y){
+        canvas.setFillColor("red");
+        canvas.setBorderColor("black");
+        canvas.drawRectangle(x, y, 75, 85);
+        canvas.setFillColor("green");
+        canvas.drawEquilateralTriangle(x, y-65, 75, 0);
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(x, y+20, 25, 40);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(x+3, y+20, 10);
+        canvas.setFillColor("white");
+        canvas.drawRectangle(x, y-20, 25, 25);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(x, y-20, 0, 25);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(x, y-20, 25, 0);
+    }
+
+    function drawFace(){
+        canvas.setFillColor("darkred");
+        canvas.setBorderColor("red");
+        canvas.drawCircle(400, 250, 75, 85);
+        canvas.setFillColor("yellow");
+        canvas.setBorderColor("green");
+        canvas.drawCircle(370, 230, 20, 20);
+        canvas.setFillColor("purple");
+        canvas.setBorderColor("lightblue");
+        canvas.drawCircle(430, 240, 30, 20);
+        canvas.setFillColor("gray");
+        canvas.setBorderColor("white");
+        canvas.drawRectangle(400, 290, 75, 20);
+        canvas.setFillColor("red");
+        canvas.setBorderColor("black");
+        canvas.drawEquilateralTriangle(400, 160, 100, 0); 
+    }
+
+    function drawTrees(x, y){
+        canvas.setFillColor("brown");
+        canvas.setBorderColor("black")
+        canvas.drawRectangle(x+20, 290, 30, 100);
+        canvas.setFillColor("lightgreen");
+        canvas.setBorderColor("lightgreen")
+        canvas.drawCircle(x+50, y, 30);
+        canvas.setFillColor("lightgreen");
+        canvas.setBorderColor("lightgreen")
+        canvas.drawCircle(x-10 , y, 30);
+        canvas.setFillColor("lightgreen");
+        canvas.setBorderColor("lightgreen")
+        canvas.drawCircle(x+20, y-30, 30);
+
+
+
+    }
+
+    function drawClouds(x, y, shiftSpeed){
+        canvas.setFillColor("white")
+        canvas.setBorderColor("white")
+        canvas.drawCircle((x+shiftSpeed)%(canvas.width+60)-30, y, 30);
+        canvas.setFillColor("white")
+        canvas.setBorderColor("white")
+        canvas.drawCircle((x+40+shiftSpeed)%(canvas.width+60)-30, y, 30);
+        canvas.setFillColor("white")
+        canvas.setBorderColor("white")
+        canvas.drawCircle((x+20+shiftSpeed)%(canvas.width+60)-30, y-20, 30);
+
+
+    }
+
+    function drawSun(x, y){
+        canvas.setFillColor("yellow")
+        canvas.setBorderColor("yellow")
+        canvas.drawCircle(x, y, 30);
+        canvas.drawRectangle(x, y, 10, 90, FILL, rotation);
+        canvas.drawRectangle(x, y, 10, 90, FILL, 45+rotation);
+        canvas.drawRectangle(x, y, 10, 90, FILL, 90+rotation);
+        canvas.drawRectangle(x, y, 10, 90, FILL, 135+rotation);
+    }
+
+    function drawMoon(){
+        canvas.setFillColor("lightyellow")
+        canvas.setBorderColor("lightyellow")
+        canvas.drawCircle(-20, 70, 50);
+    }
+        
+    
+
+
+
+    function drawAllCircles(){
+        for(let circle of circles){
+            canvas.setFillColor(circle.color);
+            canvas.drawRectangle(circle.x, circle.y, circle.radius,50);
+        }
+    }
+
+    function drawRotatingTriangle(){
+        canvas.setFillColor("lightblue");
+        canvas.drawCircle(100, 100, 50);
+        canvas.setFillColor("red");
+        canvas.drawEquilateralTriangle(100, 100, 50, rotation);
+        canvas.setFillColor("green");
+        canvas.drawCircle(100, 100, 5);
+    }
+
+    function drawRotatingRectangle(){
+        canvas.setFillColor("lightblue");
+        canvas.drawCircle(300, 100, 50);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(300, 100, 60, 50, -rotation);
+        canvas.setFillColor("green");
+        canvas.drawCircle(300, 100, 5);
+    }
+
+    function drawCursor(){
+        if(canvas.mouseIsInScreen()){
+            canvas.setFillColor("green");
+            canvas.drawCircle(canvas.mouseX, canvas.mouseY, 5);
+        }
+    }
+
+</script>
