@@ -1,0 +1,240 @@
+<!--Import graphics functionality-->
+<script src="BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    let canvas = new BearcatGraphics(800, 800);
+    let classIndex = 0;
+
+    onMouseDown = () => classIndex = (classIndex + 1) % 4;
+
+    function update() {
+        drawBackground();
+        switch (classIndex) {
+            case 0: 
+                drawGross(canvas.width/2, canvas.height/2);
+                fillText("Mr. Gross (after typing all your functions out)", 100, 700);
+                break;
+            case 1:
+                fillText("Period 2", 600, 700);
+                drawCristian();
+                break;
+            case 2:
+                fillText("Period 3", 600, 700);
+                drawAjoni();
+                drawJimmy();
+                drawIngrid();
+                drawAsaiahs();
+                break;
+            case 3:
+                fillText("Period 4", 600, 700);
+                drawJayden();
+                drawEdwin();
+                drawYuddy();
+                drawJohn();
+                drawSantiago();
+                break;
+        }
+    }
+
+    function fillText(text, x, y) {
+        canvas.setFillColor("black");
+        canvas.canvas.fillText(text, x, y);
+    }
+
+    r = (x, y, l, h, f, r) => canvas.drawRectangle(x,y,l,h,f,r);
+    c = (x,y,r) => canvas.drawCircle(x,y,r);
+    sc = (c) => canvas.setFillColor(c);
+
+
+    function drawGross(x,y){
+        // face
+        sc("gray");
+        c(x, y, 100);
+        // eyeballs
+        sc("white");
+        c(x-25,y-25,30);
+        c(x+25,y-25,30)
+        // pupils
+        sc("black");
+        c(x-25,y-15,15);
+        c(x+25,y-15,15);
+        // eyebrows
+        r(x-25,y-45,25,5,FILLFRAME,45);
+        r(x+25,y-45,25,5,FILLFRAME,-45);
+        // mouth
+        sc("red");
+        r(x,y+10,30,15);
+    }
+
+    function drawSantiago(){
+        sc("gray");
+        c(280,200,45);
+        sc("white");
+        c(260,185,15);
+        c(300,185,15);
+        sc("black");
+        c(264,193,7);
+        c(297,193,7);
+        sc("red");
+        r(282,220,50,20);
+        sc("black");
+        r(254,168,45,5,FILLFRAME,20);
+        r(301,168,45,5,FILLFRAME,-20);
+        fillText("Santiago*", 225, 150);
+        fillText("* wrote code on computer before paper >:(", 25, 775);
+    }
+
+    function drawJohn(){
+        sc("gray");
+        c(600,210,152);
+        sc("red");
+        r(600,210,84,84);
+        sc("white");
+        c(581,190,76);
+        sc("black");
+        c(589,185,33);
+        sc("white");
+        c(595,189,76)
+        sc("black");
+        c(599,195,37);
+        r(645,290,31,31,FILL,45);
+        r(633,228,37,37,FILL,35);
+        fillText("John", 650, 375);
+    }
+
+    function drawYuddy(){
+        sc("gray");
+        c(500,420,50);
+        sc("white");
+        c(450,425,25);
+        c(465,425,25);
+        sc("black");
+        c(469,430,10);
+        c(455,430,10);
+        sc("red");
+        r(465,440,10,25);
+        sc("black");
+        r(450,400,5,10,FILLFRAME,95);
+        r(465,400,5,10,FILLFRAME,100);
+        fillText("Yuddy", 450, 500);
+    }
+
+    function drawEdwin() {
+        sc("gray");
+        c(200,450,200);
+        sc("red");
+        r(200,500,100,60);
+        sc("white");
+        c(150,390,50);
+        c(250,390,50);
+        sc("black");
+        c(165,410,25);
+        c(260,410,25);
+        r(150,345,80,20);
+        r(250,345,80,20);
+        fillText("Edwin", 150, 675);
+    }
+
+    function drawJayden() {
+        canvas.setFillColor("gray");
+        canvas.drawCircle(150, 145, 40);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(90, 65, 15, 20);
+        canvas.setFillColor("white");
+        canvas.drawCircle(25, 125, 10);
+        canvas.setFillColor("black");
+        canvas.drawCircle(30, 120, 5);
+        canvas.drawRectangle(10, 135, 35, 5, FILLFRAME, 45);
+        canvas.setFillColor("white");
+        canvas.drawCircle(85, 125, 10);
+        canvas.setFillColor("black");
+        canvas.drawCircle(90, 120, 5);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(130, 135, 35, 5, FILLFRAME, 315);
+        fillText("Jayden", 10, 175);
+    }
+
+    function drawAsaiahs() {
+        canvas.setFillColor("gray");
+        canvas.drawCircle(350, 390, 85);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(350, 430, 80, 25);
+        canvas.drawCircle(310, 380, 25);
+        canvas.drawCircle(320, 380, 25);
+        canvas.drawCircle(313, 370, 15);
+        canvas.drawRectangle(350, 400, 10, 25, FILL, 45);
+        canvas.drawRectangle(360, 400, 10, 25, FILL, 135);
+        fillText("Asaiahs", 300, 500);
+    }
+
+    function drawIngrid() {
+        canvas.setFillColor("gray");
+        canvas.drawCircle(500, 279, 40);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(500, 279, 4, 25, FILL, 70);
+        canvas.setFillColor("white");
+        canvas.drawCircle(500, 179, 40);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(500, 242, 15);
+        canvas.setFillColor("black");
+        canvas.drawCircle(500, 241, 7);
+        fillText("Ingrid", 450, 125);
+    }
+
+    function drawJimmy() {
+        canvas.setFillColor("gray");
+        canvas.drawCircle(300, 150, 100);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(250, 100, 60, 30);
+        fillText("Jimmy", 250, 275);
+    }
+
+    function drawAjoni() {
+        canvas.setFillColor("gray");
+        canvas.drawCircle(100, 150, 20);
+        canvas.drawCircle(90, 140, 10);
+        canvas.drawCircle(90, 100, 10);
+        canvas.drawCircle(70, 90, 5);
+        canvas.drawCircle(70, 90, 5);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(100, 150, 20, 10);
+        canvas.drawRectangle(100, 90, 1, 10);
+        canvas.drawRectangle(100, 90, 1, 10);
+        fillText("Ajoni", 80, 200);
+    }
+
+    function drawCristian() {
+        //canvas.canvas.font = "12px Arial";
+        canvas.setFillColor("gray");
+        canvas.drawCircle(200, 200, 25);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(200, 210, 40, 60);
+        canvas.setFillColor("white");
+        canvas.drawCircle(180, 190, 10);
+        canvas.drawCircle(220, 230, 10);
+        canvas.setFillColor("black");
+        canvas.drawCircle(180, 200, 5);
+        canvas.drawCircle(220, 240, 5);
+        canvas.drawRectangle(180, 160, 20, 10);
+        canvas.drawRectangle(220, 200, 20, 10);
+        canvas.canvas.fillText("Cristian", 150, 275);
+    }
+
+    function drawBackground() {
+        canvas.setFillColor("white");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.canvas.font = "30px Arial";
+        canvas.setFillColor("black");
+        canvas.canvas.fillText("Click to toggle between class results..", 100, 50);
+    }
+
+    function init() {
+        canvas.setUpdateFunction(update);
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEDOWN, onMouseDown);
+    }
+
+    init();
+
+</script>

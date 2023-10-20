@@ -1,0 +1,280 @@
+<!--Import graphics functionality-->
+<script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let canvas = null;
+
+    // rotation amount in degrees
+    let rotation = 0;
+
+    // rate at which expanding element expands or shrinks
+    let expandAmount = 1;
+
+    // minimum size of expanding element
+    let minExpandAmount = 30;
+
+    // maximum size of expanding element
+    let maxExpandAmount = 100;
+
+    // side of expanding element
+    let expander = minExpandAmount;
+
+    // movement speed of "player"
+    let movementSpeed = 4;
+
+    // player x position
+    let px = 300;
+
+    // player x movement direction: x = 0 if not moving, -1 if moving left, 1 if moving right
+    let pMovingX = 0;
+
+    // player y position
+    let py = 300;
+
+    // player y movement direction: y = 0 if not moving, -1 if moving up, 1 if moving down
+    let pMovingY = 0;
+
+    // array of circles to draw
+    let circles = [];
+
+    // call to set everything up
+    init();
+
+    // function that sets everything up
+    function init() {
+
+        // create canvas to display graphics in and do other setup stuff
+        canvas = new BearcatGraphics();
+
+        // every frame, call our update function
+        canvas.setUpdateFunction(update);
+
+        // set thickness of shape borders
+        canvas.setLineThickness(5);
+
+        // get rid of mouse cursor when in window
+        canvas.canvasElement.style.cursor = "none";
+
+        // everytime the mouse is clicked, call our mouse click function
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.CLICK, onMouseClick);
+
+        // everytime a key is pressed down, call our key down function
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
+
+        // everytime a key is key held down, call our key up function
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, onKeyPress);
+
+        // everytime a key is released, call our key up function
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, onKeyUp);
+    }
+
+    // when a key is pressed down
+    function onKeyDown(e) {
+        switch (e.key) {
+            case "ArrowUp":
+                expandAmount *= 2;
+                break;
+            case "ArrowDown":
+                expandAmount /= 2;
+                break;
+            case "a":
+                if(pMovingX == 0) pMovingX = -1;
+                break;
+            case "d":
+                if(pMovingX == 0) pMovingX = 1;
+                break;
+            case "w":
+                if(pMovingY == 0) pMovingY = -1;
+                break;
+            case "s":
+                if(pMovingY == 0) pMovingY = 1;
+                break;
+        }
+    }
+
+    // when a key is held down
+    function onKeyPress(e) {
+        // switch (e.key) {
+        //     case "a":
+        //         if(pMovingX == 0) pMovingX = -1;
+        //         break;
+        //     case "d":
+        //         if(pMovingX == 0) pMovingX = 1;
+        //         break;
+        //     case "w":
+        //         if(pMovingY == 0) pMovingY = -1;
+        //         break;
+        //     case "s":
+        //         if(pMovingY == 0) pMovingY = 1;
+        //         break;
+        // }
+    }
+
+
+
+    // when a key is released
+    function onKeyUp(e) {
+        switch (e.key) {
+            case "ArrowUp":
+                expandAmount *= 2;
+                break;
+            case "ArrowDown":
+                expandAmount /= 2;
+                break;
+            case "a":
+                if(pMovingX == -1) pMovingX = 0;
+                break;
+            case "d":
+                if(pMovingX == 1) pMovingX = 0;
+                break;
+            case "w":
+                if(pMovingY == -1) pMovingY = 0;
+                break;
+            case "s":
+                if(pMovingY == 1) pMovingY = 0;
+                break;
+        }
+    }
+        // when the mouse is clicked
+        function onMouseClick(e) {
+
+
+
+            // create a new circle and add it to the list of circles to show on screen
+            circles.push(
+                {
+                    // set circle x coordinate to mouse x coordinate when clicked
+                    x: canvas.getMouseX(e),
+
+                    // set circle y coordinate to mouse y coordinate when clicked
+                    y: canvas.getMouseY(e),
+
+                    // radius of the circle is a random number between 1 and 100 pixels
+                    radius: canvas.getRandomInteger(Math.min(canvas.getMouseY(e), canvas.getMouseX(e), canvas.width - canvas.getMouseX(e) - canvas.canvasElement.lineWidth / 2, canvas.height - canvas.getMouseY(e))),
+
+                    // color is a random color
+                    color: canvas.getRandomColor(),
+
+                    xAccel: -20 + canvas.getRandomInteger(40),
+
+                    yAccel: -20 + canvas.getRandomInteger(40),
+                }
+            );
+        }
+
+        // every frame (1/60th of a second) draw everything
+        function update() {
+            drawBackground();
+
+           
+            drawHouse();
+
+
+            drawCursor();
+
+
+            
+            if (expander > maxExpandAmount || expander < minExpandAmount) expandAmount *= -1;
+
+            px += movementSpeed * pMovingX;
+            py += movementSpeed * pMovingY;
+            expander += expandAmount;
+            rotation += 1;
+        }
+
+        function drawBackground() {
+            canvas.setFillColor("white");
+            canvas.drawRectangle(0, 0, canvas.width * 2, canvas.height * 2);
+            canvas.setFillColor("green");
+            canvas.drawRectangle(300, 335, 600, 290);
+            
+
+
+        }
+
+        function drawHouse(){
+            canvas.setFillColor("Green");
+            canvas.drawIsoscelesTriangle(100, 100, 61, 70, FILLFRAME);
+            canvas.setFillColor("red");
+            canvas.drawSquare(100, 160, 65, FILLFRAME);
+            canvas.setFillColor("brown");
+            canvas.drawRectangle(100, 175, 15, 30);
+            canvas.setFillColor("yellow");            
+            canvas.drawCircle(105, 175 ,2);
+            canvas.setFillColor("white");
+            canvas.drawSquare(100, 140, 20)
+            canvas.drawRectangle(100, 140, 1, 20);
+            canvas.drawRectangle(100, 140, 1, 20, FILLFRAME, 90);  
+            canvas.setFillColor("white");
+            canvas.drawCircle(400, 90, 50);
+            canvas.setFillColor("brown")
+            canvas.drawRectangle(250, 200, 15, 100); 
+            canvas.setFillColor("lightGreen") 
+            canvas.drawCircle(225, 150, 25);
+            canvas.drawCircle(275, 150, 25);
+            canvas.drawCircle(250, 120, 25)     
+        }
+
+        function drawAllCircles() {
+            for (let circle of circles) {
+                canvas.setFillColor(circle.color);
+                canvas.drawCircle(circle.x, circle.y, circle.radius);
+                circle.x += circle.xAccel;
+                circle.y += circle.yAccel;
+                circle.yAccel += (9.8 / canvas.fps);
+                if (circle.x - circle.radius <= 0 || circle.x + circle.radius >= canvas.width) circle.xAccel *= -1;
+                if (circle.y - circle.radius <= 0 || circle.y + circle.radius >= canvas.height) circle.yAccel *= -1;
+            }
+        }
+
+        function drawRotatingTriangle() {
+            canvas.setFillColor("lightblue");
+            canvas.drawCircle(100, 100, 50);
+            canvas.setFillColor("red");
+            canvas.drawIsoscelesTriangle(100, 100, 50, 100, FILLFRAME, rotation);
+            canvas.setFillColor("black");
+            canvas.drawCircle(100, 100, 5);
+        }
+
+        function drawRotatingRectangle() {
+            canvas.setFillColor("lightblue");
+            canvas.drawCircle(300, 100, 50);
+            canvas.setFillColor("red");
+            canvas.drawSquare(300, 100, 65, FILLFRAME, -rotation);
+            canvas.setFillColor("black");
+            canvas.drawCircle(300, 100, 5);
+        }
+
+        function drawStar() {
+            canvas.setFillColor("yellow");
+            canvas.drawStar(300, 300, expander);
+        }
+
+        function drawImage(){
+            canvas.drawImage("milo uke.png", px, py, 100, 100);
+        }
+
+        function drawPolygon() {
+            canvas.setFillColor("brown");
+            canvas.setBorderColor("red");
+            let p1 = new Point(100, 50);
+            let p2 = new Point(75, 250);
+            let p3 = new Point(220, 0);
+            let p4 = new Point(60, 300);
+            let p5 = new Point(60, 300);
+            let p6 = new Point(60, 300);
+            canvas.drawPolygon([p1, p2, p3, p4], 0, p4);
+            canvas.setBorderColor("black");
+        }
+
+        function drawCursor() {
+            if (canvas.mouseIsInScreen()) {
+                canvas.setFillColor("green");
+                canvas.drawOval(canvas.mouseX, canvas.mouseY, 5, 5);
+            }
+        }
+
+</script>
