@@ -1,0 +1,68 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update);
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawSky();
+        drawBuildings();
+        drawSidewalk();
+        drawRoad();
+        drawCars();
+    }
+
+    function drawCars(){
+        canvas.setBorderColor("white");
+        canvas.setFillColor("black");
+        canvas.drawCircle(20, 250, 10);
+        canvas.drawCircle(55, 250, 10); 
+        canvas.setFillColor("red");
+        canvas.drawRectangle(40, 240, 60, 20);
+        canvas.setFillColor("black");
+        canvas.drawCircle(25, 255, 10);
+        canvas.drawCircle(60, 255, 10); 
+    }
+
+    function drawRoad(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, 325, canvas.width, 250);
+        canvas.setFillColor("yellow");
+        canvas.setBorderColor("yellow");
+        for(let i = 0; i < 6; i ++){
+            canvas.drawRectangle(i*120, 280, 30, 5);
+            canvas.drawRectangle(i*120, 360, 30, 5);
+        }
+    }
+
+    function drawSidewalk(){
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(canvas.width/2, 175, canvas.width, 50);
+        canvas.setFillColor("black");
+        for(let i = 0; i < 9; i++)
+            canvas.drawRectangle(i * 90, 175, 3, 50, FILL);
+    }
+
+    function drawBuildings(){
+        canvas.setFillColor("red");
+        canvas.drawRectangle(40, 100, 40, 100);
+        canvas.setFillColor("purple");
+        canvas.drawRectangle(140, 120, 60, 60);
+        canvas.setFillColor("green");
+        canvas.drawRectangle(260, 60, 80, 180);
+        canvas.setFillColor("orange");
+        canvas.drawRectangle(400, 90, 70, 120);
+        canvas.setFillColor("blue");
+        canvas.drawRectangle(550, 130, 40, 40);
+    }
+
+    function drawSky(){
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, canvas.height);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(0, 0, 50);
+    }
+
+</script>
