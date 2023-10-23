@@ -155,6 +155,28 @@ class BearcatGraphics {
         this.#drawTriangle(x, y, p1, p2, p3, style, rotation);
     }
 
+    drawHexagon(x, y, length, style = FILLFRAME, rotation){
+        let h = Math.sqrt(3 * length * length) / 2;
+        if(rotation) this.#rotate(x, y, rotation);
+        this.canvas.beginPath();
+        this.canvas.moveTo(x-length/2, y+h);
+        this.canvas.lineTo(x+length/2, y+h);
+        this.canvas.lineTo(x+length, y);
+        this.canvas.lineTo(x+length/2, y-h);
+        this.canvas.lineTo(x-length/2, y-h);
+        this.canvas.lineTo(x-length, y);
+        this.canvas.lineTo(x-length/2, y+h);
+        if (style === FRAME || style === FILLFRAME) this.canvas.lineTo(x+length/2, y+h); // prevents jagged p1 corner on stroke
+        if(style === FILL) this.canvas.fill();
+        else if(style === FRAME) this.canvas.stroke();
+        else if(style === FILLFRAME){
+            this.canvas.stroke();
+            this.canvas.fill();
+        }
+        else console.error("Invalid style type: " + style + "; valid style types are FILL, FRAME, and FILLFRAME");
+        if(rotation) this.resetCanvasRotation();
+    }
+
     drawStar(x, y, length, style = FILLFRAME, rotation, rotateAroundPoint){
         if(!rotation) rotation = BearcatGraphics.STAR_ROTATION_CORRECTION; // determine the correct formula iot not need this
         let points = [];
