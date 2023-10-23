@@ -118,7 +118,6 @@ class BearcatGraphics {
         if(rotation) this.#rotate(x, y, rotation);
         this.canvas.beginPath();
         this.canvas.ellipse(x, y, xRadius, yRadius, 0, 0, 2 * Math.PI);
-        this.canvas.fill();
         if(style === FILL) this.canvas.fill();
         else if(style === FRAME) this.canvas.stroke();
         else if(style === FILLFRAME){
