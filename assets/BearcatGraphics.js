@@ -31,6 +31,9 @@ class BearcatGraphics {
         this.setBorderColor("black");
         this.width = width;
         this.height = height;
+        this.fontSize = 12;
+        this.fontFamily = "Arial";
+        this.canvas.textAlign = "center";
         this.fps = 60;
         this.mouseX = -1;
         this.mouseY = -1;
@@ -93,6 +96,10 @@ class BearcatGraphics {
      */
     setLineThickness = (thickness) => this.canvas.lineWidth = thickness;
     
+    clear(){
+        this.setFillColor("white");
+        this.drawRectangle(this.width/2, this.height/2, this.width, this.height);
+    }
 
     drawRectangle(x, y, width, height, style = FILLFRAME, rotation){
         if (rotation) this.#rotate(x, y, rotation);
@@ -123,6 +130,8 @@ class BearcatGraphics {
     }
     
     drawCircle = (x, y, radius, style = FILLFRAME, rotation) => this.drawOval(x, y, radius, radius, style, rotation);
+
+    drawTriangle = (x, y, length, style=FILLFRAME, rotation) => this.drawEquilateralTriangle(x,y,length,style,rotation);
 
     drawEquilateralTriangle(x, y, length, style = FILLFRAME, rotation) {
         let h = Math.sqrt(3 * length * length) / 2;
@@ -159,7 +168,7 @@ class BearcatGraphics {
         this.drawPolygon(points, style, rotation, rotateAroundPoint);
     }
 
-    drawPolygon(points, style, rotation, rotateAroundPoint){
+    drawPolygon(points, style = FILLFRAME, rotation, rotateAroundPoint){
         if(rotation) {
             let p = rotateAroundPoint === undefined ? this.findCenter(points) : rotateAroundPoint;
             this.#rotate(p.x, p.y, rotation);
@@ -180,7 +189,7 @@ class BearcatGraphics {
         if(rotation) this.resetCanvasRotation();
     }
 
-    drawLine(p1, p2, style, rotation){
+    drawLine(p1, p2, style = FILLFRAME, rotation){
         if (rotation) this.#rotate((p1.x+p2.x)/2, (p1.y+p2.y)/2, rotation);
         this.canvas.beginPath();
         this.canvas.moveTo(p1.x, p1.y);
@@ -259,6 +268,27 @@ class BearcatGraphics {
         setInterval(func, 1000 / this.fps);
     }
 
+    setFontSize(size){
+        this.fontSize = size;
+        this.#setFont();
+    }
+
+    setFontFamily = (fontFamily) => {
+        this.fontFamily = fontFamily;
+        this.#setFont(); 
+    }
+
+    drawText(text, x, y, style = FILL, rotation){
+        if(style == FILL)
+            this.canvas.fillText(text, x, y);
+        else if(style == FRAME)
+            this.canvas.strokeText(x, y);
+        else
+            console.error("Invalid fill style: " + style + " | Valid fill styles are FILL, FRAME");
+    }
+
+    #setFont = () => this.canvas.font = `${this.fontSize}px ${this.fontFamily}`;
+
     getRandomColor() {
         let r = Math.floor(Math.random() * 255);
         let g = Math.floor(Math.random() * 255);
@@ -302,7 +332,7 @@ let FILLFRAME = 0;
 
 function color(colorString){return COLORS[colorString];}
 
-function color(r, g, b){`#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;}
+function color(r, g, b){return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;}
 
 class Point{
     constructor(x, y){
