@@ -22,7 +22,7 @@ class BearcatGraphics {
         MOUSEUP: "mouseup",
     };
 
-    constructor(width, height, canvasName) {
+    constructor(updateFunction, width, height, canvasName) {
         if (width == null) width = 600;
         if (height == null) height = 450;
         if (canvasName == null) canvasName = "Test";
@@ -34,12 +34,13 @@ class BearcatGraphics {
         this.fontSize = 12;
         this.fontFamily = "Arial";
         this.canvas.textAlign = "center";
+        this.canvas.lineWidth = 5;
         this.fps = 60;
         this.mouseX = -1;
         this.mouseY = -1;
+        this.setUpdateFunction(updateFunction);
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e) });
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
-        setInterval(this.update, 1000 / this.fps);
     }
 
     /**
@@ -69,7 +70,6 @@ class BearcatGraphics {
         canvas.width = width;
         canvas.height = height;
         canvas.style.border = "4px solid black";
-        canvas.lineWidth = 10;
         canvas.innerHTML = "<p> Use a browser that supports canvases! </p>";
         return canvas;
     }
@@ -264,8 +264,8 @@ class BearcatGraphics {
     mouseIsInScreen = () => this.mouseX > -1 && this.mouseX <= this.width && this.mouseY > -1 && this.mouseY <= this.height;
 
     setUpdateFunction(func) {
-        this.update = func;
-        setInterval(func, 1000 / this.fps);
+        this.update = () => {this.clear(); func()};
+        setInterval(this.update, 1000 / this.fps);
     }
 
     setFontSize(size){
