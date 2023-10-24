@@ -26,6 +26,7 @@ class BearcatGraphics {
         if (width == null) width = 600;
         if (height == null) height = 450;
         if (canvasName == null) canvasName = "Test";
+        if (!document.body) this.#createBody();
         this.#buildDebug();
         this.canvas = this.#createCanvas(width, height, canvasName);
         this.setFillColor("white");
@@ -64,7 +65,6 @@ class BearcatGraphics {
      * @returns {canvas.getContext}
      */
     #createCanvas(width, height, canvasName) {
-        if (!document.body) this.#createBody();
         let canvas = this.#buildCanvas(width, height, canvasName);
         document.body.appendChild(canvas);
         console.log("Created canvas sucessfully!");
