@@ -5,6 +5,31 @@
     // canvas object
     let canvas = new BearcatGraphics(update);
 
+    let enemies = [];
+
+    let enemyTimer = 0;
+
+    let playerLane = 1;
+
+    // in ms
+    let timeBetweenSpawns = 3000;
+
+    let enemyMoveSpeed = 1;
+
+    let score = 0;
+
+    let gameOver = false;
+
+    canvas.setFontSize(20);
+        
+    // everytime a key is pressed down, call our key down function
+    canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
+
+    function onKeyDown(e){
+        if(e.key == "w") playerLane = playerLane == 0 ? 2 : playerLane - 1;
+        else if(e.key == "s") playerLane = (playerLane+1)%3;
+    }
+
     // every frame (1/60th of a second) draw everything
     function update() {
         drawSky();
@@ -12,18 +37,85 @@
         drawSidewalk();
         drawRoad();
         drawCars();
+        drawScore();
+        if(!gameOver)
+            logic();
+    }
+
+    function drawScore(){
+        canvas.drawText("Score: " + score, 100, 25);
+    }
+
+    function logic(){
+        spawnLogic();
+        collisionLogic();
+        scoreLogic();
+    }
+
+    function scoreLogic(){
+        score++;
+    }
+
+    function collisionLogic(){
+        for(let enemy of enemies){
+            enemy.x -= enemyMoveSpeed;
+            if(enemy.lane === playerLane){
+                if(enemy.x - enemy.width/2 <= 70 && enemy.x + enemy.width/2 >= 10){
+                    gameOver = true;
+                }
+                else if(enemy.x <= -100){
+                    enemies.shift();
+                }
+            }
+        }
+    }
+
+    function createEnemy(){
+        let enemy = {x: canvas.width + canvas.width / 10, lane: canvas.getRandomInteger(3), color: canvas.getRandomColor(), width: canvas.getRandomInteger(30)}
+        enemies.push(enemy);
+    }
+
+    function spawnLogic(){
+        enemyTimer++;
+        if(enemyTimer >= timeBetweenSpawns){
+            createEnemy();
+            enemyTimer = 0;
+            timeBetweenSpawns -= 20;
+            enemyMoveSpeed += 1;
+        }
     }
 
     function drawCars(){
+        drawPlayer();
+        for(let enemy of enemies){
+            drawEnemy(enemy);
+        }
+    }
+
+    function drawEnemy(enemy){
+        let y = 250 + enemyLane*80;
         canvas.setBorderColor("white");
         canvas.setFillColor("black");
-        canvas.drawCircle(20, 250, 10);
-        canvas.drawCircle(55, 250, 10); 
-        canvas.setFillColor("red");
-        canvas.drawRectangle(40, 240, 60, 20);
+        canvas.drawCircle(20, y, 10);
+        canvas.drawCircle(55, y, 10); 
+        canvas.setFillColor(enemy.color);
+        canvas.drawRectangle(40, y, 60, 20);
         canvas.setFillColor("black");
-        canvas.drawCircle(25, 255, 10);
-        canvas.drawCircle(60, 255, 10); 
+        canvas.drawCircle(25, y, 10);
+        canvas.drawCircle(60, y, 10); 
+    }   
+
+    function drawPlayer(){
+        let laneOffset = playerLane*80;
+        canvas.setBorderColor("white");
+        canvas.setFillColor("black");
+        canvas.drawCircle(20, 250+laneOffset, 10);
+        canvas.drawCircle(55, 250+laneOffset, 10); 
+        canvas.setFillColor("red");
+        canvas.drawRectangle(40, 240+laneOffset, 60, 20);
+        canvas.setFillColor("black");
+        canvas.drawCircle(25, 255+laneOffset, 10);
+        canvas.drawCircle(60, 255+laneOffset, 10); 
     }
 
     function drawRoad(){
