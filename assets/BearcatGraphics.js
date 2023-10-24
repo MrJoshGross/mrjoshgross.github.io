@@ -26,6 +26,7 @@ class BearcatGraphics {
         if (width == null) width = 600;
         if (height == null) height = 450;
         if (canvasName == null) canvasName = "Test";
+        this.#buildDebug();
         this.canvas = this.#createCanvas(width, height, canvasName);
         this.setFillColor("white");
         this.setBorderColor("black");
@@ -39,8 +40,21 @@ class BearcatGraphics {
         this.mouseX = -1;
         this.mouseY = -1;
         this.setUpdateFunction(updateFunction);
-        this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e) });
+        this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e);});
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
+    }
+
+    #buildDebug(){
+        let div = document.createElement("div");
+        div.id = "debug";
+        div.style.border = "2px solid black";
+        div.style.float = "right";
+        document.body.appendChild(div);
+    }
+
+    #handleDebug(){
+        if(this.debug && this.mouseX != -1 && this.mouseY != -1)
+            document.getElementById("debug").innerHTML = `Mouse x: ${this.mouseX}<br>Mouse y: ${this.mouseY}`;
     }
 
     /**
@@ -286,7 +300,8 @@ class BearcatGraphics {
     mouseIsInScreen = () => this.mouseX > -1 && this.mouseX <= this.width && this.mouseY > -1 && this.mouseY <= this.height;
 
     setUpdateFunction(func) {
-        this.update = () => {this.clear(); func()};
+        if(!func) return;
+        this.update = () => {this.clear(); func(); this.#handleDebug()};
         setInterval(this.update, 1000 / this.fps);
     }
 
@@ -322,6 +337,7 @@ class BearcatGraphics {
 
     getRandomDecimal = (max) => Math.random() / (1 / max);
 
+    // exclusive
     getRandomInteger = (max) => Math.floor(Math.random() * max);
 
     getRandomIntegerInRange = (min, max) => min + this.getRandomInteger(max-min);
