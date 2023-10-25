@@ -30,6 +30,8 @@
 
     let roadOffset = 0;
 
+    let sidewalkOffset = 0;
+
     canvas.setFontSize(20);
         
     // everytime a key is pressed down, call our key down function
@@ -95,6 +97,7 @@
                 buildings.shift();
         }
         roadOffset = (roadOffset + enemyMoveSpeed)%120;
+        sidewalkOffset = (sidewalkOffset + enemyMoveSpeed*0.8)%90;
     }
 
     function createEnemy(){
@@ -184,7 +187,7 @@
         canvas.drawRectangle(canvas.width/2, 175, canvas.width, 50);
         canvas.setFillColor("black");
         for(let i = 0; i < 9; i++)
-            canvas.drawRectangle(i * 90, 175, 3, 50, FILL);
+            canvas.drawRectangle(i * 90-sidewalkOffset, 175, 3, 50, FILL);
     }
 
     function drawBuilding(building){
