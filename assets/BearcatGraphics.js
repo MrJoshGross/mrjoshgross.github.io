@@ -48,6 +48,7 @@ class BearcatGraphics {
     #buildDebug(){
         let div = document.createElement("div");
         div.id = "debug";
+        div.style.fontSize = "48px";
         div.style.border = "2px solid black";
         div.style.float = "right";
         document.body.appendChild(div);
