@@ -5,6 +5,8 @@
 class BearcatGraphics {
     static RADTODEG = Math.PI / 180;
     static STAR_ROTATION_CORRECTION = -18; // determine the correct formula iot not need this
+    
+    // Enum of event types that map to their respective (canvas/JS/HTML) event type names 
     static EVENT_TYPES = {
         CLICK: "click",
         DOUBLECLICK: "dblclick",
@@ -22,6 +24,13 @@ class BearcatGraphics {
         MOUSEUP: "mouseup",
     };
 
+    /**
+     * Creates an instance of the wrapper class that makes canvas drawing operations easier.
+     * @param {*} updateFunction    The callback method to execute every frame graphics are to be drawn.
+     * @param {*} width             The width of the canvas to create.
+     * @param {*} height            The height of the canvas to create.
+     * @param {*} canvasName        The id of the canvas to create.  
+     */
     constructor(updateFunction, width, height, canvasName) {
         if (width == null) width = 600;
         if (height == null) height = 450;
@@ -45,6 +54,9 @@ class BearcatGraphics {
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
     }
 
+    /**
+     * Creates a div containing debug information such as mouse X and Y coordinates.
+     */
     #buildDebug(){
         let div = document.createElement("div");
         div.id = "debug";
@@ -54,16 +66,20 @@ class BearcatGraphics {
         document.body.appendChild(div);
     }
 
+    /**
+     * Updates mouse X and Y debug information within debug div.
+     */
     #handleDebug(){
         if(this.debug && this.mouseX != -1 && this.mouseY != -1)
             document.getElementById("debug").innerHTML = `Mouse x: ${this.mouseX}<br>Mouse y: ${this.mouseY}`;
     }
 
     /**
-     * @param {number} width 
-     * @param {number} height 
-     * @param {string} canvasName 
-     * @returns {canvas.getContext}
+     * Creates a canvas element to invoke drawing methods on. 
+     * @param {number} width            The width of the canvas to create.
+     * @param {number} height           The height of the canvas to create.
+     * @param {string} canvasName       The id of the canvas to create.
+     * @returns {canvas.getContext}     A 2D canvas context for the created canvas.
      */
     #createCanvas(width, height, canvasName) {
         let canvas = this.#buildCanvas(width, height, canvasName);
@@ -74,10 +90,11 @@ class BearcatGraphics {
     }
 
     /**
-     * @param {*} width 
-     * @param {*} height 
-     * @param {*} canvasName 
-     * @returns {canvas}
+     * Creates a canvas element to invoke drawing methods on. 
+     * @param {number} width        The width of the canvas to create.
+     * @param {number} height       The height of the canvas to create.
+     * @param {string} canvasName   The id of the canvas to create.
+     * @returns {canvas}            A 2D canvas context for the created canvas.
      */
     #buildCanvas(width, height, canvasName) {
         let canvas = document.createElement("canvas");
@@ -104,6 +121,9 @@ class BearcatGraphics {
      */
     setBorderColor = (color) => this.canvas.strokeStyle = color;
 
+    /**
+     * @param {*} percent a number (between 0 and 1) representing the percentage of opacity to apply
+     */
     setOpacity = (percent) => this.canvas.globalAlpha = percent;
 
     /**
@@ -111,12 +131,24 @@ class BearcatGraphics {
      */
     setLineThickness = (thickness) => this.canvas.lineWidth = thickness;
     
+    /**
+     * Overwrites all contents in the canvas with a white fill, black frame rectangle.
+     */
     clear(){
         this.setFillColor("white");
         this.setBorderColor("black");
         this.drawRectangle(this.width/2, this.height/2, this.width, this.height);
     }
 
+    /**
+     * Draws a rectangle with the given information. To change the color, call `setFillColor(color)` or `setBorderColor(color)` beforehand.
+     * @param {Number} x                                The X coordinate of the center of the rectangle, between 0 and `canvas.width`, starting from the left edge of the canvas.
+     * @param {Number} y                                The Y coordinate of the center of the rectangle, between 0 and `canvas.height`, starting from the top of the canvas.
+     * @param {Number} width                            The width of the rectangle. The distance from the (x, y) to the left or right edge of the rectangle is `width/2`.
+     * @param {Number} height                           The height of the rectangle. The distance from the (x, y) to the top or bottom edge of the rectangle is `height/2`.
+     * @param {*} style                                 The style to apply to the rectangle. Valid values are `FILL`, `FRAME`, and `FILLFRAME`. Default: `FILLFRAME`.
+     * @param {Number | RotationAnchor} rotation        Either the amount of degrees to rotate around the center of this rectangle, or a point around which to rotate. See `#rotate` for more information.
+     */
     drawRectangle(x, y, width, height, style = FILLFRAME, rotation){
         if (rotation) this.#rotate(x, y, rotation);
         if(style === FILL) this.canvas.fillRect(x - width / 2, y - height / 2, width, height)
@@ -268,6 +300,59 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    /* 
+        #################################
+        #################################
+        ##### Student-Created Assets ####
+        #################################
+        #################################
+    */
+
+    // adapted from code written by Yuddy N, Fall 2023
+    drawFoodTruck(x, y, direction, rotation){
+        if(rotation) rotation = {x: x, y: y, amount: rotation};
+        if(!direction) direction = RIGHT;
+        canvas.setFillColor("white");
+        canvas.drawRectangle(x,y,150,75, FILLFRAME, rotation);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(x-(69*direction),y,0.5,70, FILLFRAME, rotation);
+        canvas.setFillColor("red");
+        canvas.drawCircle(x,y+5,20, FILLFRAME, rotation);
+        canvas.setFillColor("green");
+        canvas.drawCircle(x-(5*direction),y-20,5, FILLFRAME, rotation);
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(x,y-15,2,5, FILLFRAME, rotation);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(x+(110*direction),y+7,50,61, FILLFRAME, rotation);
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(x+(100*direction),y-33,5,13, FILLFRAME, rotation);
+        canvas.drawRectangle(x+(97*direction),y-40,8,3, FILLFRAME, rotation);
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(x+(120*direction),y-2,25,23, FILLFRAME, rotation);
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(x+(30*direction),y+40,210,5, FILLFRAME, rotation);
+        canvas.setFillColor("yellow");
+        canvas.drawRectangle(x+(130*direction),y+23,5,5, FILLFRAME, rotation);
+        canvas.setFillColor("orange");
+        canvas.drawRectangle(x+(130*direction),y+30,5,5, FILLFRAME, rotation);
+        canvas.setFillColor("white");
+        canvas.drawRectangle(x+(107*direction),y+23,25,15, FILLFRAME, rotation);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(x+(100*direction),y+21,4,2, FILLFRAME, rotation);
+        canvas.setFillColor("brown");
+        canvas.drawCircle(x-(55*direction),y+55,15, FILLFRAME, rotation);
+        canvas.drawCircle(x-(21*direction),y+55,15, FILLFRAME, rotation);
+        canvas.drawCircle(x+(13*direction),y+55,15, FILLFRAME, rotation);
+        canvas.drawCircle(x+(85*direction),y+55,14, FILLFRAME, rotation);
+        canvas.drawCircle(x+(116*direction),y+55,14, FILLFRAME, rotation);
+        canvas.setFillColor("black");
+        canvas.drawCircle(x-(55*direction),y+55,1, FILLFRAME, rotation);
+        canvas.drawCircle(x-(21*direction),y+55,1, FILLFRAME, rotation);
+        canvas.drawCircle(x+(13*direction),y+55,1, FILLFRAME, rotation);
+        canvas.drawCircle(x+(85*direction),y+55,1, FILLFRAME, rotation);
+        canvas.drawCircle(x+(116*direction),y+55,1, FILLFRAME, rotation);
+    }
+
     drawImage(path, x, y, width, height, rotation){
         const image = new Image(width, height)
         image.src = path;
@@ -368,10 +453,20 @@ let COLORS = {
 let FILL = -123456789;
 let FRAME = 123456789;
 let FILLFRAME = 0;
+let RIGHT = 1;
+let LEFT = -1;
 
 function color(colorString){return COLORS[colorString];}
 
 function color(r, g, b){return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;}
+
+class RotationAnchor{
+    constructor(x, y, rotation){
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+    }
+}
 
 class Point{
     constructor(x, y){
