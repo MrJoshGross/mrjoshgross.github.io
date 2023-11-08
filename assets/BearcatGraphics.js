@@ -49,6 +49,7 @@ class BearcatGraphics {
         this.fps = 60;
         this.mouseX = -1;
         this.mouseY = -1;
+        this.debug = true;
         this.setUpdateFunction(updateFunction);
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e);});
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
