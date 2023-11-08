@@ -308,6 +308,19 @@ class BearcatGraphics {
         #################################
     */
 
+    // adapted from code written by Santiago L, Fall 2023
+    drawPerson(x, y, width, height, color, rotation){
+        if(rotation) rotation = {x: x, y: y, amount: rotation};
+        if(!color) color = "white";
+        canvas.setFillColor(color);
+        canvas.drawRectangle(x, y, width/2, height, FILLFRAME, rotation);
+        canvas.drawRectangle(x-width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
+        canvas.drawRectangle(x+width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
+        canvas.drawOval(x, y-height, width/2, height/2, FILLFRAME, rotation);
+        canvas.drawRectangle(x-width/8, y+7*height/8,width/4, 3*height/4, FILLFRAME, rotation);
+        canvas.drawRectangle(x+width/8, y+7*height/8,width/4, 3*height/4, FILLFRAME, rotation);
+    }
+
     // adapted from code written by Yuddy N, Fall 2023
     drawFoodTruck(x, y, direction, rotation){
         if(rotation) rotation = {x: x, y: y, amount: rotation};
