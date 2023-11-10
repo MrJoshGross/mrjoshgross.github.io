@@ -8,10 +8,28 @@
     let upperPanelCenterY = 200;
     let bottomPanelCenterY = 600;
     let panelSize = 400;
+    let force = 0;
+    let accel = 0;
+    let areStudentsSleeping = false;
+    let time = 500;
+    let skyColor = "black";
 
     // canvas object
     let canvas = new BearcatGraphics(update, panelSize*2, panelSize*2);
     canvas.debug = true;
+
+    canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
+
+    function onKeyDown(e){
+        switch(e.key){
+            case " ":
+                accel += 100.0;
+            break;
+            case "s":
+                areStudentsSleeping = !areStudentsSleeping;
+            break;
+        }
+    }
 
     // every frame (1/60th of a second) draw everything
     function update() {
@@ -20,6 +38,23 @@
         drawBottomLeft();
         drawBottomRight();
         drawSeparators();
+
+        // bike
+        force -= accel/canvas.fps;
+        if(accel > 0) accel *= 0.98;
+        time = (time + 100/canvas.fps) % 2400;
+        if(time%100 > 60) time += 40; 
+        skyColor = calculateSkyColor();
+    }
+
+    function calculateSkyColor(){
+        return time < 400 || time > 2000 
+        ? color(0, 0, 0)
+        : time < 600 || time > 1800
+        ? color(0, 25, 25)
+        : time < 800 || time > 1600
+        ? color(0, 75, 75)
+        : color(0, 125, 125);
     }
 
     function drawSeparators(){
@@ -50,7 +85,7 @@
         canvas.setFillColor(color(173, 143, 111));
         canvas.drawRectangle(200, 150, 400, 300, FILL);
         canvas.setFillColor("white")
-        drawWindow(200, 125, 150, color(70, 70, 70));
+        drawWindow(200, 125, 150, skyColor);
     }
 
     function drawWindow(x, y, size, fillColor, frameColor){
@@ -75,10 +110,15 @@
         canvas.setFillColor("gray");
         canvas.drawRectangle(50, 280, 50, 25)
         canvas.setFillColor("red");
-        canvas.setFontSize("24");
-        canvas.drawText("5:00", 49, 290);
-        canvas.drawText("5:00", 50, 290);
-        canvas.drawText("5:00", 51, 290);
+        canvas.setFontSize("22");
+        let timeText = getTimeText();
+        canvas.drawText(timeText, 49, 290);
+        canvas.drawText(timeText, 50, 290);
+        canvas.drawText(timeText, 51, 290);
+    }
+
+    function getTimeText(){
+        return Math.floor((time/100)) + ":" + String((time%100).toFixed(0)).padStart(2, "0");
     }
 
     function drawTopLeft(){
@@ -149,7 +189,7 @@
         canvas.setFillColor("lightyellow");
         canvas.drawRectangle(leftPanelCenterX, bottomPanelCenterY, panelSize, panelSize, FILL);
         canvas.setFillColor("lightgray");
-        canvas.drawRectangle(leftPanelCenterX/2, bottomPanelCenterY+panelSize/4, 5, 30);
+
 
         drawStudentAndDesk(leftPanelCenterX/2, bottomPanelCenterY+panelSize/4, 20, 20);
         drawStudentAndDesk(leftPanelCenterX+panelSize/4, bottomPanelCenterY+panelSize/4, 20, 20);
@@ -167,14 +207,23 @@
     }
 
     function drawStudentAndDesk(x, y){
-        drawPerson(x, y, 20, 20);
-        canvas.setFillColor("silver");
-        canvas.drawRectangle(x-10, y+20, 3, 20);
-        canvas.drawRectangle(x+10, y+20, 3, 20);
-        canvas.setFillColor("orange");
-        canvas.drawRectangle(x, y+10, 30, 20);
-        canvas.setFillColor("white");
-        canvas.drawRectangle(x, y+10, 10, 14, FILL);
+        if(areStudentsSleeping){
+            drawPerson(x, y, 20, 20, "white", 90)
+            canvas.setFillColor("silver");
+            canvas.drawRectangle(x-10, y+40, 3, 20);
+            canvas.drawRectangle(x+10, y+40, 3, 20);
+            canvas.setFillColor("orange");
+            canvas.drawRectangle(x, y+30, 30, 20);
+        } else{
+            drawPerson(x, y, 20, 20);
+            canvas.setFillColor("silver");
+            canvas.drawRectangle(x-10, y+20, 3, 20);
+            canvas.drawRectangle(x+10, y+20, 3, 20);
+            canvas.setFillColor("orange");
+            canvas.drawRectangle(x, y+10, 30, 20);
+            canvas.setFillColor("white");
+            canvas.drawRectangle(x, y+10, 10, 14, FILL);
+        }    
     }
 
     function drawBottomRight(){
@@ -206,8 +255,9 @@
         canvas.drawPolygon([
             new Point(511, 572),
             new Point(552, 584),
-            new Point(514, 599)
+            new Point(514, 599),
         ], FILL);
+
 
         // gear chain
         canvas.drawCircle(rightPanelCenterX-45, bottomPanelCenterY+89, 15, FRAME);
@@ -228,10 +278,9 @@
         canvas.drawCircle(490, 685, 4);
 
         // spokes
-        canvas.drawRectangle(490, 685, 1, 80, FILL);
         for(let i = 0; i < 20; i++){
             // rear
-            canvas.drawRectangle(490, 685, 1, 80, FILL, 360/20*i);
+            canvas.drawRectangle(490, 685, 1, 80, FILL, (360/20*i) + force);
 
             // front
             canvas.drawRectangle(692, 687, 1, 80, FILL, 360/20*i);
