@@ -42,7 +42,7 @@
         // bike
         force -= accel/canvas.fps;
         if(accel > 0) accel *= 0.98;
-        time = (time + 100/canvas.fps) % 2400;
+        time = (time + 10/canvas.fps) % 2400;
         if(time%100 > 60) time += 40; 
         skyColor = calculateSkyColor();
     }
