@@ -1,0 +1,70 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script>
+</body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update);
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawSky();
+        drawSidewalk();
+        drawBuildings();
+        drawRoad();
+        drawCar();
+        drawGrass();
+    }
+
+    function drawSky() {
+        canvas.setFillColor("Lightblue");
+        canvas.drawRectangle(300, 300, 1000, 1000);
+    }
+
+    function drawBuildings() {
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(300, 90, 75, 150);
+       
+
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(50, 90, 75, 150);
+    
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(150, 90, 75, 150);
+       
+
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(425, 90, 75, 150);
+       
+    }
+
+    function drawSidewalk() {
+        canvas.setFillColor("Gray");
+        canvas.drawRectangle(300, 200, 1000, 200);
+
+    }
+
+    function drawRoad() {
+        canvas.setFillColor("Black");
+        canvas.drawRectangle(300, 258, 1000, 125);
+    }
+
+    function drawCar() {
+        canvas.setFillColor("red")
+        canvas.drawRectangle(120, 250, 60, 40);
+        canvas.setFillColor("gray")
+        canvas.drawCircle(100, 265, 8);
+        canvas.setFillColor("Gray")
+        canvas.drawCircle(140, 265, 8);
+
+    }
+
+    function drawGrass() {
+        canvas.setFillColor("Green");
+        canvas.drawRectangle(300, 425, 1000, 200);
+
+    }
+
+</script>

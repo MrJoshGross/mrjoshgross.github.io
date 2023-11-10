@@ -1,0 +1,59 @@
+<!--Import graphics functionality-->
+<body><script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update);
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawBackground();
+		drawBuilding();
+    }
+
+	function drawBuilding(){
+			canvas.setFillColor("RED") 
+	canvas.drawSquare(50,50,100)
+	canvas.setFillColor("brown") 
+	canvas.drawRectangle(50,80,25,40)
+	canvas.setFillColor("white") 
+    canvas.drawSquare( 30,30,20) 	
+	
+	
+	canvas.setFillColor("green") 
+	canvas.drawRectangle(300,50,190,100)
+	canvas.setFillColor("brown") 
+	canvas.drawRectangle(250,75,20,50) 
+	canvas.setFillColor("white") 
+	canvas.drawSquare( 320,40,30) 
+	}
+
+    // TODO add your code here
+    function drawBackground(){
+	canvas.setFillColor("black")  
+	canvas.drawRectangle(300,225,600,150)
+	canvas.setFillColor ("grey") 
+    canvas.drawRectangle(150,125,900,75)
+	canvas.setFillColor("grey") 
+	canvas.drawRectangle(400,300,900,75)
+	canvas.setFillColor("yellow") 
+	canvas.drawRectangle(300,215,75,10)
+	canvas.setFillColor("yellow") 
+	canvas.drawRectangle(130,215,75,10) 
+	canvas.setFillColor("yellow") 
+	canvas.drawRectangle( 480,215,75,10)
+	canvas.setFillColor(color(255,236,179)) 
+	canvas.drawRectangle(270,400,700,120) 
+	canvas.setFillColor("blue") 
+	canvas.drawSquare( 150,50,100) 
+	canvas.drawRectangle(450,50,400,100)
+	canvas.setFillColor("green") 
+    canvas.drawRectangle(300,400,10,60) 	
+	canvas.drawRectangle(130,380,10,60)
+	canvas.setFillColor("purple") 
+	canvas.drawCircle(150,250,15) 
+	canvas.drawCircle(80,250,15)
+	canvas.setFillColor("green") 
+	canvas.drawRectangle(110,215,75,45) 
+	} 
+</script>

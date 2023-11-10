@@ -1,0 +1,94 @@
+<!--Import graphics functionality-->
+<script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let canvas = null;
+
+    // call to set everything up
+    init();
+
+    // function that sets everything up
+    function init() {
+
+        // create canvas to display graphics in and do other setup stuff
+        canvas = new BearcatGraphics();
+
+        // every frame, call our update function
+        canvas.setUpdateFunction(update);
+
+        // set thickness of shape borders
+        canvas.setLineThickness(5);
+    }
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        canvas.clear();
+		drawBackground();
+    }
+	
+	function drawBackground(){
+		canvas.setFillColor("blue");
+		canvas.drawRectangle(0, 0, 1200, 500);
+		canvas.setFillColor("lime");
+		canvas.drawRectangle(0, 500, 1200, 500);
+		canvas.setFillColor("black");
+		canvas.drawRectangle(0, 250, 1200, 175);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(40, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(125, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(210, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(295, 190, 80, 50);
+	    canvas.setFillColor("gray");
+		canvas.drawRectangle(380, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(465, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(550, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(650, 190, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(40, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(125, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(210, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(295, 350, 80, 50);
+	    canvas.setFillColor("gray");
+		canvas.drawRectangle(380, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(465, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(550, 350, 80, 50);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(650, 350, 80, 50);
+		canvas.setFillColor("red");
+		canvas.drawRectangle(40, 110, 70, 100);
+		canvas.setFillColor("green");
+		canvas.drawRectangle(120, 115, 70, 90);
+		canvas.setFillColor("red");
+		canvas.drawRectangle(200, 85, 70, 150);
+		canvas.setFillColor("lime");
+		canvas.drawRectangle(280, 85, 70, 155);
+		canvas.setFillColor("green");
+		canvas.drawRectangle(360, 110, 70, 100);
+		canvas.setFillColor("gray");
+		canvas.drawRectangle(450, 105, 70, 110);
+		canvas.setFillColor("yellow");
+		canvas.drawRectangle(550, 100, 70, 120);
+		canvas.setFillColor("Yellow"),
+		canvas.drawRectangle(510 ,280 ,50 ,30);
+		canvas.setFillColor("white");
+		canvas.drawCircle(490, 300, 10); 
+		canvas.setFillColor("white");
+		canvas.drawCircle(530, 300, 10);
+		
+	}
+
+</script>

@@ -1,0 +1,141 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="https://mrjoshgross.github.io/assets/BearcatGraphics.js"></script>
+</body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update);
+
+    let movement = 0;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawSky();
+        drawSidewalk();
+        drawRoad();
+        drawBuildings();
+        drawCar();
+        drawGrass();
+        drawCar2(200 + movement, 300);
+        movement = (movement + 1)%300;
+    }
+
+    function drawSky() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(100, 200, 1000, 2000)
+
+
+
+
+    }
+
+    function drawBuildings() {
+        canvas.setFillColor("YELLOW");
+        canvas.drawRectangle(70, 75, 60, 60);
+        canvas.setFillColor("blue");
+        canvas.drawRectangle(170, 75, 60, 60);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(300, 75, 60, 60);
+
+        canvas.setFillColor("red");
+        canvas.drawRectangle(450, 75, 60, 60);
+        canvas.setFillColor("purple");
+        canvas.drawTriangle(170, 25, 60);
+        canvas.setFillColor("green");
+        canvas.drawTriangle(70, 25, 60);
+        canvas.setFillColor("yellow");
+        canvas.drawTriangle(300, 25, 60);
+        canvas.setFillColor("blue");
+        canvas.drawTriangle(450, 25, 60);
+
+
+    }
+
+    function drawSidewalk() {
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(250, 400, 700, 100);
+        canvas.drawRectangle(250, 150, 700, 100);
+    }
+
+    function drawRoad() {
+        canvas.setFillColor("BLACK");
+        canvas.drawRectangle(100, 300, 1000, 200);
+        canvas.setFillColor("YELLOW");
+        canvas.drawRectangle(350, 300, 450, 30);
+    }
+
+    function drawCar() {
+        canvas.setFillColor("RED");
+        canvas.drawRectangle(250, 350, 50, 30);
+        canvas.setFillColor("YELLOW");
+        canvas.drawCircle(230, 370, 10)
+        canvas.drawCircle(270, 370, 10)
+
+
+        canvas.setFillColor("blue");
+        canvas.drawRectangle(375, 350, 50, 30);
+        canvas.setFillColor("green");
+        canvas.drawCircle(350, 370, 10)
+        canvas.drawCircle(400, 370, 10)
+    }
+
+    function drawCar2(x, y) {
+        canvas.setFillColor("blue");
+        canvas.drawRectangle(x, y, 50, 30);
+        canvas.setFillColor("green");
+        canvas.drawCircle(x - 20, y + 20, 10)
+        canvas.drawCircle(x + 20, y + 20, 10)
+
+
+        canvas.setFillColor("purple");
+        canvas.drawRectangle(550, 350, 50, 30);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(530, 370, 10)
+        canvas.drawCircle(570, 370, 10)
+
+
+        canvas.setFillColor("green");
+        canvas.drawCircle(350, 370, 10)
+        canvas.drawCircle(400, 370, 10)
+
+
+        canvas.setFillColor("yellow")
+        canvas.drawCircle(0, 0, 50)
+
+
+        canvas.setFillColor("white");
+        canvas.drawCircle(200, 30, 20, FILL)
+        canvas.drawCircle(230, 30, 20, FILL)
+        canvas.drawCircle(215, 10, 20, FILL)
+
+        canvas.drawCircle(375, 30, 20, FILL)
+        canvas.drawCircle(405, 30, 20, FILL)
+        canvas.drawCircle(390, 10, 20, FILL)
+
+
+        canvas.drawCircle(545, 30, 20, FILL)
+        canvas.drawCircle(575, 30, 20, FILL)
+        canvas.drawCircle(560, 10, 20, FILL)
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    function drawGrass() {
+        canvas.setFillColor("GREEN");
+        canvas.drawRectangle(200, 450, 1000, 90);
+    }
+
+</script>
