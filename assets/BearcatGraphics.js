@@ -472,7 +472,7 @@ let LEFT = -1;
 
 function color(colorString){return COLORS[colorString];}
 
-function color(r, g, b){return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;}
+function color(r, g, b){return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;}
 
 class RotationAnchor{
     constructor(x, y, rotation){
