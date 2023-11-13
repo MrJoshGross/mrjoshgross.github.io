@@ -1,5 +1,8 @@
 <!--Import graphics functionality-->
-<body><script src="BearcatGraphics.js"></script></body>
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
 
 <script>
 
@@ -11,23 +14,23 @@
     let force = 0;
     let accel = 0;
     let areStudentsSleeping = false;
-    let time = 500;
+    let time = 0;
     let skyColor = "black";
 
     // canvas object
-    let canvas = new BearcatGraphics(update, panelSize*2, panelSize*2);
+    let canvas = new BearcatGraphics(update, panelSize * 2, panelSize * 2);
     canvas.debug = true;
 
     canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
 
-    function onKeyDown(e){
-        switch(e.key){
+    function onKeyDown(e) {
+        switch (e.key) {
             case " ":
                 accel += 100.0;
-            break;
+                break;
             case "s":
                 areStudentsSleeping = !areStudentsSleeping;
-            break;
+                break;
         }
     }
 
@@ -40,66 +43,70 @@
         drawSeparators();
 
         // bike
-        force -= accel/canvas.fps;
-        if(accel > 0) accel *= 0.98;
-        time = (time + 10/canvas.fps) % 2400;
-        if(time%100 > 60) time += 40; 
+        force -= accel / canvas.fps;
+        if (accel > 0) accel *= 0.98;
+        calculateTime();
         skyColor = calculateSkyColor();
     }
 
-    function calculateSkyColor(){
-        return time < 400 || time > 2000 
-        ? color(0, 0, 0)
-        : time < 600 || time > 1800
-        ? color(0, 25, 25)
-        : time < 800 || time > 1600
-        ? color(0, 75, 75)
-        : color(0, 125, 125);
+    function calculateTime(){
+        time = (time + 10 / canvas.fps) % 2400;
+        if (time % 100 > 60) time += 40;
     }
 
-    function drawSeparators(){
+    function calculateSkyColor() {
+        return time < 400 || time > 2000
+            ? color(0, 0, 0)
+            : time < 600 || time > 1800
+                ? color(0, 25, 25)
+                : time < 800 || time > 1600
+                    ? color(0, 75, 75)
+                    : color(0, 125, 125);
+    }
+
+    function drawSeparators() {
         canvas.setFillColor("black");
-        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
-        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, 3, canvas.height, FILL);
     }
 
 
-    function drawPerson(x, y, width, height, color, rotation){
-        if(rotation) rotation = {x: x, y: y, amount: rotation};
-        if(!color) color = "white";
+    function drawPerson(x, y, width, height, color, rotation) {
+        if (rotation) rotation = { x: x, y: y, amount: rotation };
+        if (!color) color = "white";
         canvas.setFillColor(color);
-        canvas.drawRectangle(x, y, width/2, height, FILLFRAME, rotation);
-        canvas.drawRectangle(x-width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
-        canvas.drawRectangle(x+width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
-        canvas.drawOval(x, y-height, width/2, height/2, FILLFRAME, rotation);
-        canvas.drawRectangle(x-width/8, y+7*height/8,width/4, 3*height/4, FILLFRAME, rotation);
-        canvas.drawRectangle(x+width/8, y+7*height/8,width/4, 3*height/4, FILLFRAME, rotation);
+        canvas.drawRectangle(x, y, width / 2, height, FILLFRAME, rotation);
+        canvas.drawRectangle(x - width / 3, y - height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
+        canvas.drawRectangle(x + width / 3, y - height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
+        canvas.drawOval(x, y - height, width / 2, height / 2, FILLFRAME, rotation);
+        canvas.drawRectangle(x - width / 8, y + 7 * height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
+        canvas.drawRectangle(x + width / 8, y + 7 * height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
     }
 
-    function drawFloor(){
+    function drawFloor() {
         canvas.setFillColor(color(87, 52, 25));
         canvas.drawRectangle(200, 350, 400, 100, FILL);
     }
 
-    function drawWall(){
+    function drawWall() {
         canvas.setFillColor(color(173, 143, 111));
         canvas.drawRectangle(200, 150, 400, 300, FILL);
         canvas.setFillColor("white")
         drawWindow(200, 125, 150, skyColor);
     }
 
-    function drawWindow(x, y, size, fillColor, frameColor){
-        if(!fillColor) fillColor = "white";
-        if(!frameColor) frameColor = "black";
+    function drawWindow(x, y, size, fillColor, frameColor) {
+        if (!fillColor) fillColor = "white";
+        if (!frameColor) frameColor = "black";
         canvas.setBorderColor(frameColor);
         canvas.setFillColor(fillColor);
         canvas.drawSquare(x, y, size);
         canvas.setFillColor(frameColor);
-        canvas.drawRectangle(x, y, size/50, size, FILL);
-        canvas.drawRectangle(x, y, size, size/50, FILL);
+        canvas.drawRectangle(x, y, size / 50, size, FILL);
+        canvas.drawRectangle(x, y, size, size / 50, FILL);
     }
 
-    function drawNightStand(){
+    function drawNightStand() {
         // stand
         canvas.setFillColor("darkorange");
         canvas.drawRectangle(25, 310, 25, 40);
@@ -117,18 +124,18 @@
         canvas.drawText(timeText, 51, 290);
     }
 
-    function getTimeText(){
-        return Math.floor((time/100)) + ":" + String((time%100).toFixed(0)).padStart(2, "0");
+    function getTimeText() {
+        return Math.floor((time / 100)) + ":" + String((time % 100).toFixed(0)).padStart(2, "0");
     }
 
-    function drawTopLeft(){
+    function drawTopLeft() {
         drawFloor();
         drawWall();
         // pillow
         canvas.setFillColor("darkgrey");
         canvas.drawRectangle(350, 325, 50, 75);
 
-        if(time <= 500 || time >= 2100) drawPerson(250, 325, 65, 75, "white", 90);
+        if (time <= 500 || time >= 2100) drawPerson(250, 325, 65, 75, "white", 90);
         // blanket
         canvas.setFillColor("lightyellow");
         canvas.drawRectangle(225, 325, 100, 75);
@@ -136,107 +143,125 @@
         drawNightStand();
     }
 
-    function drawTopRight(){
-        canvas.setFillColor("lightblue");
-        canvas.drawSquare(rightPanelCenterX, upperPanelCenterY, panelSize, FILL);
-        canvas.setFillColor("lightgray");
-        canvas.drawRectangle(rightPanelCenterX, upperPanelCenterY+3*upperPanelCenterY/4, panelSize, panelSize/4, FILL);
-        drawCar();
+    function drawTopRight() {
+        if ((630 <= time && time <= 730) || (1700 <= time && time <= 1800)) {
+            canvas.setFillColor("lightblue");
+            canvas.drawSquare(rightPanelCenterX, upperPanelCenterY, panelSize, FILL);
+            canvas.setFillColor("lightgray");
+            canvas.drawRectangle(rightPanelCenterX, upperPanelCenterY + 3 * upperPanelCenterY / 4, panelSize, panelSize / 4, FILL);
+            drawCar();
+        }
+        else {
+            canvas.setFillColor("black");
+            canvas.drawRectangle(rightPanelCenterX, upperPanelCenterY, panelSize, panelSize);
+        }
     }
 
-    function drawCar(){
+    function drawCar() {
         canvas.setFillColor("white");
-        canvas.drawOval(rightPanelCenterX, upperPanelCenterY+50, 100, 80);
-        canvas.drawRectangle(rightPanelCenterX, upperPanelCenterY+upperPanelCenterY/2, 300, 100);
-        canvas.drawOval(rightPanelCenterX, upperPanelCenterY+50, 100, 80, FILL);
+        canvas.drawOval(rightPanelCenterX, upperPanelCenterY + 50, 100, 80);
+        canvas.drawRectangle(rightPanelCenterX, upperPanelCenterY + upperPanelCenterY / 2, 300, 100);
+        canvas.drawOval(rightPanelCenterX, upperPanelCenterY + 50, 100, 80, FILL);
         canvas.setFillColor("black");
-        canvas.drawCircle(rightPanelCenterX+panelSize/4, upperPanelCenterY+panelSize/3, 35);
-        canvas.drawCircle(rightPanelCenterX-panelSize/4, upperPanelCenterY+panelSize/3, 35);
-        
+        canvas.drawCircle(rightPanelCenterX + panelSize / 4, upperPanelCenterY + panelSize / 3, 35);
+        canvas.drawCircle(rightPanelCenterX - panelSize / 4, upperPanelCenterY + panelSize / 3, 35);
+
         // rear door
         canvas.setFillColor("white");
-        canvas.drawSquare(rightPanelCenterX-35, upperPanelCenterY+75, 50);
+        canvas.drawSquare(rightPanelCenterX - 35, upperPanelCenterY + 75, 50);
         canvas.setFillColor("lightblue");
-        canvas.drawSquare(rightPanelCenterX-35, upperPanelCenterY+25, 50);
+        canvas.drawSquare(rightPanelCenterX - 35, upperPanelCenterY + 25, 50);
         canvas.setFillColor("black");
-        canvas.drawRectangle(rightPanelCenterX-25, upperPanelCenterY+75, 25, 3)
-        
+        canvas.drawRectangle(rightPanelCenterX - 25, upperPanelCenterY + 75, 25, 3)
+
         // driver door
         canvas.setFillColor("white");
-        canvas.drawSquare(rightPanelCenterX+40, upperPanelCenterY+75, 50);
+        canvas.drawSquare(rightPanelCenterX + 40, upperPanelCenterY + 75, 50);
         canvas.setFillColor("lightblue");
-        canvas.drawSquare(rightPanelCenterX+40, upperPanelCenterY+25, 50);
-        canvas.setFillColor("white");
-        canvas.drawRectangle(rightPanelCenterX+38, upperPanelCenterY+45, 7, 10);
-        canvas.drawCircle(rightPanelCenterX+38, upperPanelCenterY+25, 20);
+        canvas.drawSquare(rightPanelCenterX + 40, upperPanelCenterY + 25, 50);
+        if ((630 <= time && time <= 730) || (1700 <= time && time <= 1800)) {
+            canvas.setFillColor("white");
+            canvas.drawRectangle(rightPanelCenterX + 38, upperPanelCenterY + 45, 7, 10);
+            canvas.drawCircle(rightPanelCenterX + 38, upperPanelCenterY + 25, 20);
+        }
         canvas.setFillColor("black");
-        canvas.drawRectangle(rightPanelCenterX+50, upperPanelCenterY+75, 25, 3)
+        canvas.drawRectangle(rightPanelCenterX + 50, upperPanelCenterY + 75, 25, 3)
 
         // next car
         canvas.setFillColor("lightgreen");
-        canvas.drawRectangle(panelSize*2, upperPanelCenterY+upperPanelCenterY/2, 50, 100);
+        canvas.drawRectangle(panelSize * 2, upperPanelCenterY + upperPanelCenterY / 2, 50, 100);
 
         // previous car
         canvas.setFillColor(color(70, 70, 70));
-        canvas.drawRectangle(panelSize+13, upperPanelCenterY+upperPanelCenterY/2, 25, 100);
+        canvas.drawRectangle(panelSize + 13, upperPanelCenterY + upperPanelCenterY / 2, 25, 100);
 
         // sun
         canvas.setFillColor("yellow");
-        canvas.drawCircle(panelSize*2, 0, 50);
+        canvas.drawCircle(panelSize * 2, 0, 50);
     }
 
-    function drawBottomLeft(){
-        canvas.setFillColor("lightyellow");
-        canvas.drawRectangle(leftPanelCenterX, bottomPanelCenterY, panelSize, panelSize, FILL);
-        canvas.setFillColor("lightgray");
+    function drawBottomLeft() {
+        if (730 <= time && time <= 1645) {
+            canvas.setFillColor("lightyellow");
+            canvas.drawRectangle(leftPanelCenterX, bottomPanelCenterY, panelSize, panelSize, FILL);
+            canvas.setFillColor("lightgray");
 
 
-        drawStudentAndDesk(leftPanelCenterX/2, bottomPanelCenterY+panelSize/4, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX+panelSize/4, bottomPanelCenterY+panelSize/4, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX/2, bottomPanelCenterY, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX / 2, bottomPanelCenterY + panelSize / 4, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX + panelSize / 4, bottomPanelCenterY + panelSize / 4, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX / 2, bottomPanelCenterY, 20, 20);
 
-        drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY+panelSize/4, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX+panelSize/4, bottomPanelCenterY, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY + panelSize / 4, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX + panelSize / 4, bottomPanelCenterY, 20, 20);
 
-        drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY-panelSize/4, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX+panelSize/4, bottomPanelCenterY-panelSize/4, 20, 20);
-        drawStudentAndDesk(leftPanelCenterX-panelSize/4, bottomPanelCenterY-panelSize/4, 20, 20);
-        
-        drawPerson(leftPanelCenterX, bottomPanelCenterY+2*panelSize/5, 30, 30);
+            drawStudentAndDesk(leftPanelCenterX, bottomPanelCenterY - panelSize / 4, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX + panelSize / 4, bottomPanelCenterY - panelSize / 4, 20, 20);
+            drawStudentAndDesk(leftPanelCenterX - panelSize / 4, bottomPanelCenterY - panelSize / 4, 20, 20);
+            drawPerson(leftPanelCenterX, bottomPanelCenterY + 2 * panelSize / 5, 30, 30);
+        }
+        else {
+            canvas.setFillColor("black");
+            canvas.drawRectangle(leftPanelCenterX, bottomPanelCenterY, panelSize, panelSize);
+        }
     }
 
-    function drawStudentAndDesk(x, y){
-        if(areStudentsSleeping){
-            drawPerson(x, y, 20, 20, "white", 90)
+    function drawStudentAndDesk(x, y) {
+        if (areStudentsSleeping) {
+            if (920 <= time && time <= 1500) drawPerson(x, y, 20, 20, "white", 90);
             canvas.setFillColor("silver");
-            canvas.drawRectangle(x-10, y+40, 3, 20);
-            canvas.drawRectangle(x+10, y+40, 3, 20);
+            canvas.drawRectangle(x - 10, y + 40, 3, 20);
+            canvas.drawRectangle(x + 10, y + 40, 3, 20);
             canvas.setFillColor("orange");
-            canvas.drawRectangle(x, y+30, 30, 20);
-        } else{
-            drawPerson(x, y, 20, 20);
+            canvas.drawRectangle(x, y + 30, 30, 20);
+        } else {
+            if (920 <= time && time <= 1500) drawPerson(x, y, 20, 20);
             canvas.setFillColor("silver");
-            canvas.drawRectangle(x-10, y+20, 3, 20);
-            canvas.drawRectangle(x+10, y+20, 3, 20);
+            canvas.drawRectangle(x - 10, y + 20, 3, 20);
+            canvas.drawRectangle(x + 10, y + 20, 3, 20);
             canvas.setFillColor("orange");
-            canvas.drawRectangle(x, y+10, 30, 20);
+            canvas.drawRectangle(x, y + 10, 30, 20);
             canvas.setFillColor("white");
-            canvas.drawRectangle(x, y+10, 10, 14, FILL);
-        }    
+            canvas.drawRectangle(x, y + 10, 10, 14, FILL);
+        }
     }
 
-    function drawBottomRight(){
-        canvas.setFillColor("lightgreen");
-        canvas.drawRectangle(rightPanelCenterX, bottomPanelCenterY, panelSize, panelSize, FILL);
-        canvas.setFillColor(color(173, 143, 111));
-        canvas.drawRectangle(rightPanelCenterX, bottomPanelCenterY+panelSize/2.5+17, panelSize, 100, FILL);
-        drawWindow(rightPanelCenterX, bottomPanelCenterY-panelSize/3, 100, color(70,70,70));
-        drawPerson(rightPanelCenterX+panelSize/2.55, bottomPanelCenterY+20, 85, 85)
-        drawBike();
+    function drawBottomRight() {
+        if (1900 <= time && time <= 2000) {
+            canvas.setFillColor("lightgreen");
+            canvas.drawRectangle(rightPanelCenterX, bottomPanelCenterY, panelSize, panelSize, FILL);
+            canvas.setFillColor(color(173, 143, 111));
+            canvas.drawRectangle(rightPanelCenterX, bottomPanelCenterY + panelSize / 2.5 + 17, panelSize, 100, FILL);
+            drawWindow(rightPanelCenterX, bottomPanelCenterY - panelSize / 3, 100, color(70, 70, 70));
+            drawPerson(rightPanelCenterX + panelSize / 2.55, bottomPanelCenterY + 20, 85, 85)
+            drawBike();
+        } else{
+            canvas.setFillColor("black");
+            canvas.drawRectangle(rightPanelCenterX, bottomPanelCenterY, panelSize, panelSize);
+        }
     }
 
-    function drawBike(){
+    function drawBike() {
         canvas.setFillColor("black");
         // front stem
         canvas.drawLine(new Point(655, 590), new Point(690, 685));
@@ -260,7 +285,7 @@
 
 
         // gear chain
-        canvas.drawCircle(rightPanelCenterX-45, bottomPanelCenterY+89, 15, FRAME);
+        canvas.drawCircle(rightPanelCenterX - 45, bottomPanelCenterY + 89, 15, FRAME);
 
         // rear frame
         canvas.drawLine(new Point(489, 685), new Point(552, 692));
@@ -278,12 +303,12 @@
         canvas.drawCircle(490, 685, 4);
 
         // spokes
-        for(let i = 0; i < 20; i++){
+        for (let i = 0; i < 20; i++) {
             // rear
-            canvas.drawRectangle(490, 685, 1, 80, FILL, (360/20*i) + force);
+            canvas.drawRectangle(490, 685, 1, 80, FILL, (360 / 20 * i) + force);
 
             // front
-            canvas.drawRectangle(692, 687, 1, 80, FILL, 360/20*i);
+            canvas.drawRectangle(692, 687, 1, 80, FILL, 360 / 20 * i);
         }
     }
 
