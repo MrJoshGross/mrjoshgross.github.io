@@ -14,11 +14,11 @@
     let force = 0;
     let accel = 0;
     let areStudentsSleeping = false;
-    let time = 0;
     let skyColor = "black";
 
     // canvas object
     let canvas = new BearcatGraphics(update, panelSize * 2, panelSize * 2);
+    let time = canvas.time;
     canvas.debug = true;
 
     canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, onKeyDown);
@@ -45,13 +45,10 @@
         // bike
         force -= accel / canvas.fps;
         if (accel > 0) accel *= 0.98;
-        calculateTime();
         skyColor = calculateSkyColor();
-    }
-
-    function calculateTime(){
-        time = (time + 10 / canvas.fps) % 2400;
-        if (time % 100 > 60) time += 40;
+        time = canvas.time;
+        canvas.setFillColor("white");
+        canvas.drawText(`Day: ${canvas.getDays()}\nYear: ${canvas.getYears()}`, 75, canvas.fontSize);
     }
 
     function calculateSkyColor() {
@@ -118,14 +115,8 @@
         canvas.drawRectangle(50, 280, 50, 25)
         canvas.setFillColor("red");
         canvas.setFontSize("22");
-        let timeText = getTimeText();
-        canvas.drawText(timeText, 49, 290);
-        canvas.drawText(timeText, 50, 290);
-        canvas.drawText(timeText, 51, 290);
-    }
-
-    function getTimeText() {
-        return Math.floor((time / 100)) + ":" + String((time % 100).toFixed(0)).padStart(2, "0");
+        let timeText = canvas.getTimeText24Hours();
+        canvas.drawText(timeText, 49, 284, FILLFRAME);
     }
 
     function drawTopLeft() {
