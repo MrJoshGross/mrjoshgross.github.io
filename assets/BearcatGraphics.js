@@ -45,10 +45,15 @@ class BearcatGraphics {
         this.fontSize = 12;
         this.fontFamily = "Arial";
         this.canvas.textAlign = "center";
+        this.canvas.textBaseline = "middle";
         this.canvas.lineWidth = 5;
         this.fps = 60;
         this.mouseX = -1;
         this.mouseY = -1;
+        this.time = 0;
+        this.days = 1;
+        this.years = 1;
+        this.timeScale = 10;
         this.debug = true;
         this.setUpdateFunction(updateFunction);
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e);});
@@ -108,6 +113,18 @@ class BearcatGraphics {
     }
 
     /**
+     * Sets the time in a 24 hour time cycle
+     * @param {number} time the time value, between 0 and 2359, to set to
+     */
+    setTime = (time) => this.time = time;
+
+    /**
+     * Sets the time scale of a 24 hour time cycle
+     * @param {number} timeScale the amount of minutes that pass in the 24 hour time cycle each real life second; set to negative to reverse time
+     */
+    setTimeScale = (timeScale) => this.timeScale = timeScale;
+
+    /**
      * Creates HTML body element if it's missing.
      */
     #createBody = () => document.body = document.createElement("body");
@@ -131,7 +148,7 @@ class BearcatGraphics {
      * @param {number} thickness 
      */
     setLineThickness = (thickness) => this.canvas.lineWidth = thickness;
-    
+
     /**
      * Overwrites all contents in the canvas with a white fill, black frame rectangle.
      */
@@ -401,7 +418,7 @@ class BearcatGraphics {
 
     setUpdateFunction(func) {
         if(!func) return;
-        this.update = () => {this.clear(); func(); this.#handleDebug()};
+        this.update = () => {this.clear(); this.#calculateTime(); func(); this.#handleDebug()};
         setInterval(this.update, 1000 / this.fps);
     }
 
@@ -415,22 +432,76 @@ class BearcatGraphics {
         this.#setFont(); 
     }
 
-    drawText(text, x, y, style = FILL, rotation){
+    drawText(text, x, y, style = FILLFRAME, rotation){
+        if (rotation) this.#rotate(x, y, rotation);
         if(style == FILL)
             this.canvas.fillText(text, x, y);
         else if(style == FRAME)
-            this.canvas.strokeText(x, y);
+            this.canvas.strokeText(text, x, y);
+        else if(style == FILLFRAME){
+            this.canvas.strokeText(text ,x, y);
+            this.canvas.fillText(text, x, y);
+        }
         else
             console.error("Invalid fill style: " + style + " | Valid fill styles are FILL, FRAME");
+        if (rotation) this.resetCanvasRotation();
     }
 
     #setFont = () => this.canvas.font = `${this.fontSize}px ${this.fontFamily}`;
+
+    #calculateTime(){
+        this.time = (this.time + this.timeScale / this.fps);
+        if(this.time >= 2400){
+            this.time -= 2400;
+            this.days ++;
+            if(this.days == 366){
+                this.years ++;
+                this.days = 1;
+            } 
+        }
+        else if(this.time < 0) {
+            this.time+=2400;
+            this.days --;
+            if(this.days == 0){
+                this.years --;
+                this.days = 365;
+            }
+        }
+        if (this.time % 100 > 60){ 
+            if(this.timeScale > 0) this.time += 40;
+            else this.time -= 40;
+        }
+    }
+
+    getTimeText24Hours() {
+        return Math.floor((this.time / 100)) + ":" + String(Math.floor((this.time % 100)).toFixed(0)).padStart(2, "0");
+    }
+
+    getTimeText(){
+        let hours = Math.floor(this.time/100);
+        let minutes = String(Math.floor((this.time % 100)).toFixed(0)).padStart(2, "0");
+        let post = "";
+        if(hours <= 11){
+            if(hours == 0)
+                hours = 12;
+            post = "a";
+        } else{
+            if(hours != 12)
+                hours -= 12;
+            post = "p";
+        }
+        return hours+":"+minutes+post;
+    }
+
+    getDays = () => this.days;
+
+    getYears = () => this.years;
 
     getRandomColor() {
         let r = Math.floor(Math.random() * 255);
         let g = Math.floor(Math.random() * 255);
         let b = Math.floor(Math.random() * 255);
-        return "#" + r.toString(16) + g.toString(16) + b.toString(16);
+        return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
     }
 
     getRandomDecimal = () => Math.random();
