@@ -447,6 +447,10 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    drawTimeText(x, y, style = FILLFRAME, rotation){
+        this.drawText(this.getTimeText(), x, y, style, rotation);
+    }
+
     #setFont = () => this.canvas.font = `${this.fontSize}px ${this.fontFamily}`;
 
     #calculateTime(){
