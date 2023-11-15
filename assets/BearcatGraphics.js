@@ -329,8 +329,7 @@ class BearcatGraphics {
     // adapted from code written by Santiago L, Fall 2023
     drawPerson(x, y, width, height, color, rotation){
         if(rotation) rotation = {x: x, y: y, amount: rotation};
-        if(!color) color = "white";
-        canvas.setFillColor(color);
+        if(color) canvas.setFillColor(color);
         canvas.drawRectangle(x, y, width/2, height, FILLFRAME, rotation);
         canvas.drawRectangle(x-width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
         canvas.drawRectangle(x+width/3, y-height/8, width/4, 3*height/4, FILLFRAME, rotation);
