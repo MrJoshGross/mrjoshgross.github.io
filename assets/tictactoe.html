@@ -1,0 +1,122 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(drawGUI, 800, 800);
+    let cellSize = canvas.width / 3;
+    canvas.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEDOWN, handleMouseDown);
+    canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, handleKeyDown);
+    let board, isOTurn, isGameOver, winner, winType;
+    let X = -1;
+    let O = 1;
+    init();
+
+    function init() {
+        createBoard();
+        isOTurn = false;
+        isGameOver = false;
+        winner = null;
+        canvas.setFontSize(100);
+    }
+
+    function handleKeyDown(e){
+        if(isGameOver && e.key === "r") init();
+    }
+
+    function handleMouseDown(e) {
+        if (!isGameOver && canvas.mouseX < canvas.width && canvas.mouseY < canvas.height) {
+            let indexX = Math.floor(canvas.mouseX / cellSize);
+            let indexY = Math.floor(canvas.mouseY / cellSize);
+            if (board[indexX][indexY] === 0) {
+                board[indexX][indexY] = isOTurn ? O : X;
+                isOTurn = !isOTurn;
+                calculateGameOver();
+            }
+        }
+    }
+
+    function calculateGameOver() {
+        if (isBoardFull()) {
+            winner = "DRAW";
+            winType = "DRAW";
+        }
+        else {
+            // horizontal and vertical
+            for (let i = 0; i < 3; i++) {
+                let horizontalSum = board[i][0] + board[i][1] + board[i][2];
+                let verticalSum = board[0][i] + board[1][i] + board[2][i];
+
+                if (horizontalSum === 3 || verticalSum === 3) winner = "O";
+
+                else if (horizontalSum === -3 || verticalSum === -3) winner = "X";
+            }
+            // diagonal
+            let increasingSum = board[0][0] + board[1][1] + board[2][2];
+            let decreasingSum = board[2][0] + board[1][1] + board[0][2];
+
+            if (increasingSum === 3 || decreasingSum === 3) winner = "O";
+            else if (increasingSum === -3 || decreasingSum === -3) winner = "X";
+        }
+        if (winner != null) isGameOver = true;
+    }
+
+    function isBoardFull() {
+        for (let row of board)
+            for (let cell of row)
+                if (cell === 0)
+                    return false;
+        return true;
+    }
+
+    function createBoard() {
+        board = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ];
+    }
+
+    // every frame (1/60th of a second) draw everything
+    function drawGUI() {
+        drawBoard();
+    }
+
+    function drawPiece(x, y) {
+        let pieceText = board[x][y] === X ? "X" : "O";
+        canvas.drawText(pieceText, cellSize / 2 + cellSize * x, cellSize / 2 + cellSize * y);
+    }
+
+    function drawWinType() {
+
+    }
+
+    function drawBoard() {
+        drawOutline();
+        for (let x = 0; x < board.length; x++) {
+            let row = board[x];
+            for (let y = 0; y < row.length; y++) {
+                if (board[x][y] != 0)
+                    drawPiece(x, y);
+            }
+        }
+        if (isGameOver) {
+            canvas.setFillColor("white");
+            canvas.drawText("Game Over!", canvas.width / 2, 2 * canvas.height / 5);
+            canvas.drawText("Press r to restart", canvas.width / 2, 3 * canvas.height / 5);
+            if (winner)
+                drawWinType();
+        }
+    }
+
+    function drawOutline() {
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width / 3, canvas.height / 2, 5, canvas.height);
+        canvas.drawRectangle(2 * canvas.width / 3, canvas.height / 2, 5, canvas.height);
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 3, canvas.width, 5);
+        canvas.drawRectangle(canvas.width / 2, 2 * canvas.height / 3, canvas.width, 5);
+    }
+</script>
