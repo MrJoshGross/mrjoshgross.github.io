@@ -1,0 +1,199 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let canvas, platforms, enemies, player;
+    
+    let GRAVITY = 9.81;
+
+    let EPSILON = 5;
+
+    init();
+
+    function init() {
+        canvas = new BearcatGraphics(update, 800, 800);
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, handleKeyDown);
+        canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, handleKeyUp);
+        platforms = [];
+        enemies = [];
+        player = {
+            x: 25,
+            y: 750, 
+            width: 30, 
+            height: 30, 
+            moveSpeed: 5, 
+            jumpHeight: 6, 
+            gravity: 1, 
+            xVelocity: 0, 
+            yVelocity: 0, 
+            isOnGround: false, 
+            moveLeftKeyDown: false, 
+            moveRightKeyDown: false,
+            jumpKeyDown: false
+        };
+        createMap();
+    }
+
+    function handleKeyDown(e) {
+        switch (e.key) {
+            case " ":
+                player.jumpKeyDown = true;
+                break;
+            case "d":
+                player.moveRightKeyDown = true;
+                break;
+            case "a":
+                player.moveLeftKeyDown = true;
+                break;
+        }
+    }
+
+    function handleKeyUp(e) {
+        switch (e.key) {
+            case " ":
+                player.jumpKeyDown = false;
+                break;
+                case "d":
+                player.moveRightKeyDown = false;
+                break;
+            case "a":
+                player.moveLeftKeyDown = false;
+                break;
+        }
+    }
+
+    function createMap() {
+        canvas.setFillColor("brown");
+        addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
+        addPlatform(377, 700, 50, 20);
+        addPlatform(200, 600, 20, 20);
+        addPlatform(470, 570, 20, 50);
+        addPlatform(600, 450, 50, 20);
+        addPlatform(470, 350, 50, 20);
+        addPlatform(200, 350, 50, 20);
+        addPlatform(50, 275, 50, 20);
+        addPlatform(150, 175, 50, 20);
+        addPlatform(470, 200, 50, 20);
+        addPlatform(750, 200, 100, 20);
+        canvas.setFillColor("red");
+        addEnemy(350, 140, 20, 50);
+        addEnemy(90, 540, 50, 20);
+    }
+
+    function addEnemy(x, y, width, height){
+        enemies.push({ x: x, y: y, width: width, height: height, color: canvas.canvas.fillStyle});
+    }
+
+    function addPlatform(x, y, width, height) {
+        platforms.push({ x: x, y: y, width: width, height: height, color: canvas.canvas.fillStyle});
+    }
+
+    function update() {
+        handlePlayerMovement();
+        drawGUI();
+    }
+
+    function handlePlayerMovement() {
+        if((player.moveLeftKeyDown && player.moveRightKeyDown) || (!player.moveLeftKeyDown && !player.moveRightKeyDown)) player.xVelocity = 0;
+        else if(player.moveLeftKeyDown) player.xVelocity = -player.moveSpeed;
+        else if(player.moveRightKeyDown) player.xVelocity = player.moveSpeed;
+
+        if(platformLeftOfPlayer() && player.xVelocity === -player.moveSpeed)
+            player.xVelocity = 0;
+        else if(platformRightOfPlayer() && player.xVelocity === player.moveSpeed)
+            player.xVelocity = 0;
+        player.x += player.xVelocity;
+
+        if(platformAbovePlayer()){
+            player.yVelocity = -player.yVelocity * 0.5;
+        }
+        if (platformBelowPlayer()) {
+            player.yVelocity = 0;
+            player.isOnGround = true;
+        }
+        else {
+            player.isOnGround = false;
+        }
+
+        if(!player.isOnGround)
+            player.yVelocity -= GRAVITY / canvas.fps;
+
+        if (player.jumpKeyDown && player.isOnGround)
+            player.yVelocity += player.jumpHeight;
+        player.y -= player.yVelocity;
+    }
+
+    function platformLeftOfPlayer(){
+        for(let platform of platforms){
+            if( player.y - player.height/2 <= platform.y + platform.height/2 && player.y + player.height/2 >= platform.y - platform.height/2 &&
+                player.x - player.width/2 + EPSILON >= platform.x + platform.width/2 && player.x - player.width/2 - EPSILON < platform.x + platform.width/2)
+                return true;
+        }
+        return false;
+    }
+
+    function platformRightOfPlayer(){
+        for(let platform of platforms){
+            if( player.y - player.height/2 <= platform.y + platform.height/2 && player.y + player.height/2 >= platform.y - platform.height/2 &&
+                player.x + player.width/2 + EPSILON >= platform.x - platform.width/2 && player.x + player.width/2 - EPSILON < platform.x - platform.width/2)
+                return true;
+        }
+        return false;
+    }
+
+    function platformBelowPlayer() {
+        for (let platform of platforms) {
+            if (player.x + player.width/2 > platform.x - platform.width/2 && player.x - player.width/2 < platform.x + platform.width/2 &&  
+                player.y + player.height / 2 >= platform.y - platform.height / 2 - EPSILON && player.y + player.height / 2 <= platform.y - platform.height / 2 + EPSILON)
+                return true;
+        }
+        return false;
+    }
+
+    function platformAbovePlayer() {
+        for (let platform of platforms) {
+            if (player.x + player.width/2 > platform.x - platform.width/2 && player.x - player.width/2 < platform.x + platform.width/2 &&  
+                player.y - player.height / 2 >= platform.y + platform.height / 2 - EPSILON && player.y - player.height / 2 <= platform.y + platform.height / 2 + EPSILON)
+                return true;
+        }
+        return false;
+    }
+
+    function drawGUI() {
+        drawBackground();
+        drawPlatforms();
+        drawEnemies();
+        drawPlayer();
+    }
+
+    function drawBackground() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.setFillColor("yellow");
+        canvas.drawStar(755, 155, 20);
+    }
+
+    function drawPlatforms() {
+        for (let platform of platforms){
+            canvas.setFillColor(platform.color);
+            canvas.drawRectangle(platform.x, platform.y, platform.width, platform.height);
+        }
+    }
+
+    function drawEnemies(){
+        for (let enemy of enemies){
+            canvas.setFillColor(enemy.color);
+            canvas.drawRectangle(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+    }
+
+    function drawPlayer() {
+        canvas.setFillColor("green");
+        canvas.drawRectangle(player.x, player.y, player.width, player.height);
+    }
+
+</script>
