@@ -6,36 +6,210 @@
 
 <script>
 
-    let canvas, platforms, enemies, player;
-    
+    let canvas, objects, player, levels, currentLevel, score, timeSinceGameStart, timeSinceLevelStart;
+
     let GRAVITY = 9.81;
 
     let EPSILON = 5;
+
+    class GameObject {
+        constructor(x, y, width, height, collidable = true, renderType, renderString) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.collidable = collidable;
+            this.renderType = renderType;
+            this.renderString = renderString;
+        }
+
+        render() {
+            throw new Error("Must implement 'render' in subclasses!");
+        }
+    }
+
+    let RENDER_TYPES = {
+        COLOR: -123,
+        IMAGE: 123
+    }
+
+    class Platform extends GameObject {
+        constructor(x, y, width = 30, height = 5, renderType = RENDER_TYPES.COLOR, renderString = "BROWN") {
+            super(x, y, width, height, true, renderType, renderString);
+        }
+
+        render(canvas) {
+            if (this.renderType === RENDER_TYPES.COLOR) {
+                if (this.renderString)
+                    canvas.setFillColor(this.renderString);
+                else
+                    console.warn("Render type set to RENDER_TYPES.COLOR but no color was provided.")
+                canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            }
+            else if (this.renderType === RENDER_TYPES.IMAGE) {
+                // TODO draw image representing this platform
+            }
+            else
+                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: RENDER_TYPES.COLOR, RENDER_TYPES.IMAGE`);
+        }
+    }
+
+    class Star extends GameObject {
+        constructor(x, y, size = 30, renderType = RENDER_TYPES.COLOR, renderString = "YELLOW") {
+            super(x, y, size, size, true, renderType, renderString);
+        }
+
+        render(canvas) {
+            if (this.renderType === RENDER_TYPES.COLOR) {
+                if (this.renderString)
+                    canvas.setFillColor(this.renderString);
+                else
+                    console.warn("Render type set to RENDER_TYPES.COLOR but no color was provided.")
+                canvas.drawTriangle(this.x, this.y, this.width / 2);
+            }
+            else if (this.renderType === RENDER_TYPES.IMAGE) {
+                // TODO draw image representing this platform
+            }
+            else
+                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: RENDER_TYPES.COLOR, RENDER_TYPES.IMAGE`);
+        }
+    }
+
+    class Enemy extends GameObject {
+        static MOVEMENT_TYPES = {
+            FORWARD: 1,
+            BACKWARD: -1
+        };
+
+        static MOVEMENT_AXES = {
+            VERTICAL: 1,
+            HORIZONTAL: 2,
+            INCREASING_DIAGONAL: 3,
+            DECREASING_DIAGONAL: 4,
+            CIRCLE: 5
+        };
+
+        constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = RENDER_TYPES.COLOR, renderString = "RED") {
+            super(x, y, width, height, true, renderType, renderString)
+            this.movementAxis = movementAxis;
+            this.anchorX = x;
+            this.anchorY = y;
+            this.movementDirection = Enemy.MOVEMENT_TYPES.FORWARD;
+            this.movementSpeed = movementSpeed;
+            this.maxDistance = maxDistance;
+        }
+
+        update() {
+            switch (this.movementAxis) {
+                case Enemy.MOVEMENT_AXES.VERTICAL:
+                    this.y += this.movementSpeed * this.movementDirection;
+                    if(Math.abs(this.anchorY - this.y) >= this.maxDistance)
+                        this.movementDirection *= -1;
+                    break;
+                case Enemy.MOVEMENT_AXES.HORIZONTAL:
+                    this.x += this.movementSpeed * this.movementDirection;
+                    if(Math.abs(this.anchorX - this.x) >= this.maxDistance)
+                        this.movementDirection *= -1;
+                    break;
+                default:
+                    console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
+                    break;
+            }
+        }
+
+        render() {
+            if (this.renderType === RENDER_TYPES.COLOR) {
+                if (this.renderString)
+                    canvas.setFillColor(this.renderString);
+                else
+                    console.warn("Render type set to RENDER_TYPES.COLOR but no color was provided.")
+                canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            }
+            else if (this.renderType === RENDER_TYPES.IMAGE) {
+                // TODO draw image representing this platform
+            }
+            else
+                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: RENDER_TYPES.COLOR, RENDER_TYPES.IMAGE`);
+        }
+    }
+
+    class Door extends GameObject {
+        constructor() {
+            super()
+        }
+
+        render() {
+            if (this.renderType === RENDER_TYPES.COLOR) {
+                if (this.renderString)
+                    canvas.setFillColor(this.renderString);
+                else
+                    console.warn("Render type set to RENDER_TYPES.COLOR but no color was provided.")
+                canvas.drawStar(this.x, this.y, this.width / 2);
+            }
+            else if (this.renderType === RENDER_TYPES.IMAGE) {
+                // TODO draw image representing this platform
+            }
+            else
+                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: RENDER_TYPES.COLOR, RENDER_TYPES.IMAGE`);
+        }
+    }
+
+    class Player {
+        constructor(
+            x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true
+        ) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.moveSpeed = moveSpeed;
+            this.jumpHeight = jumpHeight;
+            this.gravity = gravity;
+            this.xVelocity = xVelocity;
+            this.yVelocity = yVelocity;
+            this.canMove = canMove;
+            this.isOnGround = false;
+            this.moveLeftKeyDown = false;
+            this.moveRightKeyDown = false;
+            this.jumpKeyDown = false;
+        }
+    }
 
     init();
 
     function init() {
         canvas = new BearcatGraphics(update, 800, 800);
+        // canvas.initializePlatformer();
         canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, handleKeyDown);
         canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, handleKeyUp);
-        platforms = [];
-        enemies = [];
-        player = {
-            x: 25,
-            y: 750, 
-            width: 30, 
-            height: 30, 
-            moveSpeed: 5, 
-            jumpHeight: 6, 
-            gravity: 1, 
-            xVelocity: 0, 
-            yVelocity: 0, 
-            isOnGround: false, 
-            moveLeftKeyDown: false, 
-            moveRightKeyDown: false,
-            jumpKeyDown: false
-        };
-        createMap();
+        objects = [];
+        levels = {};
+        timeSinceGameStart = 0;
+        currentLevel = "Level 1";
+        createLevel("Level 1", createLevel1);
+        createLevel("Level 2", createLevel2);
+        loadLevel("Level 1");
+    }
+
+    function createLevel(name, func) {
+        levels[name] = func;
+    }
+
+    function reloadLevel() {
+        loadLevel(currentLevel);
+    }
+
+    function loadLevel(name) {
+        if (!levels[name])
+            console.error(`Cannot find level ${name}`);
+        else {
+            platforms = [];
+            enemies = [];
+            player = null;
+            timeSinceLevelStart = 0;
+            currentLevel = name;
+            levels[name]();
+        }
     }
 
     function handleKeyDown(e) {
@@ -44,10 +218,16 @@
                 player.jumpKeyDown = true;
                 break;
             case "d":
+            case "D":
                 player.moveRightKeyDown = true;
                 break;
             case "a":
+            case "A":
                 player.moveLeftKeyDown = true;
+                break;
+            case "r":
+            case "R":
+                reloadLevel();
                 break;
         }
     }
@@ -57,17 +237,20 @@
             case " ":
                 player.jumpKeyDown = false;
                 break;
-                case "d":
+            case "d":
+            case "D":
                 player.moveRightKeyDown = false;
                 break;
             case "a":
+            case "A":
                 player.moveLeftKeyDown = false;
                 break;
         }
     }
 
-    function createMap() {
+    function createLevel1() {
         canvas.setFillColor("brown");
+        addPlayer();
         addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
         addPlatform(377, 700, 50, 20);
         addPlatform(200, 600, 20, 20);
@@ -80,35 +263,69 @@
         addPlatform(470, 200, 50, 20);
         addPlatform(750, 200, 100, 20);
         canvas.setFillColor("red");
-        addEnemy(350, 140, 20, 50);
+        addEnemy(350, 140, 20, 50, Enemy.MOVEMENT_AXES.VERTICAL, 1, 50);
         addEnemy(90, 540, 50, 20);
+        addStar(755, 155, 40);
+        addDoor(755, 155, 30, 10, "Level 2");
     }
 
-    function addEnemy(x, y, width, height){
-        enemies.push({ x: x, y: y, width: width, height: height, color: canvas.canvas.fillStyle});
+    function createLevel2() {
+        addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
+    }
+
+    function addStar(x, y, size) {
+        let star = new Star(x, y, size);
+        objects.push(star);
+        return star;
+    }
+
+    function addDoor(x, y, width = 30, height = 50, levelName) {
+        let door = new Door(x, y, width, height, levelName);
+    }
+
+    function addPlayer(x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true) {
+        player = new Player(x, y, width, height, moveSpeed, jumpHeight, gravity, xVelocity, yVelocity, canMove);
+        return player;
+    }
+
+    function addEnemy(x, y, width = 20, height = 20, movementDirection = Enemy.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
+        let enemy = new Enemy(x, y, width, height, movementDirection, movementSpeed, maxDistance);
+        objects.push(enemy);
+        return enemy;
     }
 
     function addPlatform(x, y, width, height) {
-        platforms.push({ x: x, y: y, width: width, height: height, color: canvas.canvas.fillStyle});
+        let platform = new Platform(x, y, width, height);
+        objects.push(platform);
+        console.log(platform);
+        return platform;
     }
 
     function update() {
-        handlePlayerMovement();
+        handleLogic();
         drawGUI();
     }
 
-    function handlePlayerMovement() {
-        if((player.moveLeftKeyDown && player.moveRightKeyDown) || (!player.moveLeftKeyDown && !player.moveRightKeyDown)) player.xVelocity = 0;
-        else if(player.moveLeftKeyDown) player.xVelocity = -player.moveSpeed;
-        else if(player.moveRightKeyDown) player.xVelocity = player.moveSpeed;
+    function handleLogic() {
+        handlePlayerMovement();
+        for (let obj of objects) {
+            if (obj.update) obj.update();
+        }
+    }
 
-        if(platformLeftOfPlayer() && player.xVelocity === -player.moveSpeed)
+    function handlePlayerMovement() {
+        if (!player || !player.canMove) return;
+        if ((player.moveLeftKeyDown && player.moveRightKeyDown) || (!player.moveLeftKeyDown && !player.moveRightKeyDown)) player.xVelocity = 0;
+        else if (player.moveLeftKeyDown) player.xVelocity = -player.moveSpeed;
+        else if (player.moveRightKeyDown) player.xVelocity = player.moveSpeed;
+
+        if (platformLeftOfPlayer() && player.xVelocity === -player.moveSpeed)
             player.xVelocity = 0;
-        else if(platformRightOfPlayer() && player.xVelocity === player.moveSpeed)
+        else if (platformRightOfPlayer() && player.xVelocity === player.moveSpeed)
             player.xVelocity = 0;
         player.x += player.xVelocity;
 
-        if(platformAbovePlayer()){
+        if (platformAbovePlayer() && player.yVelocity > 0) {
             player.yVelocity = -player.yVelocity * 0.5;
         }
         if (platformBelowPlayer()) {
@@ -119,7 +336,7 @@
             player.isOnGround = false;
         }
 
-        if(!player.isOnGround)
+        if (!player.isOnGround)
             player.yVelocity -= GRAVITY / canvas.fps;
 
         if (player.jumpKeyDown && player.isOnGround)
@@ -127,27 +344,35 @@
         player.y -= player.yVelocity;
     }
 
-    function platformLeftOfPlayer(){
-        for(let platform of platforms){
-            if( player.y - player.height/2 <= platform.y + platform.height/2 && player.y + player.height/2 >= platform.y - platform.height/2 &&
-                player.x - player.width/2 + EPSILON >= platform.x + platform.width/2 && player.x - player.width/2 - EPSILON < platform.x + platform.width/2)
+    function platformLeftOfPlayer() {
+        for (let platform of objects) {
+            if (inVerticalBounds(player, platform) &&
+                player.x - player.width / 2 + EPSILON >= platform.x + platform.width / 2 && player.x - player.width / 2 - EPSILON < platform.x + platform.width / 2)
                 return true;
         }
         return false;
     }
 
-    function platformRightOfPlayer(){
-        for(let platform of platforms){
-            if( player.y - player.height/2 <= platform.y + platform.height/2 && player.y + player.height/2 >= platform.y - platform.height/2 &&
-                player.x + player.width/2 + EPSILON >= platform.x - platform.width/2 && player.x + player.width/2 - EPSILON < platform.x - platform.width/2)
+    function platformRightOfPlayer() {
+        for (let platform of objects) {
+            if (inVerticalBounds(player, platform) &&
+                player.x + player.width / 2 + EPSILON >= platform.x - platform.width / 2 && player.x + player.width / 2 - EPSILON < platform.x - platform.width / 2)
                 return true;
         }
         return false;
+    }
+
+    function inHorizontalBounds(player, platform) {
+        return player.x + player.width / 2 >= platform.x - platform.width / 2 && player.x - player.width / 2 <= platform.x + platform.width / 2;
+    }
+
+    function inVerticalBounds(player, platform) {
+        return player.y + player.height / 2 >= platform.y - platform.height / 2 && player.y - player.height / 2 <= platform.y + platform.height / 2;
     }
 
     function platformBelowPlayer() {
-        for (let platform of platforms) {
-            if (player.x + player.width/2 > platform.x - platform.width/2 && player.x - player.width/2 < platform.x + platform.width/2 &&  
+        for (let platform of objects) {
+            if (inHorizontalBounds(player, platform) &&
                 player.y + player.height / 2 >= platform.y - platform.height / 2 - EPSILON && player.y + player.height / 2 <= platform.y - platform.height / 2 + EPSILON)
                 return true;
         }
@@ -155,8 +380,8 @@
     }
 
     function platformAbovePlayer() {
-        for (let platform of platforms) {
-            if (player.x + player.width/2 > platform.x - platform.width/2 && player.x - player.width/2 < platform.x + platform.width/2 &&  
+        for (let platform of objects) {
+            if (inHorizontalBounds(player, platform) &&
                 player.y - player.height / 2 >= platform.y + platform.height / 2 - EPSILON && player.y - player.height / 2 <= platform.y + platform.height / 2 + EPSILON)
                 return true;
         }
@@ -165,33 +390,23 @@
 
     function drawGUI() {
         drawBackground();
-        drawPlatforms();
-        drawEnemies();
+        drawObjects();
         drawPlayer();
     }
 
     function drawBackground() {
         canvas.setFillColor("lightblue");
         canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
-        canvas.setFillColor("yellow");
-        canvas.drawStar(755, 155, 20);
     }
 
-    function drawPlatforms() {
-        for (let platform of platforms){
-            canvas.setFillColor(platform.color);
-            canvas.drawRectangle(platform.x, platform.y, platform.width, platform.height);
-        }
-    }
-
-    function drawEnemies(){
-        for (let enemy of enemies){
-            canvas.setFillColor(enemy.color);
-            canvas.drawRectangle(enemy.x, enemy.y, enemy.width, enemy.height);
+    function drawObjects() {
+        for (let obj of objects) {
+            obj.render(canvas);
         }
     }
 
     function drawPlayer() {
+        if (!player) return;
         canvas.setFillColor("green");
         canvas.drawRectangle(player.x, player.y, player.width, player.height);
     }
