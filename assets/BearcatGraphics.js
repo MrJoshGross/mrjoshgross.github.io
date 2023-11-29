@@ -839,6 +839,13 @@ class Star extends GameObject {
         super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
     }
 
+    onTrigger(other){
+        if(other.constructor.name === "Player"){
+            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+            other.game.scoreEarnedThisLevel += 100;
+        }
+    }
+
     render(canvas) {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
             if (this.renderString)
@@ -878,6 +885,11 @@ class Enemy extends GameObject {
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
+    }
+
+    onCollision(other){
+        if(other.constructor.name === "Player")
+            other.game.reloadLevel();
     }
 
     update() {
