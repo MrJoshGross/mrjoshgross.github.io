@@ -6,472 +6,59 @@
 
 <script>
 
-    let canvas, objects, player, levels, currentLevel, score, timeSinceGameStart, timeSinceLevelStart;
-
-    let GRAVITY = 9.81;
-
-    let EPSILON = 5;
-
-    class GameObject {
-
-        static COLLIDE_STATES = {
-            COLLIDABLE: 1,
-            TRIGGER: 0,
-            NOCOLLIDE: -1
-        };
-
-        static RENDER_TYPES = {
-            COLOR: -123,
-            IMAGE: 123
-        }
-
-        constructor(x, y, width, height, collisionType = GameObject.COLLIDE_STATES.COLLIDABLE, renderType = GameObject.RENDER_TYPES.COLOR, renderString) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-            this.collisionType = collisionType;
-            this.renderType = renderType;
-            this.renderString = renderString;
-        }
-
-        handleCollision(other){
-            switch(this.collisionType){
-                case GameObject.COLLIDE_STATES.NOCOLLIDE: return;
-                case GameObject.COLLIDE_STATES.TRIGGER: this.onTrigger(other); break;
-                case GameObject.COLLIDE_STATES.COLLIDABLE: this.onCollision(other); break;
-            }
-        }
-
-        render() {
-            throw new Error("Must implement 'render' in subclasses!");
-        }
-
-        onTrigger(){
-
-        }
-
-        onCollision(){
-            
-        }
-    }
-
-    class Platform extends GameObject {
-        constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "BROWN") {
-            super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
-        }
-
-        render(canvas) {
-            if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-                if (this.renderString)
-                    canvas.setFillColor(this.renderString);
-                else
-                    console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                canvas.drawRectangle(this.x, this.y, this.width, this.height);
-            }
-            else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-                // TODO draw image representing this platform
-            }
-            else
-                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-        }
-    }
-
-    class Star extends GameObject {
-        constructor(x, y, size = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
-            super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
-        }
-
-        render(canvas) {
-            if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-                if (this.renderString)
-                    canvas.setFillColor(this.renderString);
-                else
-                    console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                canvas.drawStar(this.x, this.y, this.width / 2);
-            }
-            else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-                // TODO draw image representing this platform
-            }
-            else
-                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-        }
-    }
-
-    class Enemy extends GameObject {
-        static MOVEMENT_TYPES = {
-            FORWARD: 1,
-            BACKWARD: -1
-        };
-
-        static MOVEMENT_AXES = {
-            VERTICAL: 1,
-            HORIZONTAL: 2,
-            INCREASING_DIAGONAL: 3,
-            DECREASING_DIAGONAL: 4,
-            CIRCLE: 5
-        };
-
-        constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "RED") {
-            super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
-            this.movementAxis = movementAxis;
-            this.anchorX = x;
-            this.anchorY = y;
-            this.movementDirection = Enemy.MOVEMENT_TYPES.FORWARD;
-            this.movementSpeed = movementSpeed;
-            this.maxDistance = maxDistance;
-        }
-
-        update() {
-            switch (this.movementAxis) {
-                case Enemy.MOVEMENT_AXES.VERTICAL:
-                    this.y += this.movementSpeed * this.movementDirection;
-                    if (Math.abs(this.anchorY - this.y) >= this.maxDistance)
-                        this.movementDirection *= -1;
-                    break;
-                case Enemy.MOVEMENT_AXES.HORIZONTAL:
-                    this.x += this.movementSpeed * this.movementDirection;
-                    if (Math.abs(this.anchorX - this.x) >= this.maxDistance)
-                        this.movementDirection *= -1;
-                    break;
-                default:
-                    console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
-                    break;
-            }
-        }
-
-        render() {
-            if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-                if (this.renderString)
-                    canvas.setFillColor(this.renderString);
-                else
-                    console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                canvas.drawRectangle(this.x, this.y, this.width, this.height);
-            }
-            else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-                // TODO draw image representing this platform
-            }
-            else
-                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-        }
-    }
-
-    class Door extends GameObject {
-        constructor(x, y, width, height, levelName, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { doorColor: "BROWN", knobColor: "YELLOW" }) {
-            super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
-            this.levelName = levelName;
-        }
-
-        render() {
-            if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-                if (this.renderString) {
-                    canvas.setFillColor(this.renderString.doorColor ? this.renderString.doorColor : "BROWN");
-                    canvas.drawRectangle(this.x, this.y, this.width, this.height);
-                    canvas.setFillColor(this.renderString.knobColor ? this.renderString.knobColor : "YELLOW");
-                    canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
-                }
-                else
-                    console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            }
-            else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-                // TODO draw image representing this platform
-            }
-            else
-                console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-        }
-    }
-
-    class Player extends GameObject {
-        constructor(
-            x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true
-        ) {
-            super(x, y, width, height)
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-            this.moveSpeed = moveSpeed;
-            this.jumpHeight = jumpHeight;
-            this.gravity = gravity;
-            this.xVelocity = xVelocity;
-            this.yVelocity = yVelocity;
-            this.canMove = canMove;
-            this.isOnGround = false;
-            this.moveLeftKeyDown = false;
-            this.moveRightKeyDown = false;
-            this.jumpKeyDown = false;
-            canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, handleKeyDown);
-            canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, handleKeyUp);
-
-        }
-        update() {
-            this.#handleMovement();
-        }
-
-        #handleMovement() {
-            if (!this.canMove) return;
-            if ((this.moveLeftKeyDown && this.moveRightKeyDown) || (!this.moveLeftKeyDown && !this.moveRightKeyDown)) this.xVelocity = 0;
-            else if (this.moveLeftKeyDown) this.xVelocity = -this.moveSpeed;
-            else if (this.moveRightKeyDown) this.xVelocity = this.moveSpeed;
-
-            if (this.collidingLeft && this.xVelocity === -this.moveSpeed)
-                this.xVelocity = 0;
-            else if (platformRightOfPlayer() && this.xVelocity === this.moveSpeed)
-                this.xVelocity = 0;
-            this.x += this.xVelocity;
-
-            if (platformAbovePlayer() && this.yVelocity > 0) {
-                this.yVelocity = -this.yVelocity * 0.5;
-            }
-            if (platformBelowPlayer()) {
-                this.yVelocity = 0;
-                this.isOnGround = true;
-            }
-            else {
-                this.isOnGround = false;
-            }
-
-            if (!this.isOnGround)
-                this.yVelocity -= GRAVITY / canvas.fps;
-
-            if (this.jumpKeyDown && this.isOnGround)
-                this.yVelocity += this.jumpHeight;
-            this.y -= this.yVelocity;
-        }
-
-        render() {
-            canvas.setFillColor("green");
-            canvas.drawRectangle(player.x, player.y, player.width, player.height);
-        }
-
-        onCollision(other){
-            if(other instanceof Platform){
-                
-            }
-        }
-    }
+    let game, canvas;
 
     init();
 
     function init() {
-        canvas = new BearcatGraphics(update, 800, 800);
-        // canvas.initializePlatformer();
-
-        objects = [];
-        levels = {};
-        timeSinceGameStart = 0;
-        currentLevel = "Level 1";
-        createLevel("Level 1", createLevel1);
-        createLevel("Level 2", createLevel2);
-        loadLevel("Level 1");
-    }
-
-    function createLevel(name, func) {
-        levels[name] = func;
-    }
-
-    function reloadLevel() {
-        loadLevel(currentLevel);
-    }
-
-    function loadLevel(name) {
-        if (!levels[name])
-            console.error(`Cannot find level ${name}`);
-        else {
-            objects = [];
-            player = null;
-            timeSinceLevelStart = 0;
-            currentLevel = name;
-            levels[name]();
-        }
-    }
-
-    function handleKeyDown(e) {
-        switch (e.key) {
-            case " ":
-                player.jumpKeyDown = true;
-                break;
-            case "d":
-            case "D":
-                player.moveRightKeyDown = true;
-                break;
-            case "a":
-            case "A":
-                player.moveLeftKeyDown = true;
-                break;
-            case "r":
-            case "R":
-                reloadLevel();
-                break;
-        }
-    }
-
-    function handleKeyUp(e) {
-        switch (e.key) {
-            case " ":
-                player.jumpKeyDown = false;
-                break;
-            case "d":
-            case "D":
-                player.moveRightKeyDown = false;
-                break;
-            case "a":
-            case "A":
-                player.moveLeftKeyDown = false;
-                break;
-        }
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level 2", createLevel2);
+        game.loadLevel("Level 1");
     }
 
     function createLevel1() {
-        canvas.setFillColor("brown");
-        addPlayer();
-        addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
-        addPlatform(377, 700, 50, 20);
-        addPlatform(200, 600, 20, 20);
-        addPlatform(470, 570, 20, 50);
-        addPlatform(600, 450, 50, 20);
-        addPlatform(470, 350, 50, 20);
-        addPlatform(200, 350, 50, 20);
-        addPlatform(50, 275, 50, 20);
-        addPlatform(150, 175, 50, 20);
-        addPlatform(470, 200, 50, 20);
-        addPlatform(750, 200, 100, 20);
-        addEnemy(350, 140, 20, 50, Enemy.MOVEMENT_AXES.VERTICAL, 1, 50);
-        addEnemy(90, 540, 50, 20);
-        addStar(670, 370);
-        addDoor(755, 155, 30, 50, "Level 2");
+        game.addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
+        game.addPlatform(377, 700, 50, 20);
+        game.addPlatform(200, 600, 20, 20);
+        game.addPlatform(470, 570, 20, 50);
+        game.addPlatform(600, 450, 50, 20);
+        game.addPlatform(470, 350, 50, 20);
+        game.addPlatform(200, 350, 50, 20);
+        game.addPlatform(50, 275, 50, 20);
+        game.addPlatform(150, 175, 50, 20);
+        game.addPlatform(470, 200, 50, 20);
+        game.addPlatform(750, 200, 100, 20);
+        game.addEnemy(350, 140, 20, 50, Enemy.MOVEMENT_AXES.CIRCLE, 5, 50);
+        game.addEnemy(90, 540, 50, 20);
+        game.addStar(670, 370);
+        game.addDoor(755, 162, "Level 2");
+        game.addPlayer();        
     }
 
     function createLevel2() {
-        addPlatform(canvas.width / 2, canvas.height, canvas.width, 20);
-    }
-
-    function addStar(x, y, size) {
-        let star = new Star(x, y, size);
-        objects.push(star);
-        return star;
-    }
-
-    function addDoor(x, y, width = 30, height = 50, levelName) {
-        let door = new Door(x, y, width, height, levelName);
-        objects.push(door);
-        return door;
-    }
-
-    function addPlayer(x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true) {
-        player = new Player(x, y, width, height, moveSpeed, jumpHeight, gravity, xVelocity, yVelocity, canMove);
-        objects.push(player);
-        return player;
-    }
-
-    function addEnemy(x, y, width = 20, height = 20, movementDirection = Enemy.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
-        let enemy = new Enemy(x, y, width, height, movementDirection, movementSpeed, maxDistance);
-        objects.push(enemy);
-        return enemy;
-    }
-
-    function addPlatform(x, y, width, height) {
-        let platform = new Platform(x, y, width, height);
-        objects.push(platform);
-        return platform;
-    }
-
-    function update() {
-        handleLogic();
-        drawGUI();
-    }
-
-    function handleLogic() {
-        for (let obj of objects) {
-            if (obj.update) obj.update();
-            if(obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
-                checkForCollisions(obj);
-        }
-    }
-
-    function checkForCollisions(obj){
-        let objsAlreadyCollided = [];
-        for(let o of objects)
-            if(o === obj) continue;
-            else if((!objsAlreadyCollided[o] || !objsAlreadyCollided[o][obj]) && inVerticalBounds(obj, o) && inHorizontalBounds(obj, o)){
-                obj.handleCollision(o);
-                o.handleCollision(obj);
-                if(!objsAlreadyCollided[o])
-                    objsAlreadyCollided[o] = [];
-                if(!objsAlreadyCollided[obj])
-                    objsAlreadyCollided[obj] = [];
-                objsAlreadyCollided[o][obj] = 1;
-                objsAlreadyCollided[obj][o] = 1;
-            }
-    }
-
-    
-    function isToLeftOf(self, other){
-        return self.x - self.width / 2 + EPSILON >= other.x + other.width / 2 && self.x - self.width / 2 - EPSILON < other.x + other.width / 2;
-    }
-
-    function isToLeftOf(self, other){
-        return self.x - self.width / 2 + EPSILON >= other.x + other.width / 2 && self.x - self.width / 2 - EPSILON < other.x + other.width / 2;
-    }
-
-    function platformLeftOfPlayer() {
-        for (let platform of objects) {
-            if (inVerticalBounds(player, platform) &&
-                player.x - player.width / 2 + EPSILON >= platform.x + platform.width / 2 && player.x - player.width / 2 - EPSILON < platform.x + platform.width / 2)
-                return true;
-        }
-        return false;
-    }
-
-    function platformRightOfPlayer() {
-        for (let platform of objects) {
-            if (inVerticalBounds(player, platform) &&
-                player.x + player.width / 2 + EPSILON >= platform.x - platform.width / 2 && player.x + player.width / 2 - EPSILON < platform.x - platform.width / 2)
-                return true;
-        }
-        return false;
-    }
-
-    function inHorizontalBounds(player, platform) {
-        return player.x + player.width / 2 >= platform.x - platform.width / 2 && player.x - player.width / 2 <= platform.x + platform.width / 2;
-    }
-
-    function inVerticalBounds(player, platform) {
-        return player.y + player.height / 2 >= platform.y - platform.height / 2 && player.y - player.height / 2 <= platform.y + platform.height / 2;
-    }
-
-    function platformBelowPlayer() {
-        for (let platform of objects) {
-            if (inHorizontalBounds(player, platform) &&
-                player.y + player.height / 2 >= platform.y - platform.height / 2 - EPSILON && player.y + player.height / 2 <= platform.y - platform.height / 2 + EPSILON)
-                return true;
-        }
-        return false;
-    }
-
-    function platformAbovePlayer() {
-        for (let platform of objects) {
-            if (inHorizontalBounds(player, platform) &&
-                player.y - player.height / 2 >= platform.y + platform.height / 2 - EPSILON && player.y - player.height / 2 <= platform.y + platform.height / 2 + EPSILON)
-                return true;
-        }
-        return false;
-    }
-
-    function drawGUI() {
-        drawBackground();
-        drawObjects();
+        game.addPlatform(755, 180);
+        game.addPlatform(400, 180);
+        game.addPlatform(440, 180, 20, 50);
+        game.addPlatform(55, 380);
+        game.addPlatform(55, 180);
+        game.addPlatform(55, 580);
+        game.addPlatform(255, 480);
+        game.addPlatform(255, 280);
+        game.addPlatform(255, 680);
+        game.addPlatform(455, 680);
+        game.addPlatform(530, 530, 200, 20);
+        game.addPlatform(440, 465, 20, 150);
+        game.addPlatform(600, 680);
+        game.addDoor(600, 490, "Level 1");
+        game.addPlayer(755, 150);
     }
 
     function drawBackground() {
         canvas.setFillColor("lightblue");
         canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
-    }
-
-    function drawObjects() {
-        for (let obj of objects) {
-            obj.render(canvas);
-        }
     }
 
 </script>
