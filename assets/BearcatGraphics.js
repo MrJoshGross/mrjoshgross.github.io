@@ -579,11 +579,12 @@ class BearcatPlatformer {
     }
 
     handleKeyDown(e, game) {
-        console.log();
         if (e.key === "r" || e.key === "R") game.reloadLevel();
         if (game.player)
             switch (e.key) {
                 case " ":
+                case "w":
+                case "W":
                     game.player.jumpKeyDown = true;
                     break;
                 case "d":
@@ -600,6 +601,8 @@ class BearcatPlatformer {
     handleKeyUp(e, game) {
         switch (e.key) {
             case " ":
+            case "w":
+            case "W":
                 game.player.jumpKeyDown = false;
                 break;
             case "d":
@@ -639,15 +642,16 @@ class BearcatPlatformer {
         this.#drawDisplay();
     }
 
-    #drawDisplay(){
-        if(this.showScore === true){
+    #drawDisplay() {
+        if (this.showScore === true) {
             this.canvas.setFillColor("white");
             this.canvas.setFontSize(20);
             let scoreText = this.scoreEarnedThisLevel !== 0 ? `Score: ${this.score} (+${this.scoreEarnedThisLevel})` : `Score: ${this.score}`;
             this.canvas.drawText(scoreText, 100, 25);
         }
-        if(this.showTime === true){
-            // TODO
+        if (this.showTime === true) {
+            let timeText = `Time: ${this.timeSinceLevelStart.toFixed(2)}`;
+            this.canvas.drawText(timeText, 400, 25);
         }
     }
 
@@ -664,6 +668,7 @@ class BearcatPlatformer {
                 this.#checkForCollisions(obj, objsAlreadyCollided);
             if (obj.update) obj.update();
         }
+        this.timeSinceLevelStart += 1 / this.canvas.fps;
     }
 
     #checkForCollisions(obj, objsAlreadyCollided) {
@@ -697,7 +702,7 @@ class BearcatPlatformer {
         else {
             this.objects = [];
             this.player = null;
-            if(this.scoreEarnedThisLevel !== 0){
+            if (this.scoreEarnedThisLevel !== 0) {
                 this.score += this.scoreEarnedThisLevel;
                 this.scoreEarnedThisLevel = 0;
             }
@@ -908,7 +913,7 @@ class Enemy extends GameObject {
                 console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
                 break;
         }
-        this.theta += (this.movementSpeed/60)%360;
+        this.theta += (this.movementSpeed / 60) % 360;
     }
 
     render() {
@@ -937,7 +942,7 @@ class Door extends GameObject {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
             if (this.renderString) {
                 canvas.setFillColor(this.renderString.doorColor ? this.renderString.doorColor : "BROWN");
-                canvas.drawRectangle(this.x, this.y, this.width*1.2, this.height*1.2);
+                canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
                 canvas.setFillColor(this.renderString.knobColor ? this.renderString.knobColor : "YELLOW");
                 canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
             }
@@ -951,8 +956,8 @@ class Door extends GameObject {
             console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
-    onTrigger(other){
-        if(other.constructor.name === "Player"){
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
             other.game.loadLevel(this.levelName);
         }
     }
@@ -960,9 +965,9 @@ class Door extends GameObject {
 
 class Player extends GameObject {
     constructor(
-        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true
+        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "green"
     ) {
-        super(x, y, width, height);
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.game = game;
         this.moveSpeed = moveSpeed;
         this.jumpHeight = jumpHeight;
@@ -979,21 +984,7 @@ class Player extends GameObject {
         this.collidingRight = false;
     }
 
-    handleKeyUp(e) {
-        switch (e.key) {
-            case " ":
-                this.jumpKeyDown = false;
-                break;
-            case "d":
-            case "D":
-                this.moveRightKeyDown = false;
-                break;
-            case "a":
-            case "A":
-                this.moveLeftKeyDown = false;
-                break;
-        }
-    }
+ 
 
     update() {
         this.#handleMovement();
@@ -1002,13 +993,13 @@ class Player extends GameObject {
     #handleMovement() {
 
         // check for collisions
-        for(let obj of this.game.objects){
-            if(obj.constructor.name === "Platform"){
-                if(this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)){
-                    if(this.isRightOf(obj)) this.collidingLeft = true;
-                    else if(this.isLeftOf(obj)) this.collidingRight = true;
-                    else if(this.isAbove(obj)) this.collidingAbove = true;
-                    else if(this.isBelow(obj)) this.collidingBelow = true;
+        for (let obj of this.game.objects) {
+            if (obj.constructor.name === "Platform") {
+                if (this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)) {
+                    if (this.isRightOf(obj)) this.collidingLeft = true;
+                    else if (this.isLeftOf(obj)) this.collidingRight = true;
+                    else if (this.isAbove(obj)) this.collidingAbove = true;
+                    else if (this.isBelow(obj)) this.collidingBelow = true;
                 }
             }
         }
@@ -1037,7 +1028,7 @@ class Player extends GameObject {
     }
 
     render() {
-        canvas.setFillColor("green");
+        canvas.setFillColor(this.renderString);
         canvas.drawRectangle(this.x, this.y, this.width, this.height);
     }
 
