@@ -585,14 +585,17 @@ class BearcatPlatformer {
                 case " ":
                 case "w":
                 case "W":
+                case "ArrowUp":
                     game.player.jumpKeyDown = true;
                     break;
                 case "d":
                 case "D":
+                case "ArrowRight":
                     game.player.moveRightKeyDown = true;
                     break;
                 case "a":
                 case "A":
+                case "ArrowLeft":
                     game.player.moveLeftKeyDown = true;
                     break;
             }
@@ -603,14 +606,17 @@ class BearcatPlatformer {
             case " ":
             case "w":
             case "W":
+            case "ArrowUp":
                 game.player.jumpKeyDown = false;
                 break;
             case "d":
             case "D":
+            case "ArrowRight":
                 game.player.moveRightKeyDown = false;
                 break;
             case "a":
             case "A":
+            case "ArrowLeft":
                 game.player.moveLeftKeyDown = false;
                 break;
         }
