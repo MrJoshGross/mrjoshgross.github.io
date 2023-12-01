@@ -727,8 +727,8 @@ class BearcatPlatformer {
         }
     }
 
-    addStar(x, y, size) {
-        let star = new Star(x, y, size);
+    addStar(x, y, worth, size) {
+        let star = new Star(x, y, size, worth);
         this.objects.push(star);
         return star;
     }
@@ -854,14 +854,15 @@ class Platform extends GameObject {
 }
 
 class Star extends GameObject {
-    constructor(x, y, size = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
+    constructor(x, y, size = 30, worth = 100, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
         super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+        this.worth = worth;
     }
 
     onTrigger(other){
         if(other.constructor.name === "Player"){
             other.game.objects.splice(other.game.objects.indexOf(this), 1);
-            other.game.scoreEarnedThisLevel += 100;
+            other.game.scoreEarnedThisLevel += this.worth;
         }
     }
 
