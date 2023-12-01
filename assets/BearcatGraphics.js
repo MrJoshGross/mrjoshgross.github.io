@@ -135,6 +135,12 @@ class BearcatGraphics {
     setFillColor = (color) => this.canvas.fillStyle = color;
 
     /**
+     * @param {Array} arr   an array containing two numbers to indicate line width and spacing,
+     *                      or an empty array to indicate a solid line
+     */
+    setLineDash = (arr) => this.canvas.setLineDash(arr);
+
+    /**
      * @param {string} color either a supported color name or rgb hex
      */
     setBorderColor = (color) => this.canvas.strokeStyle = color;
@@ -727,8 +733,8 @@ class BearcatPlatformer {
         return star;
     }
 
-    addDoor(x, y, levelName, width = 30, height = 50,) {
-        let door = new Door(x, y, width, height, levelName);
+    addDoor(x, y, levelName, width = 30, height = 50, enabled = true) {
+        let door = new Door(x, y, width, height, levelName, enabled);
         this.objects.push(door);
         return door;
     }
@@ -784,7 +790,7 @@ class GameObject {
         }
     }
 
-    render() {
+    render(canvas) {
         throw new Error("Must implement 'render' in subclasses!");
     }
 
@@ -937,7 +943,7 @@ class Enemy extends GameObject {
         this.theta += (this.movementSpeed / 60) % 360;
     }
 
-    render() {
+    render(canvas) {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
             if (this.renderString)
                 canvas.setFillColor(this.renderString);
@@ -954,13 +960,21 @@ class Enemy extends GameObject {
 }
 
 class Door extends GameObject {
-    constructor(x, y, width = 30, height = 50, levelName, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { doorColor: "BROWN", knobColor: "YELLOW" }) {
+    constructor(x, y, width = 30, height = 50, levelName, enabled = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { doorColor: "BROWN", knobColor: "YELLOW" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.levelName = levelName;
+        this.enabled = enabled;
     }
 
-    render() {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+    render(canvas) {
+        if(this.enabled === false){
+            canvas.setFillColor("#00000000");
+            canvas.setLineDash([5, 5])
+            canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
+            canvas.setLineDash([])
+            canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
             if (this.renderString) {
                 canvas.setFillColor(this.renderString.doorColor ? this.renderString.doorColor : "BROWN");
                 canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
@@ -978,6 +992,7 @@ class Door extends GameObject {
     }
 
     onTrigger(other) {
+        if(this.enabled === false) return;
         if (other.constructor.name === "Player") {
             other.game.loadLevel(this.levelName);
         }
@@ -1052,7 +1067,7 @@ class Player extends GameObject {
         this.collidingBelow = false;
     }
 
-    render() {
+    render(canvas) {
         canvas.setFillColor(this.renderString);
         canvas.drawRectangle(this.x, this.y, this.width, this.height);
     }
