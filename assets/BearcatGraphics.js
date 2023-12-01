@@ -733,7 +733,7 @@ class BearcatPlatformer {
         return star;
     }
 
-    addDoor(x, y, levelName, width = 30, height = 50, enabled = true) {
+    addDoor(x, y, levelName, enabled = true, width = 30, height = 50) {
         let door = new Door(x, y, width, height, levelName, enabled);
         this.objects.push(door);
         return door;
