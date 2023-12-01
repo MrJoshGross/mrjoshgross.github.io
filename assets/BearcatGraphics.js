@@ -631,6 +631,7 @@ class BearcatPlatformer {
         this.scoreEarnedThisLevel = 0;
         this.showScore = true;
         this.showTime = true;
+        this.showLevel = true; 
     }
 
     #update() {
@@ -659,6 +660,8 @@ class BearcatPlatformer {
             let timeText = `Time: ${this.timeSinceLevelStart.toFixed(2)}`;
             this.canvas.drawText(timeText, 400, 25);
         }
+        if (this.showLevel === true)
+            this.canvas.drawText(this.currentLevel, 600, 25);
     }
 
     #drawObjects() {
