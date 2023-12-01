@@ -681,7 +681,7 @@ class BearcatPlatformer {
         for (let obj of this.objects) {
             if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
                 this.#checkForCollisions(obj, objsAlreadyCollided);
-            if (obj.update) obj.update();
+            if (obj.update) obj.update(this);
         }
         this.timeSinceLevelStart += 1 / this.canvas.fps;
     }
@@ -826,6 +826,10 @@ class GameObject {
     isAbove(other) {
         return this.y - this.height / 2 >= other.y + other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
     }
+
+    distanceTo(other){
+        return Math.sqrt((this.x - other.x)*(this.x - other.x)+(this.y - other.y)*(this.y - other.y));
+    }
 }
 
 class Platform extends GameObject {
@@ -888,7 +892,8 @@ class Enemy extends GameObject {
         HORIZONTAL: 2,
         INCREASING_DIAGONAL: 3,
         DECREASING_DIAGONAL: 4,
-        CIRCLE: 5
+        CIRCLE: 5,
+        FOLLOW: 6
     };
 
     constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "RED") {
@@ -907,7 +912,7 @@ class Enemy extends GameObject {
             other.game.reloadLevel();
     }
 
-    update() {
+    update(game) {
         switch (this.movementAxis) {
             case Enemy.MOVEMENT_AXES.VERTICAL:
                 this.y += this.movementSpeed * this.movementDirection;
@@ -935,6 +940,15 @@ class Enemy extends GameObject {
             case Enemy.MOVEMENT_AXES.CIRCLE:
                 this.x = this.anchorX + this.maxDistance * Math.sin(this.theta);
                 this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
+                break;
+            case Enemy.MOVEMENT_AXES.FOLLOW:
+                if(!game.player) return;
+                else if(this.distanceTo(game.player) <= this.maxDistance){
+                    let xDir = this.x > game.player.x ? -1 : 1;
+                    let yDir = this.y > game.player.y ? -1 : 1;
+                    this.x += this.movementSpeed * xDir;
+                    this.y += this.movementSpeed * yDir;
+                }
                 break;
             default:
                 console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
