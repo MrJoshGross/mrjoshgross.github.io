@@ -1042,6 +1042,10 @@ class Player extends GameObject {
             this.yVelocity += this.jumpHeight;
         this.y -= this.yVelocity;
 
+        if(this.y >= this.game.canvas.height + this.game.canvas.height/10){
+            this.game.reloadLevel();
+        }
+
         this.collidingLeft = false;
         this.collidingRight = false;
         this.collidingAbove = false;
