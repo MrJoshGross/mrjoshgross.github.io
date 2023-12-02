@@ -348,6 +348,7 @@ class BearcatGraphics {
     drawFoodTruck(x, y, direction, rotation) {
         if (rotation) rotation = { x: x, y: y, amount: rotation };
         if (!direction) direction = RIGHT;
+        canvas.setBorderColor("black");
         canvas.setFillColor("white");
         canvas.drawRectangle(x, y, 150, 75, FILLFRAME, rotation);
         canvas.setFillColor("black");
@@ -524,6 +525,7 @@ class BearcatGraphics {
 }
 
 let COLORS = {
+    clear: "#00000000",
     darkred: "#7D0000",
     red: "#FF0000",
     pink: "#FF9696",
@@ -757,9 +759,23 @@ class BearcatPlatformer {
         this.objects.push(platform);
         return platform;
     }
+
+    addFoodTruck(x, y, direction = LEFT){
+        let truckBody = new Platform(x, y+10, 150, 80);
+        let truckHead = new Platform(x + (110 * direction), y + 17, 50, 75);
+        truckBody.render = (canvas) => {
+            canvas.drawFoodTruck(x, y, direction);
+        }
+        truckHead.render = GameObject.dontRender;
+        this.objects.push(truckBody);
+        this.objects.push(truckHead);
+        return {truckBody: truckBody, truckHead: truckHead};
+    }
 }
 
 class GameObject {
+
+    static dontRender(canvas){};
 
     static COLLIDE_STATES = {
         COLLIDABLE: 1,
@@ -833,14 +849,16 @@ class GameObject {
 }
 
 class Platform extends GameObject {
-    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "BROWN") {
+    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = {fillColor: "brown", borderColor: "black"}) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
     }
 
     render(canvas) {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
+            if (this.renderString){
+                if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
+                if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
+            }
             else
                 console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
