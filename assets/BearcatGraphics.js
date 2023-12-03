@@ -1165,7 +1165,8 @@ class Player extends GameObject {
                         this.collidingLeft = true;
                     else if (this.isRightOf(obj))
                         this.collidingRight = true;
-            }
+            } else if(this.inHorizontalBounds(obj) && this.inVerticalBounds(obj))
+                obj.handleCollision(this);
         }
 
         this.xVelocity = 0;
