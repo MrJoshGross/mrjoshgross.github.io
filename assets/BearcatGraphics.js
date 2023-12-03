@@ -654,6 +654,7 @@ class BearcatPlatformer {
                 case "W":
                 case "ArrowUp":
                     game.player.jumpKeyDown = true;
+                    game.player.jumpKeyCount++;
                     break;
                 case "d":
                 case "D":
@@ -1115,6 +1116,9 @@ class Player extends GameObject {
         this.collidingRight = false;
         this.wallJumpEnabled = false;
         this.wallJumped = false;
+        this.doubleJumpEnabled = false;
+        this.jumpKeyCount = 0;
+        this.doubleJumped = false;
     }
 
 
@@ -1162,19 +1166,26 @@ class Player extends GameObject {
             this.yVelocity = -this.yVelocity * 0.5;
         if (this.collidingBelow && this.yVelocity <= 0){
             this.yVelocity = 0;
+            this.jumpKeyCount = 0;
             if(this.wallJumpEnabled)
                 this.wallJumped = false;
+            if(this.doubleJumpEnabled)
+                this.doubleJumped = false;
         }
         else
             this.yVelocity -= BearcatPlatformer.GRAVITY / canvas.fps;
 
-        if(this.jumpKeyDown){
-            if((this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft))){
+        if(this.jumpKeyDown && !this.collidingAbove){
+            if (this.collidingBelow)
                 this.yVelocity = this.jumpHeight;
-                this.wallJumped = true; 
+            else if(this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft)){
+                this.yVelocity = this.jumpHeight;
+                this.wallJumped = true;
             }
-            if (this.jumpKeyDown && ((this.collidingBelow && !this.collidingAbove)))
+            else if(this.doubleJumpEnabled && !this.doubleJumped && this.jumpKeyCount >= 1){
                 this.yVelocity = this.jumpHeight;
+                this.doubleJumped = true;
+            }
         }
         this.y -= this.yVelocity;
 
