@@ -1121,7 +1121,13 @@ class Player extends GameObject {
         this.doubleJumped = false;
     }
 
+    enableWallJump(){
+        this.wallJumpEnabled = true;
+    }
 
+    enableDoubleJump(){
+        this.doubleJumpEnabled = true;
+    }
 
     update() {
         this.#handleMovement();
