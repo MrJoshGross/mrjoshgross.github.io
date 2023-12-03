@@ -1113,6 +1113,8 @@ class Player extends GameObject {
         this.collidingBelow = false;
         this.collidingLeft = false;
         this.collidingRight = false;
+        this.wallJumpEnabled = false;
+        this.wallJumped = false;
     }
 
 
@@ -1158,13 +1160,22 @@ class Player extends GameObject {
 
         if (this.collidingAbove && this.yVelocity > 0)
             this.yVelocity = -this.yVelocity * 0.5;
-        if (this.collidingBelow && this.yVelocity <= 0)
+        if (this.collidingBelow && this.yVelocity <= 0){
             this.yVelocity = 0;
+            if(this.wallJumpEnabled)
+                this.wallJumped = false;
+        }
         else
             this.yVelocity -= BearcatPlatformer.GRAVITY / canvas.fps;
 
-        if (this.jumpKeyDown && this.collidingBelow && !this.collidingAbove)
-            this.yVelocity = this.jumpHeight;
+        if(this.jumpKeyDown){
+            if((this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft))){
+                this.yVelocity = this.jumpHeight;
+                this.wallJumped = true; 
+            }
+            if (this.jumpKeyDown && ((this.collidingBelow && !this.collidingAbove)))
+                this.yVelocity = this.jumpHeight;
+        }
         this.y -= this.yVelocity;
 
         if (this.y >= this.game.canvas.height + this.game.canvas.height / 10)
