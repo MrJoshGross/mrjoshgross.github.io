@@ -632,6 +632,17 @@ class BearcatPlatformer {
         this.#init();
         this.timeSlice = 1 / this.canvas.fps;
         this.currentLevel = "Level 1";
+        this.livesEnabled = false;
+        this.countDownEnabled = false;
+        this.lives = 5;
+    }
+
+    enableLivesSystem(){
+        this.livesEnabled = true;
+    }
+
+    enableCountDownSystem(){
+        this.countDownEnabled = true;
     }
 
     setFPS(fps) {
@@ -722,14 +733,16 @@ class BearcatPlatformer {
             this.canvas.setFillColor("white");
             this.canvas.setFontSize(20);
             let scoreText = this.scoreEarnedThisLevel !== 0 ? `Score: ${this.score} (+${this.scoreEarnedThisLevel})` : `Score: ${this.score}`;
-            this.canvas.drawText(scoreText, 100, 25);
+            this.canvas.drawText(scoreText, 75, 25);
         }
         if (this.showTime === true) {
             let timeText = `Time: ${this.timeSinceLevelStart.toFixed(2)}`;
-            this.canvas.drawText(timeText, 400, 25);
+            this.canvas.drawText(timeText, 250, 25);
         }
         if (this.showLevel === true)
             this.canvas.drawText(this.currentLevel, 600, 25);
+        if (this.livesEnabled === true)
+            this.canvas.drawText(`Lives: ${this.lives}`, 425, 25);
     }
 
     #drawObjects() {
@@ -739,6 +752,8 @@ class BearcatPlatformer {
     }
 
     #handleLogic() {
+        if(this.livesEnabled && this.lives <= 0)
+            this.loadLevel("Game Over");
         let objsAlreadyCollided = [];
         for (let obj of this.objects) {
             if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
