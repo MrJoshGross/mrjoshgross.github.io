@@ -344,50 +344,86 @@ class BearcatGraphics {
         canvas.drawRectangle(x + width / 8, y + 7 * height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
     }
 
+    // adapted from code written by Santiago L, Fall 2023
+    drawMrGross(x = 200, y = 580, widthPercent = 1, heightPercent = 1) {
+        canvas.translate(x, y);
+        canvas.scale(widthPercent, heightPercent);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(0, 0, 45, 90);
+        canvas.setFontSize(15);
+        canvas.setFillColor("white");
+        canvas.drawRectangle(-30, -15, 17, 60);
+        canvas.drawRectangle(30, -15, 17, 60);
+        canvas.setFillColor("black");
+        canvas.drawSquare(-30, -35, 17);
+        canvas.drawSquare(30, -35, 17);
+        canvas.setFillColor("white");
+        canvas.drawCircle(0, -45, 15,);
+        canvas.drawCircle(0, -80, 40);
+        canvas.drawText("FEAR", 0, -5);
+        canvas.drawSquare(-15, -85, 15);
+        canvas.drawSquare(15, -85, 15);
+        canvas.drawLine({ x: -7, y: -86 }, { x: 5, y: -86 });
+        canvas.drawLine({ x: -35, y: -102 }, { x: -23, y: -91 });
+        canvas.drawLine({ x: 36, y: -102 }, { x: 24, y: -90 });
+        canvas.setFillColor("black");
+        canvas.drawCircle(-15, -85, 1);
+        canvas.drawCircle(15, -85, 1);
+        canvas.drawRectangle(-13, 74, 19, 55);
+        canvas.drawRectangle(13, 74, 19, 55);
+        canvas.setFillColor(color(80, 90, 37));
+        canvas.drawRectangle(0, 30, 46, 10);
+        canvas.drawRectangle(0, 30, 6, 10);
+        canvas.drawLine({ x: -7, y: -60 }, { x: 8, y: -60 });
+        canvas.resetCanvasRotation();
+    }
+
     // adapted from code written by Yuddy N, Fall 2023
-    drawFoodTruck(x, y, direction, rotation) {
-        if (rotation) rotation = { x: x, y: y, amount: rotation };
-        if (!direction) direction = RIGHT;
+    drawFoodTruck(x, y, direction = RIGHT, rotation, widthPercent = 1, heightPercent = 1) {
+        canvas.canvas.translate(x, y);
+        canvas.canvas.scale(widthPercent, heightPercent);
+        if (rotation) rotation = { x: 0, y: 0, amount: rotation };
         canvas.setBorderColor("black");
         canvas.setFillColor("white");
-        canvas.drawRectangle(x, y, 150, 75, FILLFRAME, rotation);
+        canvas.drawRectangle(0, 0, 150, 75, FILLFRAME, rotation);
         canvas.setFillColor("black");
-        canvas.drawRectangle(x - (69 * direction), y, 0.5, 70, FILLFRAME, rotation);
+        canvas.drawRectangle(-(69 * direction), 0, 0.5, 70, FILLFRAME, rotation);
         canvas.setFillColor("red");
-        canvas.drawCircle(x, y + 5, 20, FILLFRAME, rotation);
+        canvas.drawCircle(0, 5, 20, FILLFRAME, rotation);
         canvas.setFillColor("green");
-        canvas.drawCircle(x - (5 * direction), y - 20, 5, FILLFRAME, rotation);
+        canvas.drawCircle(-(5 * direction), -20, 5, FILLFRAME, rotation);
         canvas.setFillColor("brown");
-        canvas.drawRectangle(x, y - 15, 2, 5, FILLFRAME, rotation);
+        canvas.drawRectangle(0, -15, 2, 5, FILLFRAME, rotation);
         canvas.setFillColor("red");
-        canvas.drawRectangle(x + (110 * direction), y + 7, 50, 61, FILLFRAME, rotation);
+        canvas.drawRectangle((110 * direction), 7, 50, 61, FILLFRAME, rotation);
         canvas.setFillColor("lightblue");
-        canvas.drawRectangle(x + (100 * direction), y - 33, 5, 13, FILLFRAME, rotation);
-        canvas.drawRectangle(x + (97 * direction), y - 40, 8, 3, FILLFRAME, rotation);
+        canvas.drawRectangle((100 * direction), -33, 5, 13, FILLFRAME, rotation);
+        canvas.drawRectangle((97 * direction), -40, 8, 3, FILLFRAME, rotation);
         canvas.setFillColor("lightblue");
-        canvas.drawRectangle(x + (120 * direction), y - 2, 25, 23, FILLFRAME, rotation);
+        canvas.drawRectangle((120 * direction), -2, 25, 23, FILLFRAME, rotation);
         canvas.setFillColor("lightblue");
-        canvas.drawRectangle(x + (30 * direction), y + 40, 210, 5, FILLFRAME, rotation);
+        canvas.drawRectangle((30 * direction), 40, 210, 5, FILLFRAME, rotation);
         canvas.setFillColor("yellow");
-        canvas.drawRectangle(x + (130 * direction), y + 23, 5, 5, FILLFRAME, rotation);
+        canvas.drawRectangle((130 * direction), 23, 5, 5, FILLFRAME, rotation);
         canvas.setFillColor("orange");
-        canvas.drawRectangle(x + (130 * direction), y + 30, 5, 5, FILLFRAME, rotation);
+        canvas.drawRectangle((130 * direction), 30, 5, 5, FILLFRAME, rotation);
         canvas.setFillColor("white");
-        canvas.drawRectangle(x + (107 * direction), y + 23, 25, 15, FILLFRAME, rotation);
+        canvas.drawRectangle((107 * direction), 23, 25, 15, FILLFRAME, rotation);
         canvas.setFillColor("red");
-        canvas.drawRectangle(x + (100 * direction), y + 21, 4, 2, FILLFRAME, rotation);
+        canvas.drawRectangle((100 * direction), 21, 4, 2, FILLFRAME, rotation);
         canvas.setFillColor("brown");
-        canvas.drawCircle(x - (55 * direction), y + 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle(x - (21 * direction), y + 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle(x + (13 * direction), y + 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle(x + (85 * direction), y + 55, 14, FILLFRAME, rotation);
-        canvas.drawCircle(x + (116 * direction), y + 55, 14, FILLFRAME, rotation);
+        canvas.drawCircle(-(55 * direction), 55, 15, FILLFRAME, rotation);
+        canvas.drawCircle(-(21 * direction), 55, 15, FILLFRAME, rotation);
+        canvas.drawCircle((13 * direction), 55, 15, FILLFRAME, rotation);
+        canvas.drawCircle((85 * direction), 55, 14, FILLFRAME, rotation);
+        canvas.drawCircle((116 * direction), 55, 14, FILLFRAME, rotation);
         canvas.setFillColor("black");
-        canvas.drawCircle(x - (55 * direction), y + 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle(x - (21 * direction), y + 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle(x + (13 * direction), y + 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle(x + (85 * direction), y + 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle(x + (116 * direction), y + 55, 1, FILLFRAME, rotation);
+        canvas.drawCircle(-(55 * direction), 55, 1, FILLFRAME, rotation);
+        canvas.drawCircle(-(21 * direction), 55, 1, FILLFRAME, rotation);
+        canvas.drawCircle((13 * direction), 55, 1, FILLFRAME, rotation);
+        canvas.drawCircle((85 * direction), 55, 1, FILLFRAME, rotation);
+        canvas.drawCircle((116 * direction), 55, 1, FILLFRAME, rotation);
+        canvas.resetCanvasRotation();
     }
 
     drawImage(path, x, y, width, height, rotation) {
@@ -396,6 +432,14 @@ class BearcatGraphics {
         if (rotation) this.#rotate(x, y, rotation);
         this.canvas.drawImage(image, x + width / 2, y + height / 2, width, height);
         if (rotation) this.resetCanvasRotation();
+    }
+
+    translate(x, y){
+        this.canvas.translate(x, y);
+    }
+
+    scale(widthScale, heightScale){
+        this.canvas.scale(widthScale, heightScale);
     }
 
     #rotate(x, y, rotation) {
@@ -575,15 +619,30 @@ class Point {
 class BearcatPlatformer {
 
     static GRAVITY = 9.81;
-    static COLLISION_EPSILON = 10;
+
+    static VERTICAL_COLLISION_EPSILON = 0;
+    static HORIZONTAL_COLLISION_EPSILON = 0;
 
     constructor(width = 800, height = 800) {
+        this.fps, this.timeSlice;
         this.canvas = new BearcatGraphics(() => this.#update(), width, height);
         this.player = null;
         this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, (e) => { this.handleKeyDown(e, this) });
         this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, (e) => (this.handleKeyUp(e, this)));
         this.#init();
+        this.timeSlice = 1 / this.canvas.fps;
         this.currentLevel = "Level 1";
+    }
+
+    setFPS(fps) {
+        this.canvas.fps = fps;
+        this.timeSlice = 1 / fps;
+    }
+
+    setLineThickness(thickness) {
+        this.canvas.setLineThickness(thickness);
+        BearcatPlatformer.VERTICAL_COLLISION_EPSILON = thickness;
+        BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON = thickness;
     }
 
     handleKeyDown(e, game) {
@@ -639,7 +698,7 @@ class BearcatPlatformer {
         this.scoreEarnedThisLevel = 0;
         this.showScore = true;
         this.showTime = true;
-        this.showLevel = true; 
+        this.showLevel = true;
     }
 
     #update() {
@@ -685,7 +744,8 @@ class BearcatPlatformer {
                 this.#checkForCollisions(obj, objsAlreadyCollided);
             if (obj.update) obj.update(this);
         }
-        this.timeSinceLevelStart += 1 / this.canvas.fps;
+        this.timeSinceLevelStart += this.timeSlice;
+        this.timeSinceGameStart += this.timeSlice;
     }
 
     #checkForCollisions(obj, objsAlreadyCollided) {
@@ -760,22 +820,24 @@ class BearcatPlatformer {
         return platform;
     }
 
-    addFoodTruck(x, y, direction = LEFT){
-        let truckBody = new Platform(x, y+10, 150, 80);
-        let truckHead = new Platform(x + (110 * direction), y + 17, 50, 75);
+    addFoodTruck(x, y, direction = LEFT, widthPercent = 1, heightPercent = 1) {
+        let truckBody = new Platform(x, y + 15, 150*widthPercent, 105*heightPercent);
+        let truckHead = new Platform(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 95*heightPercent);
         truckBody.render = (canvas) => {
-            canvas.drawFoodTruck(x, y, direction);
+            canvas.drawFoodTruck(x, y, direction, 0, widthPercent, heightPercent);
+            // canvas.drawRectangle(x, y + 15, 150*widthPercent, 110*heightPercent);
+            // canvas.drawRectangle(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 100*heightPercent);
         }
         truckHead.render = GameObject.dontRender;
         this.objects.push(truckBody);
         this.objects.push(truckHead);
-        return {truckBody: truckBody, truckHead: truckHead};
+        return { truckBody: truckBody, truckHead: truckHead };
     }
 }
 
 class GameObject {
 
-    static dontRender(canvas){};
+    static dontRender(canvas) { };
 
     static COLLIDE_STATES = {
         COLLIDABLE: 1,
@@ -820,42 +882,42 @@ class GameObject {
 
 
     isRightOf(other) {
-        return this.x - this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x + other.width / 2 && this.x - this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x + other.width / 2;
+        return this.x + this.width / 2 >= other.x - other.width / 2 - BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON && this.x + this.width / 2 <= other.x;
     }
 
     isLeftOf(other) {
-        return this.x + this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x - other.width / 2 && this.x + this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x - other.width / 2;
+        return this.x - this.width / 2 >= other.x && this.x - this.width / 2 <= other.x + other.width / 2 + BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
     }
 
-    inHorizontalBounds(other) {
-        return this.x + this.width / 2 > other.x - other.width / 2 && this.x - this.width / 2 < other.x + other.width / 2;
+    inHorizontalBounds(other) { // TODO figure out manipulation relative to epsilons to ensure clean collisions
+        return Math.abs(this.x - other.x) <= (this.width / 2 + other.width / 2) - BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
     }
 
     inVerticalBounds(other) {
-        return this.y + this.height / 2 > other.y - other.height / 2 && this.y - this.height / 2 < other.y + other.height / 2;
+        return Math.abs(this.y - other.y) <= this.height / 2 + other.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON
     }
 
     isBelow(other) {
-        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y + this.height / 2 <= other.y - other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
+        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON && this.y + this.height / 2 <= other.y;
     }
 
     isAbove(other) {
-        return this.y - this.height / 2 >= other.y + other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
+        return this.y - this.height / 2 >= other.y && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON
     }
 
-    distanceTo(other){
-        return Math.sqrt((this.x - other.x)*(this.x - other.x)+(this.y - other.y)*(this.y - other.y));
+    distanceTo(other) {
+        return Math.sqrt((this.x - other.x) * (this.x - other.x) + (this.y - other.y) * (this.y - other.y));
     }
 }
 
 class Platform extends GameObject {
-    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = {fillColor: "brown", borderColor: "black"}) {
+    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "brown", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
     }
 
     render(canvas) {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString){
+            if (this.renderString) {
                 if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
                 if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
             }
@@ -877,8 +939,8 @@ class Star extends GameObject {
         this.worth = worth;
     }
 
-    onTrigger(other){
-        if(other.constructor.name === "Player"){
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
             other.game.objects.splice(other.game.objects.indexOf(this), 1);
             other.game.scoreEarnedThisLevel += this.worth;
         }
@@ -926,8 +988,8 @@ class Enemy extends GameObject {
         this.theta = 0;
     }
 
-    onCollision(other){
-        if(other.constructor.name === "Player")
+    onCollision(other) {
+        if (other.constructor.name === "Player")
             other.game.reloadLevel();
     }
 
@@ -961,8 +1023,8 @@ class Enemy extends GameObject {
                 this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
                 break;
             case Enemy.MOVEMENT_AXES.FOLLOW:
-                if(!game.player) return;
-                else if(this.distanceTo(game.player) <= this.maxDistance){
+                if (!game.player) return;
+                else if (this.distanceTo(game.player) <= this.maxDistance) {
                     let xDir = this.x > game.player.x ? -1 : 1;
                     let yDir = this.y > game.player.y ? -1 : 1;
                     this.x += this.movementSpeed * xDir;
@@ -1000,7 +1062,7 @@ class Door extends GameObject {
     }
 
     render(canvas) {
-        if(this.enabled === false){
+        if (this.enabled === false) {
             canvas.setFillColor("#00000000");
             canvas.setLineDash([5, 5])
             canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
@@ -1025,7 +1087,7 @@ class Door extends GameObject {
     }
 
     onTrigger(other) {
-        if(this.enabled === false) return;
+        if (this.enabled === false) return;
         if (other.constructor.name === "Player") {
             other.game.loadLevel(this.levelName);
         }
@@ -1053,7 +1115,7 @@ class Player extends GameObject {
         this.collidingRight = false;
     }
 
- 
+
 
     update() {
         this.#handleMovement();
@@ -1064,12 +1126,27 @@ class Player extends GameObject {
         // check for collisions
         for (let obj of this.game.objects) {
             if (obj.constructor.name === "Platform") {
-                if (this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)) {
-                    if (this.isRightOf(obj)) this.collidingLeft = true;
-                    else if (this.isLeftOf(obj)) this.collidingRight = true;
-                    else if (this.isAbove(obj)) this.collidingAbove = true;
-                    else if (this.isBelow(obj)) this.collidingBelow = true;
+                // canvas.setFillColor("black");
+                if (this.inHorizontalBounds(obj)) {
+                    if (this.isBelow(obj)) {
+                        // canvas.setFillColor("red");
+                        this.collidingBelow = true;
+                        this.y = obj.y - obj.height / 2 - this.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
+                    } else if (this.isAbove(obj)) {
+                        // canvas.setFillColor("red");
+                        this.collidingAbove = true;
+                    }
                 }
+                else if (this.inVerticalBounds(obj))
+                    if (this.isLeftOf(obj)) {
+                        // canvas.setFillColor("red");
+                        this.collidingLeft = true;
+                    }
+                    else if (this.isRightOf(obj)) {
+                        // canvas.setFillColor("red");
+                        this.collidingRight = true;
+                    }
+                // canvas.drawRectangle(obj.x, obj.y - (obj.y-this.y)/2, 5, (obj.y-this.y));
             }
         }
 
@@ -1081,18 +1158,18 @@ class Player extends GameObject {
 
         if (this.collidingAbove && this.yVelocity > 0)
             this.yVelocity = -this.yVelocity * 0.5;
-        if (this.collidingBelow)
+        if (this.collidingBelow && this.yVelocity <= 0)
             this.yVelocity = 0;
         else
             this.yVelocity -= BearcatPlatformer.GRAVITY / canvas.fps;
 
-        if (this.jumpKeyDown && this.collidingBelow)
-            this.yVelocity += this.jumpHeight;
+        if (this.jumpKeyDown && this.collidingBelow && !this.collidingAbove)
+            this.yVelocity = this.jumpHeight;
         this.y -= this.yVelocity;
 
-        if(this.y >= this.game.canvas.height + this.game.canvas.height/10)
+        if (this.y >= this.game.canvas.height + this.game.canvas.height / 10)
             this.game.reloadLevel();
-        
+
 
         this.collidingLeft = false;
         this.collidingRight = false;
