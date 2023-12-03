@@ -756,7 +756,7 @@ class BearcatPlatformer {
             this.loadLevel("Game Over");
         let objsAlreadyCollided = [];
         for (let obj of this.objects) {
-            if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
+            if (obj.constructor.name === "Player" && obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
                 this.#checkForCollisions(obj, objsAlreadyCollided);
             if (obj.update) obj.update(this);
         }
@@ -769,7 +769,7 @@ class BearcatPlatformer {
             if (o === obj || o.collisionType === GameObject.COLLIDE_STATES.NOCOLLIDE) continue;
             if (!objsAlreadyCollided[o])
                 objsAlreadyCollided[o] = [];
-            if ((!objsAlreadyCollided[o][obj]) && o.inVerticalBounds(obj) && o.inHorizontalBounds(obj)) {
+            if (!objsAlreadyCollided[o][obj] && o.inVerticalBounds(obj) && o.inHorizontalBounds(obj)) {
                 obj.handleCollision(o);
                 o.handleCollision(obj);
                 if (!objsAlreadyCollided[obj])
@@ -906,11 +906,11 @@ class GameObject {
     }
 
     inHorizontalBounds(other) { // TODO figure out manipulation relative to epsilons to ensure clean collisions
-        return Math.abs(this.x - other.x) <= (this.width / 2 + other.width / 2) - BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
+        return Math.abs(this.x - other.x) <= this.width / 2 + other.width / 2;
     }
 
     inVerticalBounds(other) {
-        return Math.abs(this.y - other.y) <= this.height / 2 + other.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON
+        return Math.abs(this.y - other.y) <= this.height / 2 + other.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON
     }
 
     isBelow(other) {
@@ -1153,27 +1153,18 @@ class Player extends GameObject {
         // check for collisions
         for (let obj of this.game.objects) {
             if (obj.constructor.name === "Platform") {
-                // canvas.setFillColor("black");
                 if (this.inHorizontalBounds(obj)) {
                     if (this.isBelow(obj)) {
-                        // canvas.setFillColor("red");
                         this.collidingBelow = true;
                         this.y = obj.y - obj.height / 2 - this.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
-                    } else if (this.isAbove(obj)) {
-                        // canvas.setFillColor("red");
+                    } else if (this.isAbove(obj)) 
                         this.collidingAbove = true;
-                    }
                 }
                 else if (this.inVerticalBounds(obj))
-                    if (this.isLeftOf(obj)) {
-                        // canvas.setFillColor("red");
+                    if (this.isLeftOf(obj)) 
                         this.collidingLeft = true;
-                    }
-                    else if (this.isRightOf(obj)) {
-                        // canvas.setFillColor("red");
+                    else if (this.isRightOf(obj))
                         this.collidingRight = true;
-                    }
-                // canvas.drawRectangle(obj.x, obj.y - (obj.y-this.y)/2, 5, (obj.y-this.y));
             }
         }
 
@@ -1202,7 +1193,7 @@ class Player extends GameObject {
             else if(this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft)){
                 this.yVelocity = this.jumpHeight;
                 this.wallJumped = true;
-            }
+            } 
             else if(this.doubleJumpEnabled && !this.doubleJumped && this.jumpKeyCount >= 1){
                 this.yVelocity = this.jumpHeight;
                 this.doubleJumped = true;
@@ -1223,38 +1214,6 @@ class Player extends GameObject {
     render(canvas) {
         canvas.setFillColor(this.renderString);
         canvas.drawRectangle(this.x, this.y, this.width, this.height);
-    }
-
-    onCollision(other) {
-        switch (other.constructor.name) {
-            // case "Platform":
-            //     if (this.isRightOf(other)) {
-            //         this.collidingLeft = true;
-            //     }
-            //     if (this.isLeftOf(other)) {
-            //         this.collidingRight = true;
-            //     }
-            //     if (this.isAbove(other)) {
-            //         this.y = other.y + other.height / 2 + this.height / 2;
-            //         this.collidingAbove = true;
-            //     }
-            //     if (this.isBelow(other)) {
-            //         this.y = other.y - other.height / 2 - this.height / 2;
-            //         this.collidingBelow = true;
-            //     }
-            //     console.log(this.collidingBelow);
-            //     break;
-            case "Enemy":
-                this.game.reloadLevel();
-                break;
-            case "Door":
-                this.game.loadLevel(other.levelName);
-                break;
-            case "Star":
-                this.game.objects.splice(this.game.objects.indexOf(other), 1);
-                this.game.scoreEarnedThisLevel += 100;
-                break;
-        }
     }
 }
 
