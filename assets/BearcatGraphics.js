@@ -843,6 +843,12 @@ class BearcatPlatformer {
         return mp;
     }
 
+    addMovingTrampoline(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20, bounceCoefficient = 0.8) {
+        let mt = new MovingTrampoline(x, y, width, height, movementDirection, movementSpeed, maxDistance, bounceCoefficient);
+        this.objects.push(mt);
+        return mt;
+    }
+
     addTrampoline(x, y, width = 20, height = 20, bounceCoefficient = 0.8) {
         let t = new Trampoline(x, y, width, height, bounceCoefficient);
         this.objects.push(t);
@@ -1089,6 +1095,81 @@ class MovingPlatform extends GameObject {
     }
 }
 
+class MovingTrampoline extends GameObject {
+
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "lightgreen") {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
+        this.movementAxis = movementAxis;
+        this.anchorX = x;
+        this.anchorY = y;
+        this.movementDirection = BearcatPlatformer.MOVEMENT_TYPES.FORWARD;
+        this.movementSpeed = movementSpeed;
+        this.maxDistance = maxDistance;
+        this.theta = 0;
+        this.collisionCoefficient = bounceCoefficient;
+    }
+
+    update(game) {
+        switch (this.movementAxis) {
+            case BearcatPlatformer.MOVEMENT_AXES.VERTICAL:
+                this.y += this.movementSpeed * this.movementDirection;
+                if (Math.abs(this.anchorY - this.y) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                if (Math.abs(this.anchorX - this.x) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case BearcatPlatformer.MOVEMENT_AXES.INCREASING_DIAGONAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                this.y -= this.movementSpeed * this.movementDirection;
+                let dist = Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY));
+                if (dist >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case BearcatPlatformer.MOVEMENT_AXES.DECREASING_DIAGONAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                this.y += this.movementSpeed * this.movementDirection;
+                if (Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY)) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case BearcatPlatformer.MOVEMENT_AXES.CIRCLE:
+                this.x = this.anchorX + this.maxDistance * Math.sin(this.theta);
+                this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
+                break;
+            case BearcatPlatformer.MOVEMENT_AXES.FOLLOW:
+                if (!game.player) return;
+                else if (this.distanceTo(game.player) <= this.maxDistance) {
+                    let xDir = this.x > game.player.x ? -1 : 1;
+                    let yDir = this.y > game.player.y ? -1 : 1;
+                    this.x += this.movementSpeed * xDir;
+                    this.y += this.movementSpeed * yDir;
+                }
+                break;
+            default:
+                console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
+                break;
+        }
+        this.theta += (this.movementSpeed / 60) % 360;
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+}
+
 class Enemy extends GameObject {
 
     constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "RED") {
@@ -1254,10 +1335,10 @@ class Player extends GameObject {
 
         // check for collisions
         for (let obj of this.game.objects) {
-            if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline") {
+            if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline") {
                 if (this.inHorizontalBounds(obj)) {
                     if (this.isBelow(obj)) {
-                        if(obj.constructor.name === "Trampoline")
+                        if(obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline")
                             this.collisionCoefficient = obj.collisionCoefficient;
                         this.collidingBelow = true;
                         this.y = obj.y - obj.height / 2 - this.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
