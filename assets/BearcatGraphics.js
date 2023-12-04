@@ -843,6 +843,12 @@ class BearcatPlatformer {
         return mp;
     }
 
+    addTrampoline(x, y, width = 20, height = 20, bounceCoefficient = 0.8) {
+        let t = new Trampoline(x, y, width, height, bounceCoefficient);
+        this.objects.push(t);
+        return t;
+    }
+
     addFoodTruck(x, y, direction = LEFT, widthPercent = 1, heightPercent = 1) {
         let truckBody = new Platform(x, y + 15, 150*widthPercent, 105*heightPercent);
         let truckHead = new Platform(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 95*heightPercent);
@@ -936,6 +942,30 @@ class GameObject {
 class Platform extends GameObject {
     constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "brown", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString) {
+                if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
+                if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
+            }
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+}
+
+class Trampoline extends GameObject {
+    constructor(x, y, width = 30, height = 5, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "lightgreen", borderColor: "black" }) {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
+        this.collisionCoefficient = bounceCoefficient;
     }
 
     render(canvas) {
@@ -1205,6 +1235,7 @@ class Player extends GameObject {
         this.doubleJumpEnabled = false;
         this.jumpKeyCount = 0;
         this.doubleJumped = false;
+        this.collisionCoefficient = 0;
     }
 
     enableWallJump(){
@@ -1223,12 +1254,14 @@ class Player extends GameObject {
 
         // check for collisions
         for (let obj of this.game.objects) {
-            if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform") {
+            if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline") {
                 if (this.inHorizontalBounds(obj)) {
                     if (this.isBelow(obj)) {
+                        if(obj.constructor.name === "Trampoline")
+                            this.collisionCoefficient = obj.collisionCoefficient;
                         this.collidingBelow = true;
                         this.y = obj.y - obj.height / 2 - this.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
-                    } else if (this.isAbove(obj)){ 
+                    } else if (this.isAbove(obj)){
                         this.collidingAbove = true;
                         this.y = obj.y + obj.height / 2 + this.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
                     }
@@ -1255,7 +1288,7 @@ class Player extends GameObject {
         if (this.collidingAbove && this.yVelocity > 0)
             this.yVelocity = -this.yVelocity * 0.5;
         if (this.collidingBelow && this.yVelocity <= 0){
-            this.yVelocity = 0;
+            this.yVelocity = this.collisionCoefficient * -this.yVelocity;
             this.jumpKeyCount = 0;
             if(this.wallJumpEnabled)
                 this.wallJumped = false;
@@ -1278,6 +1311,7 @@ class Player extends GameObject {
             }
         }
         this.y -= this.yVelocity;
+        this.collisionCoefficient = 0;
 
         if (this.y >= this.game.canvas.height + this.game.canvas.height / 10)
             this.game.reloadLevel();
