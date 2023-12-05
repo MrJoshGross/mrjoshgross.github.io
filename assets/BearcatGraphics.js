@@ -855,6 +855,12 @@ class BearcatPlatformer {
         return t;
     }
 
+    addSizeChanger(x, y, width = 50, height = 50, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW) {
+        let sc = new SizeChanger(x, y, width, height, changeAmount, changeType);
+        this.objects.push(sc);
+        return sc;
+    }
+
     addFoodTruck(x, y, direction = LEFT, widthPercent = 1, heightPercent = 1) {
         let truckBody = new Platform(x, y + 15, 150*widthPercent, 105*heightPercent);
         let truckHead = new Platform(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 95*heightPercent);
@@ -863,7 +869,7 @@ class BearcatPlatformer {
             // canvas.drawRectangle(x, y + 15, 150*widthPercent, 110*heightPercent);
             // canvas.drawRectangle(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 100*heightPercent);
         }
-        truckHead.render = GameObject.dontRender;
+        truckHead.dontRender();
         this.objects.push(truckBody);
         this.objects.push(truckHead);
         return { truckBody: truckBody, truckHead: truckHead };
@@ -905,6 +911,10 @@ class GameObject {
 
     render(canvas) {
         throw new Error("Must implement 'render' in subclasses!");
+    }
+
+    dontRender(){
+        this.render = () => {};
     }
 
     onTrigger() {
@@ -989,6 +999,45 @@ class Trampoline extends GameObject {
         }
         else
             console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+}
+
+class SizeChanger extends GameObject {
+    static CHANGE_TYPES = {
+        GROW: 1,
+        SHRINK: -1
+    };
+
+    constructor(x, y, width = 30, height = 30, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString)
+        this.changeType = changeType;
+        this.changeAmount = changeAmount;
+    }
+
+    render() {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            canvas.setFillColor("black");
+            if(this.changeType === SizeChanger.CHANGE_TYPES.GROW)
+                canvas.drawRectangle(this.x, this.y, this.width/4, this.height/2);
+            canvas.drawRectangle(this.x, this.y, this.width/2, this.height/4);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
+            other.width += this.changeType*this.changeAmount*5/other.game.canvas.fps;
+            other.height += this.changeType*this.changeAmount*5/other.game.canvas.fps;
+        }
     }
 }
 
