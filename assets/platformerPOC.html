@@ -53,18 +53,24 @@
         // game.addPlatform(455, 680);
         game.addPlatform(530, 530, 200, 20);
         // game.addPlatform(440, 465, 20, 150);
-        game.addPlatform(600, 680);
+        game.addPlatform(550, 680);
+        game.addStar(550, 640);
+        game.addStar(40, 360);
         game.addTrampoline(200, 550, 50);
-        game.addPlatform(600, 75, 50, 200);
+        //game.addPlatform(600, 75, 50, 200);
+        game.addMovingPlatform(725, 700, 50, 50, BearcatPlatformer.MOVEMENT_AXES.FOLLOW, 2, 50);
         game.addMovingPlatform(600, 230, 30, 10, BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 1, 100);
         game.addEnemy(650, 300, 550, 10, BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 0);
         game.addDoor(600, 490, "Level 1");
-        game.addPlayer(755, 150);
+        game.addPlayer(755, 150, 30, 30, 5, 3).render = (canvas) => {
+            canvas.drawMrGross(game.player.x, game.player.y, 0.3, 0.3);
+        }
     }
 
     function drawBackground() {
         canvas.setFillColor("lightblue");
         canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.drawMrGross(300, 300);
     }
 
 </script>
