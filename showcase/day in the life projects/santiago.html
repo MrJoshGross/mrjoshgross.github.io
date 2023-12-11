@@ -1,0 +1,162 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 800, 800);
+    canvas.debug = true;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function drawSeparators(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft(){
+        canvas.setFillColor("lightblue");
+        canvas.drawSquare(200,200,400);
+        canvas.setFillColor("lightgreen");
+        canvas.drawRectangle(200,350,400,100);
+        canvas.drawFoodTruck(250,230);
+        canvas.setFillColor("blue");
+        canvas.drawCircle(150,185,31);
+        canvas.setFillColor("yellow");
+        canvas.drawRectangle(138,239,70,118);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(60,250,80,140);
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(60,305,15,28);
+        canvas.drawRectangle(138,283,15,28);
+        drawWindow(40, 200);
+        drawWindow(80, 200);
+        drawWindow(40,235);
+        drawWindow(80,235);
+        drawWindow(40,270);
+        drawWindow(80,270);
+        drawWindow(120,200);
+        drawWindow(155,200);
+        drawWindow(120,245);
+        drawWindow(155,245);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(15,15,50);
+        canvas.drawCircle(63,305,2);
+        canvas.drawCircle(141,282,2);
+        canvas.setFillColor("white");
+        canvas.drawPerson(150, 270, 75, 75);
+        canvas.drawOval(270,130,70,50);
+        canvas.drawIsoscelesTriangle(220,160,15,30, FILLFRAME, -135);
+        canvas.drawOval(270,130,70,50, FILL);
+        canvas.setFillColor("black");
+        canvas.setFontSize(15);
+        canvas.drawText("And if you go, I", 270,125);
+        canvas.drawText("wanna go with you.", 270,140);
+        canvas.setFillColor("blue");
+        canvas.drawOval(110,190,5,10);
+        canvas.drawOval(190,190,5,10);
+        drawBird(110,62);
+        drawBird(180,100);
+        drawBird(70,80);
+        drawBird(350,50);
+        drawBird(300,30);
+        drawBird(250,60);
+    }
+
+    function drawBird(x, y){
+        canvas.setFillColor("black");
+        canvas.drawCircle(x-10,y-2,10);
+        canvas.drawCircle(x+9,y-2,10);
+        canvas.setFillColor("lightblue");
+        canvas.drawCircle(x-12,y+3,12, FILL);
+        canvas.drawCircle(x+11,y+3,12, FILL);
+    }
+
+    function drawWindow(x, y){
+        canvas.setFillColor("lightblue");
+        canvas.drawSquare(x,y,20);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(x,y,20,2, FILL);
+        canvas.drawRectangle(x,y,2,20, FILL);
+    }
+
+    function drawTopRight(){
+        canvas.setFillColor("lightgray");
+        canvas.drawSquare(600,200,400);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(600,80,150,100);   
+        canvas.setFillColor("blue");
+        canvas.drawRectangle(600,80,140,90);
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(540,211,35,20);
+        canvas.drawRectangle(540,388,35,20);
+        canvas.drawRectangle(600,300,120,198);
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(600,365,80,50);
+        canvas.drawPerson(600,295,65,65,"white",180);
+        canvas.setFillColor("black");
+        canvas.setFontSize(15);
+        canvas.drawText("And if you die, I", 600,75);
+        canvas.drawText("wanna die with you.", 600,95);
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(460,210,80,100,);
+
+
+    }
+
+    function drawBottomLeft(){
+        let grd = canvas.canvas.createLinearGradient(0, 400, 0, 800);
+        grd.addColorStop(0, "black");
+        grd.addColorStop(0.5, "grey");
+        grd.addColorStop(1, "black");
+        canvas.setFillColor(grd);
+        canvas.drawSquare(200, 600, 400);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(200,580,45,90);
+        canvas.setFontSize(15);
+        canvas.setFillColor("white");
+        canvas.drawRectangle(170,565,17,60);
+        canvas.drawRectangle(230,565,17,60);
+        canvas.setFillColor("black");
+        canvas.drawSquare(170,545,17);
+        canvas.drawSquare(230,545,17);
+        canvas.setFillColor("white");
+        canvas.drawCircle(200,535,15,);
+        canvas.drawCircle(200,500,40);
+        canvas.drawText("FEAR",200,575);
+        canvas.drawSquare(185,495,15);
+        canvas.drawSquare(215,495,15);
+        canvas.drawLine({ x: 193, y: 494}, {x: 205, y: 494});
+        canvas.drawLine({ x: 165, y: 478}, {x: 177, y: 489});
+        canvas.drawLine({ x: 236, y: 478}, {x: 224, y: 490});
+        canvas.setFillColor("black");
+        canvas.drawCircle(185,495,1);
+        canvas.drawCircle(215,495,1);
+        canvas.drawRectangle(187,657,19,55);
+        canvas.drawRectangle(213,657,19,55);
+        canvas.setFillColor(color(80,90,37));
+        canvas.drawRectangle(200,610,46,10);
+        canvas.drawRectangle(200,610,6,10);
+        canvas.drawLine({ x: 193, y: 520}, {x: 208, y: 520});
+        canvas.setFillColor("black")
+        canvas.setFontSize(18);
+        canvas.drawText("Take your hand", 310,500);
+        canvas.drawText("and walk away.", 310,520);
+        canvas.setFillColor("lightblue");
+
+
+
+    }
+
+    function drawBottomRight(){
+
+    }
+
+</script>

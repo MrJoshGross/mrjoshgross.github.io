@@ -1,0 +1,235 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 1000, 800);
+    canvas.debug = true;
+    let isDoorOpened = false;
+
+    canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, handleKeyDown);
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function handleKeyDown(e){
+        switch(e.key){
+            case 'o':
+                isDoorOpened = !isDoorOpened;
+                break;
+        }
+    }
+
+    function drawSeparators(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft(){
+        
+        let grd = canvas.canvas.createLinearGradient(0,0,0,200);
+        grd.addColorStop(0, "black");
+        grd.addColorStop(0.5,"purple");
+        grd.addColorStop(1,"orange");
+        canvas.setFillColor(grd);
+        canvas.drawRectangle(250, 200, 500, 400);
+        canvas.setFillColor("green");
+        canvas.drawRectangle(250, 348, 500, 100);
+        canvas.setFillColor("tan");
+        canvas.drawRectangle(300, 340, 150, 90);
+        canvas.setFillColor(color(255, 125, 125));
+        canvas.drawPolygon([
+            new Point(211, 305),
+            new Point(174, 232),
+            new Point(347, 232), 
+            new Point(398, 305),   
+        ]);
+         canvas.setFillColor("tan");
+        canvas.drawRectangle(157, 332.5, 130, 105);
+        canvas.setFillColor("tan");
+        canvas.drawIsoscelesTriangle(156, 255, 140, 84, FILL,);
+        canvas.setFillColor(color(255, 125, 125));
+        canvas.drawPolygon([
+            new Point(75, 290),
+            new Point(159, 198),
+            new Point(230, 292),
+            new Point(235, 288),
+            new Point(159, 189),
+            new Point(71, 286),
+        ])
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(264, 380, 48, 6);
+        canvas.setFillColor(COLORS.lightorange)
+        canvas.drawRectangle(264, 348, 33, 52);
+        canvas.setFillColor("black");
+        canvas.drawCircle(276, 349, 1);
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(160, 334, 80, 33);
+        canvas.drawRectangle(160, 334, 70, 22);
+        canvas.drawRectangle(180, 334, 0.2, 18);
+        canvas.drawRectangle(140, 334, 0.2, 18);
+        canvas.drawRectangle(330, 350, 50, 30);
+        canvas.drawRectangle(330, 350, 40, 20);
+        canvas.drawRectangle(330, 350, 0.05, 15);
+        canvas.drawRectangle(157, 260, 35, 27);
+        canvas.drawRectangle(157, 260, 0.1, 21);
+        canvas.drawRectangle(157, 260, 28, 0.1);
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(317, 224, 15, 10);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(317, 217, 20, 5);
+        canvas.setFillColor("lightgrey");
+        canvas.drawCircle(327, 201, 9, FILL);
+        canvas.drawCircle(334, 190, 9, FILL);
+        canvas.drawCircle(341, 179, 9, FILL);
+
+        
+
+
+    }
+
+    function drawTopRight(){
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(850, 200, 700, 400);
+        canvas.setFillColor("lightgreen");
+        canvas.drawRectangle(550, 150, 100, 500); 
+        canvas.drawRectangle(850, 150, 100, 500);
+        canvas.setFillColor("gray");
+        canvas.drawRectangle(600, 150, 50, 500);
+        canvas.drawRectangle(800, 150, 50, 500);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(700, 150, 150, 500);
+        canvas.setFillColor("yellow");
+        canvas.drawRectangle(700, 100, 20, 50);
+        canvas.drawRectangle(700, 200, 20, 50);
+        canvas.drawRectangle(700, 300, 20, 50);
+        canvas.drawPerson(600, 150, 20, 30, "white");
+    }
+
+    function drawBottomLeft(){
+        let grd = canvas.canvas.createLinearGradient(0,0,0,200);
+        grd.addColorStop(0, "blue");
+        grd.addColorStop(0.5,"lightgrey");
+        grd.addColorStop(1,"lightblue");
+        canvas.setFillColor(grd);
+        canvas.drawRectangle(254, 525, 510, 242);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(40, 450, 35, FILL);
+        canvas.setFillColor("green");
+        canvas.drawRectangle(257, 725, 510, 150);
+        canvas.setFillColor("tan");
+        canvas.drawRectangle(257, 653, 190, 265);
+        canvas.setFillColor("tan");
+        canvas.drawRectangle(86, 675, 144, 220);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(87, 648, 144, 25);
+        canvas.setFillColor("tan");
+        canvas.drawRectangle(428, 675, 144, 220);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(428, 648, 144, 25);
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(226, 747, 40, 75);
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(270, 747, 40, 75);
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(84, 727, 85, 50);
+        canvas.drawRectangle(84, 730, 84, 1);
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(437, 726, 85, 50);
+        canvas.drawRectangle(437, 729, 84, 1);
+        canvas.setFillColor("orange");
+        canvas.setFontSize(50);
+        canvas.drawText("Y", 257, 590);
+        canvas.setFillColor("blue");
+        canvas.setFontSize(50);
+        canvas.drawText("H", 257, 615);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(257, 636, 190, 25);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(241, 752, 1, 10);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(255, 752, 1, 10);
+
+
+
+    }
+
+    function drawBottomRight(){
+        canvas.setFillColor(color(23, 23, 23));
+        canvas.drawRectangle(765, 603, 530, 405, FILL);
+        canvas.drawPolygon([
+            new Point(586, 748),
+            new Point(586, 466),
+            new Point(998, 466),
+            new Point(1200, 1200),
+        ], FRAME)
+        canvas.setFillColor(color(47, 0, 0));
+        canvas.drawRectangle(765, 775, 530, 55, FILL);
+        canvas.setFillColor(color(115, 115, 115));
+        canvas.drawRectangle(850, 732, 260, 25);
+        canvas.setFillColor("#0098d9");
+        canvas.drawRectangle(850, 715, 230, 29);
+        canvas.setFillColor(color(115, 115, 115));
+        canvas.drawRectangle(982, 707, 25, 80);
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(505, 662, 10, 170, FILL);
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(515, 662, 7, 165);
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(535, 574, 83, 7, FILL);
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(537, 583, 50, 7);
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(570, 662, 7, 165)
+        canvas.setFillColor(color(234, 234, 234));
+        canvas.drawRectangle(578, 659, 7, 176, FILL)
+        let grd = canvas.canvas.createLinearGradient(0,560,0,620);
+        grd.addColorStop(0, "black");
+        grd.addColorStop(0.5,"purple");
+        grd.addColorStop(1,"orange");
+        canvas.setFillColor(grd);
+        canvas.drawRectangle(841, 591, 55, 55);
+        canvas.setBorderColor("white")
+        canvas.drawLine(
+            new Point(840, 620),
+            new Point(840, 564),
+        )
+        canvas.drawLine(
+            new Point(813, 593),
+            new Point(868, 593),
+        )
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(628, 647, 15, 20, FILL);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(628, 635, 5, 5, FILL);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(628, 628, 5, FILL)
+        canvas.setBorderColor("black")
+        canvas.drawPerson(679, 670, 53, 60);
+        if(isDoorOpened === true) drawOpenDoor();
+        else drawClosedDoor();
+    }
+
+    function drawOpenDoor(){
+        canvas.setFillColor(color(245, 237, 233));
+        canvas.drawRectangle(600, 663, 53, 166);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(620, 668, 5);
+    }
+
+    function drawClosedDoor(){
+        canvas.setFillColor(color(245, 237, 233));
+        canvas.drawRectangle(543, 668, 45, 154);
+        canvas.setFillColor("yellow");
+        canvas.drawCircle(528, 668, 5);
+
+    }
+
+</script>

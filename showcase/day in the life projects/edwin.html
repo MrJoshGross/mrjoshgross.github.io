@@ -1,0 +1,326 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 1000, 900);
+    canvas.debug = true;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function drawSeparators(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft(){
+    //background
+    canvas.setFillColor("darkgreen");
+    canvas.drawRectangle(250, 100, 497, 350);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(250, 362, 497, 170);
+   
+    //door
+    canvas.setFillColor("brown");
+    canvas.drawRectangle(200, 175, 100, 200, FILL);
+    canvas.setFillColor("yellow");
+    canvas.drawCircle(241, 188, 5);
+   
+    //lamp
+    canvas.setFillColor("grey");
+    canvas.drawRectangle(64, 300, 15, 200,  FILL)
+    canvas.setFillColor("grey");
+    canvas.drawOval(64, 395, 20, 35, FILL, 90);
+    canvas.setFillColor("green");
+    canvas.drawOval(64, 200, 20, 40, FILL, 90);
+    canvas.setFillColor("darkgreen");
+    canvas.drawRectangle(64, 175, 100, 30, FILL);
+   
+    //bed
+    canvas.setFillColor("brown");
+    canvas.drawRectangle(285, 400, 10, 60, FILL);
+    canvas.drawRectangle(380, 375, 10, 200, FILL, 90);
+    canvas.drawRectangle(485, 355, 10, 150, FILL);
+    canvas.setFillColor("white");
+    canvas.drawRectangle(380, 365, 200, 20);
+    canvas.setFillColor("white");
+    canvas.drawRectangle(380, 365, 200, 20);
+
+    //person
+    canvas.setFillColor("white")
+    canvas.drawPerson(380, 341, 50, 65, FILL, 90);
+    canvas.setFillColor("green");
+    canvas.drawRectangle(358, 340, 65, 140, FILLFRAME, 90);
+   
+    //window
+    canvas.setFillColor("darkblue");
+    canvas.drawRectangle(350, 175, 125, 125);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(350, 175, 125, 5, FILL);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(350, 175, 5, 125, FILL);
+    canvas.setFillColor("lightgreen");
+    canvas.drawRectangle(318, 226, 60, 22);
+    canvas.setFillColor("lightgreen");
+    canvas.drawRectangle(383, 226, 60, 22);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(415, 183, 10, 140);
+    canvas.drawRectangle(285, 183, 10, 140);
+    canvas.drawRectangle(350, 115, 140, 10);
+    canvas.drawRectangle(300, 138, 60, 10, FILL, 125);
+    canvas.drawRectangle(294, 130, 34, 12, FILL, 125);
+    canvas.drawRectangle(400, 138, 55, 10, FILL, 45);
+    canvas.drawRectangle(407, 130, 34, 12, FILL, 45);
+    canvas.setFillColor("green");
+    canvas.drawPerson(320, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(323, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(318, 190, 2, FILL);
+    canvas.setFillColor("green");
+    canvas.drawPerson(300, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(298, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(303, 190, 2, FILL);
+    canvas.setFillColor("green");
+    canvas.drawPerson(340, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(343, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(338, 190, 2, FILL);
+    canvas.setFillColor("green");
+    canvas.drawPerson(360, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(358, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(363, 190, 2, FILL);
+    canvas.setFillColor("green");
+    canvas.drawPerson(380, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(378, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(383, 190, 2, FILL);
+    canvas.setFillColor("green");
+    canvas.drawPerson(400, 200, 10, 10, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(403, 190, 2, FILL);
+    canvas.setFillColor("red")
+    canvas.drawCircle(398, 190, 2, FILL);
+
+    //moon 
+    canvas.setFillColor("red");
+    canvas.drawCircle(378, 150, 20, FILL);
+    canvas.setFillColor("black");
+    canvas.drawCircle(370, 147, 2)
+    canvas.setFillColor("black");
+    canvas.drawCircle(385, 147, 2)
+    canvas.setFillColor("black");
+    canvas.drawCircle(375, 160, 5);
+
+    //weapon
+    drawWeapon(69, 114, "darkgreen");
+    }
+
+    function drawWeapon(x, y, backgroundColor){
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(x-2, y-4, 10, 80, FILL);
+        canvas.setFillColor("grey");
+        canvas.drawRectangle(x+1, y-44, 10, 40, FILL, 90);
+        canvas.setFillColor("black");
+        canvas.drawCircle(x-2, y+36, 7, FILL);
+        canvas.setFillColor("grey");
+        canvas.drawOval(x+26, y-44, 20, 25, FILL);
+        canvas.setFillColor(backgroundColor);
+        canvas.drawRectangle(x-49, y-44, 20, 60, FILL);
+        canvas.setFillColor("red");
+        canvas.drawCircle(x+35, y-44, 15, FILL);
+        canvas.setFillColor(backgroundColor);
+        canvas.drawCircle(x+37, y-44, 15, FILL);
+        canvas.setFillColor("grey");
+        canvas.drawOval(x-29, y-44, 20, 25, FILL, 180);
+        canvas.setFillColor(backgroundColor);
+        canvas.drawCircle(x-37, y-44, 15, FILL);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(x-2, y+26, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y+26, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y+17, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y+17, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y+7, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y+7, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y-3, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y-3, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y-14, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y-14, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y+35, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y+35, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y+36, 2, 17, FILL, 45);
+        canvas.drawRectangle(x-2, y+36, 2, 17, FILL, 135);
+        canvas.drawRectangle(x-2, y-9, 2 , 80, FILL);
+        canvas.setFillColor("red");
+        canvas.drawRectangle(x+31, 90, 2, 10, FILL)
+        canvas.drawCircle(x+32, 111, 3, FILL)
+    }
+
+    function drawTopRight(){
+      //background
+      canvas.setFillColor("darkblue");
+      canvas.drawRectangle(750, 210, 497, 480);
+      canvas.setFillColor("red");
+      canvas.drawCircle(920, 55, 50);
+      canvas.setFillColor("black");
+      canvas.drawCircle(900, 50, 12);
+      canvas.drawCircle(940, 50, 12);
+      canvas.drawCircle(913, 80, 14 );
+      //Rocket
+      canvas.setFillColor("red")
+      canvas.drawOval(720, 412, 20, 35, FILL);
+      canvas.setFillColor("red")
+      canvas.drawOval(780, 412, 20, 35, FILL);
+      canvas.setFillColor("red")
+      canvas.drawOval(750, 412, 20, 35, FILL);
+      canvas.setFillColor("darkorange")
+      canvas.drawOval(720, 412, 15, 30, FILL);
+      canvas.setFillColor("darkorange")
+      canvas.drawOval(780, 412, 15, 30, FILL);
+      canvas.setFillColor("darkorange")
+      canvas.drawOval(750, 412, 15, 30, FILL);
+      canvas.setFillColor("yellow")
+      canvas.drawOval(720, 412, 10, 25, FILL);
+      canvas.setFillColor("yellow")
+      canvas.drawOval(780, 412, 10, 25, FILL);
+      canvas.setFillColor("yellow")
+      canvas.drawOval(750, 412, 10, 25, FILL);
+      canvas.setFillColor("darkorange");
+      canvas.drawTriangle(720, 370, 30, FILL);
+      canvas.setFillColor("darkorange");
+      canvas.drawTriangle(750, 370, 30, FILL);
+      canvas.setFillColor("darkorange");
+      canvas.drawTriangle(780, 370, 30, FILL);
+      canvas.setFillColor(color(159, 247, 172));
+      canvas.drawRectangle(750, 280, 180, 100, FILL, 90);
+      canvas.setFillColor("black");
+      canvas.drawCircle(750, 270, 30);
+      canvas.setFillColor("darkorange")
+      canvas.drawTriangle(750, 161, 100, FILL);
+      canvas.setFillColor("black");
+      canvas.drawRectangle(930, 350, 20, 60, FILL, 135);
+      canvas.drawRectangle(966, 386, 20, 60, FILL);
+      canvas.drawCircle(965, 333, 20, FILL);
+      canvas.setFillColor("brown");
+      canvas.drawRectangle(956, 337, 20, 10, FILL);
+      canvas.setFillColor("black");
+      canvas.drawCircle(956, 338, 2);
+      canvas.drawRectangle(983, 430, 15, 40, FILL, 135);
+      canvas.drawRectangle(983, 430, 15, 40, FILL, 120);
+      drawWeapon(908, 306, "darkblue");
+    }
+
+    function drawBottomLeft(){
+    canvas.setFillColor("darkblue");
+    canvas.drawRectangle(250, 675, 500, 450);
+    canvas.setFillColor("darkgreen");
+    canvas.drawRectangle(250, 840, 500, 130)
+    canvas.setFillColor("brown");
+    canvas.drawRectangle(100, 663, 170, 220);
+    canvas.drawRectangle(400, 663, 170, 220);
+    canvas.drawRectangle(250, 650, 185, 250);
+    canvas.setFillColor("grey");
+    canvas.drawRectangle(85, 555, 140, 10);
+    canvas.drawRectangle(415, 555, 140, 10);
+    canvas.drawRectangle(250, 530, 185, 10);
+    canvas.drawRectangle(235, 750, 20, 50);
+    canvas.drawRectangle(258, 750, 20, 50);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(240, 755, 2, 5);
+    canvas.drawRectangle(253, 755, 2, 5);
+    canvas.setFillColor("dark");
+    canvas.drawRectangle(86, 615, 100, 50)
+    canvas.drawRectangle(415, 615, 100, 50)
+    canvas.setFillColor("black");
+      canvas.drawRectangle(385, 490 , 10, 25, FILL, 135);
+      canvas.drawRectangle(400, 506, 10, 30, FILL);
+      canvas.drawCircle(400, 480, 10, FILL);
+      canvas.setFillColor("brown");
+      canvas.drawRectangle(396, 480, 10, 5, FILL);
+      canvas.setFillColor("black");
+      canvas.drawCircle(395, 480, 1);
+      canvas.drawRectangle(413, 526, 10, 25, FILL, 135);
+      canvas.drawRectangle(413, 524, 10, 25, FILL, 120);
+    canvas.setFillColor("red");
+    canvas.drawCircle(60, 500, 25);
+    canvas.setFillColor("black");
+    canvas.drawCircle(75, 500, 5)
+    canvas.setFillColor("black");
+    canvas.drawCircle(55, 500, 5)
+    canvas.setFillColor("black");
+    canvas.drawCircle(375, 160, 5);
+    canvas.setFillColor("green");
+    canvas.drawPerson(86, 735, 35, 30, FILL);
+    canvas.drawPerson(420, 735, 35, 30, FILL);
+    }
+
+    function drawBottomRight(){
+    canvas.setFillColor("darkred");
+    canvas.drawRectangle(750, 675, 500, 450);
+    drawWeapon(880, 690, "darkred");
+    canvas.setFillColor("black");
+    canvas.drawCircle(750, 690, 40);
+    canvas.drawRectangle(750, 800, 50, 120);
+    canvas.drawRectangle(835, 720, 40, 120, FILL, 45)
+    canvas.drawRectangle(685, 800, 40, 120, FILL, 20);
+    canvas.drawRectangle(750, 888, 50, 40);
+    canvas.setFillColor("brown");
+    canvas.drawRectangle(750, 690, 80, 20, FILL);
+    canvas.setFillColor("black");
+    canvas.drawCircle(730, 690, 5);
+    canvas.drawCircle(770, 690, 5);
+    canvas.drawCircle(570, 518, 50);
+    canvas.setFillColor("red");
+    canvas.drawCircle(555, 527, 15);
+    canvas.drawCircle(595, 527, 15);
+    canvas.setFillColor("darkgreen");
+    canvas.drawRectangle(920, 510, 160, 120);
+    canvas.setFillColor("brown");
+    canvas.drawRectangle(910, 535, 40, 70);
+    canvas.setFillColor("yellow");
+    canvas.drawCircle(898, 542, 2);
+    canvas.setFillColor("darkgreen");
+    canvas.drawRectangle(965, 530, 30, 30);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(965, 532, 30, 4, FILL)
+    canvas.drawRectangle(965, 530 , 30, 4, FILL, 90)
+    canvas.setFillColor("white");
+    canvas.drawPerson(736, 536, 60, 50, FILL);
+    canvas.setFillColor("white");
+    canvas.drawRectangle(725, 485, 13, 12, FILLFRAME)
+    canvas.drawRectangle(745, 485, 13, 12, FILLFRAME)
+    canvas.setFillColor("black");
+    canvas.drawCircle(726, 486, 2);
+    canvas.drawCircle(746, 486, 2);
+    canvas.drawRectangle(735, 486, 2, 2);
+    canvas.drawRectangle(735, 505, 20, 7, FILL)
+    canvas.setFillColor("grey");
+    canvas.drawRectangle(740, 545, 50, 10, FILL);
+    canvas.setFillColor("black");
+    canvas.drawRectangle(720, 543, 2, 5, FILL);
+    canvas.drawRectangle(725, 543, 2, 5, FILL);
+    canvas.drawRectangle(730, 543, 2, 5, FILL);
+    canvas.drawRectangle(735, 543, 2, 5, FILL);
+    canvas.drawRectangle(740, 543, 2, 5, FILL);
+    canvas.drawRectangle(745, 543, 2, 5, FILL);
+    canvas.drawRectangle(750, 543, 2, 5, FILL);
+    canvas.drawRectangle(755, 543, 2, 5, FILL);
+    canvas.drawRectangle(760, 543, 2, 5, FILL);
+    canvas.drawRectangle(765, 543, 2, 5, FILL);
+    }
+
+</script>

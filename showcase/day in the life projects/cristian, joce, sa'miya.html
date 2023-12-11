@@ -1,0 +1,118 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 800, 800);
+    canvas.debug = true;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function drawSeparators() {
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft() {
+        canvas.setFillColor("gray")
+        canvas.drawSquare(100, 100, 600, FILL);
+        canvas.setFillColor("orange");
+        canvas.drawRectangle(150, 150, 200, 300);
+        canvas.setFillColor("green");
+        canvas.drawSquare(320, 50, 100);
+        canvas.setFillColor("white")
+        canvas.drawRectangle(150, 20, 100, 50)
+        canvas.setFillColor("brown")
+        if (canvas.time > 2200 || canvas.time < 700) {
+            canvas.drawPerson(150, 100, 50, 75, "brown");
+        }
+        canvas.setFillColor("black");
+        canvas.drawRectangle(320, 46, 90, 5);
+        canvas.setFillColor("darkgreen");
+        canvas.drawCircle(320, 20, 10);
+        canvas.drawCircle(320, 75, 10);
+        canvas.drawTimeText(314, 154);
+    }
+
+    function drawTopRight() {
+        canvas.setFillColor("lightgreen");
+        canvas.drawSquare(600, 200, 400, FILL);
+        canvas.setFillColor("skyblue");
+        canvas.drawSquare(600, 50, 400, FILL);
+        if (canvas.time > 1600 && canvas.time < 1700) {
+            canvas.drawPerson(450, 160, 50, 75, "tan");
+            canvas.setFillColor("white")
+            canvas.drawCircle(530, 230, 25);
+            canvas.setFillColor("black");
+            canvas.drawHexagon(530, 230, 4);
+            canvas.drawHexagon(520, 247, 4);
+            canvas.drawHexagon(545, 245, 4);
+            canvas.drawHexagon(510, 225, 4);
+            canvas.drawHexagon(550, 225, 4);
+            canvas.drawHexagon(530, 210, 4);
+            canvas.setFillColor("white")
+            canvas.drawPerson(750, 160, 50, 75, "tan");
+        }
+    }
+
+    function drawBottomLeft() {
+        canvas.setFillColor("lightpink");
+        canvas.drawSquare(200, 600, 400, FILL);
+        if (canvas.time > 1700 && canvas.time < 1800) {
+            canvas.drawPerson(200, 600, 50, 75, "brown");
+        }
+        canvas.setFontSize("25");
+        canvas.setFillColor("brown");
+        canvas.drawRectangle(30, 730, 10, 50);
+        canvas.drawRectangle(370, 730, 10, 50);
+        canvas.drawRectangle(20, 630, 10, 50, FILLFRAME, 2);
+        canvas.drawRectangle(380, 630, 10, 50, FILLFRAME, -2);
+        canvas.drawRectangle(200, 650, 350, 100);
+        if (canvas.time > 1700 && canvas.time < 1800) {
+            canvas.setFillColor("white");
+            canvas.drawSquare(130, 650, 70);
+            canvas.drawCircle(230, 650, 30);
+            canvas.setFillColor("tan");
+            canvas.drawTriangle(230, 650, 45);
+            canvas.setFillColor("red");
+            canvas.drawTriangle(230, 645, 30);
+            canvas.setFillColor("yellow");
+            canvas.drawTriangle(230, 640, 30);
+            canvas.setFillColor("red");
+            canvas.drawCircle(235, 643, 2);
+            canvas.drawCircle(230, 631, 2);
+            canvas.drawCircle(225, 640, 2);
+            canvas.setFillColor("red");
+            
+            canvas.drawText("Pizza", 130, 655);
+        }
+    }
+
+    function drawBottomRight() {
+        canvas.setFillColor("gray");
+        canvas.drawSquare(600, 600, 400);
+        if (canvas.time > 800 && canvas.time < 1500) {
+            canvas.drawPerson(450, 550, 50, 75, "brown");
+            canvas.drawPerson(750, 550, 50, 75, "brown");
+            canvas.drawPerson(600, 600, 50, 75, "tan");
+        }
+        canvas.setFillColor("blue");
+        canvas.drawSquare(450, 610, 85);
+        canvas.setFillColor("blue");
+        canvas.drawSquare(750, 610, 85);
+        canvas.setFillColor("blue");
+        canvas.drawSquare(600, 660, 85);
+    }
+
+</script>

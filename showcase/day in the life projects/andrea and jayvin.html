@@ -1,0 +1,130 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 800, 800);
+    canvas.debug = true;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function drawSeparators(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft(){
+        canvas.setFillColor("skyblue");
+        canvas.drawSquare(200, 200, 400)
+        canvas.drawPerson(262, 253, 65, 75, "white", 90);
+        canvas.setFillColor("purple");
+        canvas.drawRectangle(250,248,100,100)
+        canvas.setFillColor("black");
+        canvas.drawRectangle(200, 66, 150, 100);     
+        canvas.setFillColor("red")
+        canvas.drawStar(5,7,5)     
+        canvas.drawStar(30,7,5)   
+        canvas.drawStar(53,7,5)      
+        canvas.drawStar(71,7,5)   
+        canvas.drawStar(89,7,5)   
+        canvas.drawStar(108,7,5)   
+        canvas.drawStar(126,7,5)   
+        canvas.drawStar(144,7,5)   
+        canvas.drawStar(165,7,5)   
+        canvas.drawStar(278,7,5)   
+        canvas.drawStar(299,7,5)     
+        canvas.drawStar(223,7,5)   
+        canvas.drawStar(240,7,5)   
+        canvas.drawStar(261,7,5)   
+        canvas.drawStar(207,7,5)   
+        canvas.drawStar(317,7,5)   
+        canvas.drawStar(337,7,5)      
+        canvas.drawStar(355,7,5)      
+        canvas.drawStar(376,7,5) 
+        canvas.drawStar(182,7,5)   
+        canvas.setFillColor("purple")
+        canvas.drawRectangle(53,145,100,200)  
+        canvas.setFillColor("yellow")
+        canvas.drawCircle(90,156,5)         
+        canvas.setFillColor("grey")
+        canvas.drawRectangle(268,349,200,100)   
+        canvas.drawRectangle(387,294,25,200)
+       
+
+    }
+
+    function drawTopRight(){
+        canvas.setFillColor("lightblue");
+        canvas.drawSquare(600,200,400);
+       canvas.setFillColor("grey");
+        canvas.drawRectangle(600,370,400,70);
+        canvas.setFillColor("black")
+        canvas.drawRectangle(776,175,50,320)
+        canvas.setFillColor("yellow")
+        canvas.drawRectangle(776,306,10,30)
+        canvas.drawRectangle(776,253,10,30)
+        canvas.drawRectangle(776,200,10,30)
+        canvas.drawRectangle(516,803,10,30)
+        canvas.drawRectangle(776,153,10,30)
+        canvas.drawRectangle(776,96,10,30)
+       canvas.drawRectangle(776,43,10,30)
+        canvas.setFillColor("tan")
+        canvas.drawRectangle(637,48,200,200)
+        canvas.setFillColor("black")
+        canvas.setFontSize(35)
+        canvas.drawText("school",635,34 )
+        canvas.drawText("school",636,34 )
+        canvas.drawText("school",637,34 )
+        canvas.setFillColor("brown")
+        canvas.drawRectangle(631,113,50,60)
+       canvas.setFillColor("yellow")
+        canvas.drawCircle(651,121,4)   
+        canvas.drawCircle(450,31,50)
+        canvas.drawPerson(480,262,62,72)
+        canvas.drawPerson(548,262,62,65)
+     
+
+    
+    }
+
+    function drawBottomLeft(){
+
+
+    }
+
+    function drawBottomRight(){
+        canvas.setFillColor("white");
+        canvas.drawRectangle(600,600,400,400);
+        canvas.setFillColor("tan");
+        canvas.drawRectangle(600,750,400,150);
+        canvas.setFillColor("tan");
+        canvas.setFontSize(75);
+        canvas.drawText("Wowzerz",600,500,);
+        canvas.setFillColor("black");
+        canvas.drawRectangle(780,610,10,140);
+        canvas.setFillColor("gray");
+        canvas.setBorderColor("gray");
+        canvas.drawRectangle(770,541,5,60);
+        canvas.setFillColor("red");
+        canvas.setBorderColor("red");
+        canvas.drawOval(755,541,10,1);
+        canvas.setFillColor("tan");
+        canvas.setBorderColor("black");
+        canvas.drawOval(683,720,245,30);
+        canvas.drawRectangle(815,717,60,68,FILL);
+        canvas.drawRectangle(570,720,0,50)
+        canvas.drawPerson(427,650,50,50, "black")
+        
+        
+
+    }
+
+</script>
