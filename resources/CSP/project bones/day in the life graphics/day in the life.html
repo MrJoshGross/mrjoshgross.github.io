@@ -1,0 +1,40 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 800, 800);
+    canvas.debug = true;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawTopLeft();
+        drawTopRight();
+        drawBottomLeft();
+        drawBottomRight();
+        drawSeparators();
+    }
+
+    function drawSeparators(){
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, canvas.width, 3, FILL);
+        canvas.drawRectangle(canvas.width/2, canvas.height/2, 3, canvas.height, FILL);
+    }
+
+    function drawTopLeft(){
+
+    }
+
+    function drawTopRight(){
+
+    }
+
+    function drawBottomLeft(){
+
+    }
+
+    function drawBottomRight(){
+
+    }
+
+</script>
