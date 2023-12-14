@@ -426,6 +426,41 @@ class BearcatGraphics {
         canvas.resetCanvasRotation();
     }
 
+    // adapted from code written by Cristian I, Fall 2023
+    drawSoccerBall(x, y, scalePercent = 1){
+        canvas.canvas.translate(x, y); 
+        canvas.canvas.scale(scalePercent, scalePercent);
+        canvas.setFillColor("white")
+        canvas.drawCircle(0, 0, 25);
+        canvas.setFillColor("black");
+        canvas.drawHexagon(0, 0, 4, FILLFRAME);
+        canvas.drawHexagon(-10, 17, 4, FILLFRAME);
+        canvas.drawHexagon(15, 15, 4, FILLFRAME);
+        canvas.drawHexagon(-20, -5, 4, FILLFRAME);
+        canvas.drawHexagon(20, -5, 4, FILLFRAME);
+        canvas.drawHexagon(0, -20, 4, FILLFRAME);
+        canvas.resetCanvasRotation();
+    }
+
+    // adapted from code written by Cristian I, Fall 2023
+    drawPizza(x, y, scalePercent = 1, showToppings = true){
+        canvas.canvas.translate(x, y);
+        canvas.canvas.scale(scalePercent, scalePercent);
+        canvas.setFillColor("tan");
+        canvas.drawTriangle(0, 0, 45);
+        canvas.setFillColor("red");
+        canvas.drawTriangle(0, -5, 30);
+        canvas.setFillColor("yellow");
+        canvas.drawTriangle(0, -10, 30);
+        if(showToppings){
+            canvas.setFillColor("red");
+            canvas.drawCircle(5, -7, 2);
+            canvas.drawCircle(0, -19, 2);
+            canvas.drawCircle(-5, -10, 2);
+        }
+        canvas.resetCanvasRotation();
+    }
+
     drawImage(path, x, y, width, height, rotation) {
         const image = new Image(width, height)
         image.src = path;
