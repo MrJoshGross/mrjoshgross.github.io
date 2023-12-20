@@ -135,15 +135,15 @@ class BearcatGraphics {
     setFillColor = (color) => this.canvas.fillStyle = color;
 
     /**
+     * @param {string} color either a supported color name or rgb hex
+     */
+    setBorderColor = (color) => this.canvas.strokeStyle = color;
+
+    /**
      * @param {Array} arr   an array containing two numbers to indicate line width and spacing,
      *                      or an empty array to indicate a solid line
      */
     setLineDash = (arr) => this.canvas.setLineDash(arr);
-
-    /**
-     * @param {string} color either a supported color name or rgb hex
-     */
-    setBorderColor = (color) => this.canvas.strokeStyle = color;
 
     /**
      * @param {*} percent a number (between 0 and 1) representing the percentage of opacity to apply
@@ -425,7 +425,6 @@ class BearcatGraphics {
         canvas.drawCircle((116 * direction), 55, 1, FILLFRAME, rotation);
         canvas.resetCanvasRotation();
     }
-
     // adapted from code written by Cristian I, Fall 2023
     drawSoccerBall(x, y, scalePercent = 1){
         canvas.canvas.translate(x, y); 
@@ -461,20 +460,20 @@ class BearcatGraphics {
         canvas.resetCanvasRotation();
     }
 
+    translate(x, y) {
+        this.canvas.translate(x, y);
+    }
+
+    scale(widthScale, heightScale) {
+        this.canvas.scale(widthScale, heightScale);
+    }
+
     drawImage(path, x, y, width, height, rotation) {
         const image = new Image(width, height)
         image.src = path;
         if (rotation) this.#rotate(x, y, rotation);
         this.canvas.drawImage(image, x + width / 2, y + height / 2, width, height);
         if (rotation) this.resetCanvasRotation();
-    }
-
-    translate(x, y){
-        this.canvas.translate(x, y);
-    }
-
-    scale(widthScale, heightScale){
-        this.canvas.scale(widthScale, heightScale);
     }
 
     #rotate(x, y, rotation) {
@@ -603,34 +602,6 @@ class BearcatGraphics {
     getRandomIntegerInRange = (min, max) => min + this.getRandomInteger(max - min);
 }
 
-let COLORS = {
-    clear: "#00000000",
-    darkred: "#7D0000",
-    red: "#FF0000",
-    pink: "#FF9696",
-    darkorange: "#A35200",
-    orange: "#FF8000",
-    lightorange: "#FFB366",
-    darkyellow: "#9C9C00",
-    yellow: "FFFF00",
-    lightyellow: "#FFFF63",
-    darkgreen: "#009100",
-    green: "#00FF00",
-    lightgreen: "#6EFF6E",
-    darkblue: "#000082",
-    blue: "#0000FF",
-    lightblue: "#5E5EFF",
-    darkpurple: "#7D0099",
-    purple: "#D000FF",
-    lightpurple: "#E46BFF",
-};
-
-let FILL = -123456789;
-let FRAME = 123456789;
-let FILLFRAME = 0;
-let RIGHT = 1;
-let LEFT = -1;
-
 function color(colorString) { return COLORS[colorString]; }
 
 function color(r, g, b) { return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; }
@@ -653,6 +624,9 @@ class Point {
 
 class BearcatPlatformer {
 
+    static GRAVITY = 9.81;
+    static COLLISION_EPSILON = 10;
+
     static MOVEMENT_TYPES = {
         FORWARD: 1,
         BACKWARD: -1
@@ -667,44 +641,34 @@ class BearcatPlatformer {
         FOLLOW: 6
     };
 
-    static GRAVITY = 9.81;
-
-    static VERTICAL_COLLISION_EPSILON = 0;
-    static HORIZONTAL_COLLISION_EPSILON = 0;
-
     constructor(width = 800, height = 800) {
-        this.fps, this.timeSlice;
         this.canvas = new BearcatGraphics(() => this.#update(), width, height);
         this.player = null;
         this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, (e) => { this.handleKeyDown(e, this) });
         this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, (e) => (this.handleKeyUp(e, this)));
         this.#init();
-        this.timeSlice = 1 / this.canvas.fps;
         this.currentLevel = "Level 1";
         this.livesEnabled = false;
         this.countDownEnabled = false;
         this.lives = 5;
         this.createLevel("Game Over", createGameOverScreenLevel);
     }
-
     enableLivesSystem(){
         this.livesEnabled = true;
     }
-
     enableCountDownSystem(){
         this.countDownEnabled = true;
     }
-
     setFPS(fps) {
         this.canvas.fps = fps;
         this.timeSlice = 1 / fps;
     }
-
     setLineThickness(thickness) {
         this.canvas.setLineThickness(thickness);
         BearcatPlatformer.VERTICAL_COLLISION_EPSILON = thickness;
         BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON = thickness;
     }
+    
 
     handleKeyDown(e, game) {
         if (e.key === "r" || e.key === "R") game.reloadLevel();
@@ -808,12 +772,27 @@ class BearcatPlatformer {
         }
         let objsAlreadyCollided = [];
         for (let obj of this.objects) {
-            if (obj.constructor.name === "Player" && obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE);
-                //this.#checkForCollisions(obj, objsAlreadyCollided);
-            if (obj.update) obj.update(this);
+            if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
+                this.#checkForCollisions(obj, objsAlreadyCollided);
+            if (obj.update) obj.update();
         }
-        this.timeSinceLevelStart += this.timeSlice;
-        this.timeSinceGameStart += this.timeSlice;
+        this.timeSinceLevelStart += 1 / this.canvas.fps;
+    }
+
+    #checkForCollisions(obj, objsAlreadyCollided) {
+        for (let o of this.objects) {
+            if (o === obj || o.collisionType === GameObject.COLLIDE_STATES.NOCOLLIDE) continue;
+            if (!objsAlreadyCollided[o])
+                objsAlreadyCollided[o] = [];
+            if ((!objsAlreadyCollided[o][obj]) && o.inVerticalBounds(obj) && o.inHorizontalBounds(obj)) {
+                obj.handleCollision(o);
+                o.handleCollision(obj);
+                if (!objsAlreadyCollided[obj])
+                    objsAlreadyCollided[obj] = [];
+                objsAlreadyCollided[o][obj] = 1;
+                objsAlreadyCollided[obj][o] = 1;
+            }
+        }
     }
 
     createLevel(name, func) {
@@ -841,7 +820,8 @@ class BearcatPlatformer {
         }
     }
 
-    addStar(x, y, worth, size) {
+
+    addStar(x, y, size, worth) {
         let star = new Star(x, y, size, worth);
         this.objects.push(star);
         return star;
@@ -860,7 +840,7 @@ class BearcatPlatformer {
         return player;
     }
 
-    addEnemy(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
+    addEnemy(x, y, width = 20, height = 20, movementDirection = HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
         let enemy = new Enemy(x, y, width, height, movementDirection, movementSpeed, maxDistance);
         this.objects.push(enemy);
         return enemy;
@@ -872,16 +852,28 @@ class BearcatPlatformer {
         return platform;
     }
 
-    addMovingPlatform(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
-        let mp = new MovingPlatform(x, y, width, height, movementDirection, movementSpeed, maxDistance);
-        this.objects.push(mp);
-        return mp;
+    addSizeChanger(x, y, width = 50, height = 50, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW) {
+        let sc = new SizeChanger(x, y, width, height, changeAmount, changeType);
+        this.objects.push(sc);
+        return sc;
     }
 
-    addMovingTrampoline(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20, bounceCoefficient = 0.8) {
-        let mt = new MovingTrampoline(x, y, width, height, movementDirection, movementSpeed, maxDistance, bounceCoefficient);
-        this.objects.push(mt);
-        return mt;
+    addAntiGravityBlock(x, y, width = 50, height = 50) {
+        let agb = new AntiGravityBlock(x, y, width, height);
+        this.objects.push(agb);
+        return agb;
+    }
+
+    addZeroGravityBlock(x, y, width = 50, height = 50) {
+        let zgb = new ZeroGravityBlock(x, y, width, height);
+        this.objects.push(zgb);
+        return zgb;
+    }
+
+    addTreadmill(x, y, width = 50, height = 30, direction = LEFT, speed = 1) {
+        let t = new Treadmill(x, y, width, height, direction, speed);
+        this.objects.push(t);
+        return t;
     }
 
     addTrampoline(x, y, width = 20, height = 20, bounceCoefficient = 0.8) {
@@ -890,15 +882,21 @@ class BearcatPlatformer {
         return t;
     }
 
-    addSizeChanger(x, y, width = 50, height = 50, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW) {
-        let sc = new SizeChanger(x, y, width, height, changeAmount, changeType);
-        this.objects.push(sc);
-        return sc;
+    addMovingTrampoline(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20, bounceCoefficient = 0.8) {
+        let mt = new MovingTrampoline(x, y, width, height, movementDirection, movementSpeed, maxDistance, bounceCoefficient);
+        this.objects.push(mt);
+        return mt;
+    }
+
+    addMovingPlatform(x, y, width = 20, height = 20, movementDirection = BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, movementSpeed = 1, maxDistance = 20) {
+        let mp = new MovingPlatform(x, y, width, height, movementDirection, movementSpeed, maxDistance);
+        this.objects.push(mp);
+        return mp;
     }
 
     addFoodTruck(x, y, direction = LEFT, widthPercent = 1, heightPercent = 1) {
-        let truckBody = new Platform(x, y + 15, 150*widthPercent, 105*heightPercent);
-        let truckHead = new Platform(x + (110*widthPercent * direction), y + 25, 50*widthPercent, 95*heightPercent);
+        let truckBody = new Platform(x, y + 15, 150 * widthPercent, 105 * heightPercent);
+        let truckHead = new Platform(x + (110 * widthPercent * direction), y + 25, 50 * widthPercent, 95 * heightPercent);
         truckBody.render = (canvas) => {
             canvas.drawFoodTruck(x, y, direction, 0, widthPercent, heightPercent);
             // canvas.drawRectangle(x, y + 15, 150*widthPercent, 110*heightPercent);
@@ -912,8 +910,6 @@ class BearcatPlatformer {
 }
 
 class GameObject {
-
-    static dontRender(canvas) { };
 
     static COLLIDE_STATES = {
         COLLIDABLE: 1,
@@ -962,27 +958,38 @@ class GameObject {
 
 
     isRightOf(other) {
-        return this.x + this.width / 2 >= other.x - other.width / 2 - BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON && this.x + this.width / 2 <= other.x;
+        return this.x - this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x + other.width / 2 && this.x - this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x + other.width / 2;
     }
 
     isLeftOf(other) {
-        return this.x - this.width / 2 >= other.x && this.x - this.width / 2 <= other.x + other.width / 2 + BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
+        return this.x + this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x - other.width / 2 && this.x + this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x - other.width / 2;
     }
 
-    inHorizontalBounds(other) { // TODO figure out manipulation relative to epsilons to ensure clean collisions
-        return Math.abs(this.x - other.x) <= this.width / 2 + other.width / 2;
+    inHorizontalBounds(other) {
+        let dist = Math.abs(this.x - other.x);
+        return dist <= this.width/2 + other.width/2;
+        // other - < this + < other + || 
+        let otherLeftEdge = other.x - other.width / 2;
+        let otherRightEdge = other.x + other.width / 2;
+        let thisLeftEdge = this.x - this.width / 2;
+        let thisRightEdge = this.x + this.width / 2;
+        return (otherLeftEdge <= thisLeftEdge && thisLeftEdge <= otherRightEdge) || (otherLeftEdge <= thisRightEdge && thisRightEdge <= otherRightEdge);
     }
 
     inVerticalBounds(other) {
-        return Math.abs(this.y - other.y) <= this.height / 2 + other.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON
+        let otherTopEdge = other.y - other.height / 2;
+        let otherBottom = other.y + other.height / 2;
+        let thisTopEdge = this.y - this.height / 2;
+        let thisBottomEdge = this.y + this.height / 2;
+        return (otherTopEdge <= thisTopEdge && thisTopEdge <= otherBottom) || (otherTopEdge <= thisBottomEdge && thisBottomEdge <= otherBottom);
     }
 
     isBelow(other) {
-        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON && this.y + this.height / 2 <= other.y;
+        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y + this.height / 2 <= other.y - other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
     }
 
     isAbove(other) {
-        return this.y - this.height / 2 >= other.y && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON
+        return this.y - this.height / 2 >= other.y + other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
     }
 
     distanceTo(other) {
@@ -990,17 +997,126 @@ class GameObject {
     }
 }
 
+class MovingPlatform extends GameObject {
+
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
+        this.movementAxis = movementAxis;
+        this.anchorX = x;
+        this.anchorY = y;
+        this.movementDirection = Enemy.MOVEMENT_TYPES.FORWARD;
+        this.movementSpeed = movementSpeed;
+        this.maxDistance = maxDistance;
+        this.theta = 0;
+    }
+
+    update(game) {
+        switch (this.movementAxis) {
+            case Enemy.MOVEMENT_AXES.VERTICAL:
+                this.y += this.movementSpeed * this.movementDirection;
+                if (Math.abs(this.anchorY - this.y) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case Enemy.MOVEMENT_AXES.HORIZONTAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                if (Math.abs(this.anchorX - this.x) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                this.y -= this.movementSpeed * this.movementDirection;
+                let dist = Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY));
+                if (dist >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case Enemy.MOVEMENT_AXES.DECREASING_DIAGONAL:
+                this.x += this.movementSpeed * this.movementDirection;
+                this.y += this.movementSpeed * this.movementDirection;
+                if (Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY)) >= this.maxDistance)
+                    this.movementDirection *= -1;
+                break;
+            case Enemy.MOVEMENT_AXES.CIRCLE:
+                this.x = this.anchorX + this.maxDistance * Math.sin(this.theta);
+                this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
+                break;
+            case Enemy.MOVEMENT_AXES.FOLLOW:
+                if (!game.player) return;
+                else if (this.distanceTo(game.player) <= this.maxDistance) {
+                    let xDir = this.x > game.player.x ? -1 : 1;
+                    let yDir = this.y > game.player.y ? -1 : 1;
+                    this.x += this.movementSpeed * xDir;
+                    this.y += this.movementSpeed * yDir;
+                }
+                break;
+            default:
+                console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
+                break;
+        }
+        this.theta += (this.movementSpeed / 60) % 360;
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onCollision(other) {
+        if(other.constructor.name === "Player"){
+            switch (this.movementAxis) {
+                case Enemy.MOVEMENT_AXES.VERTICAL:
+                    other.y += this.movementSpeed * this.movementDirection/2;
+                    break;
+                case Enemy.MOVEMENT_AXES.HORIZONTAL:
+                    other.x += this.movementSpeed * this.movementDirection/2;
+                    break;
+                case Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL:
+                    other.x += this.movementSpeed * this.movementDirection/2;
+                    other.y -= this.movementSpeed * this.movementDirection/2;
+                    break;
+                case Enemy.MOVEMENT_AXES.DECREASING_DIAGONAL:
+                    other.x += this.movementSpeed * this.movementDirection/2;
+                    other.y += this.movementSpeed * this.movementDirection/2;
+                    break;
+                case Enemy.MOVEMENT_AXES.CIRCLE:
+                    other.x += this.maxDistance * Math.sin(this.theta)/2;
+                    other.y += this.maxDistance * Math.cos(this.theta)/2;
+                    break;
+                case Enemy.MOVEMENT_AXES.FOLLOW:
+                    if (!game.player) return;
+                    else if (this.distanceTo(game.player) <= this.maxDistance) {
+                        let xDir = this.x > game.player.x ? -1 : 1;
+                        let yDir = this.y > game.player.y ? -1 : 1;
+                        other.x += this.movementSpeed * xDir/2;
+                        other.y += this.movementSpeed * yDir/2;
+                    }
+                    break;
+                default:
+                    console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
+                    break;
+            }
+        }
+    }
+}
+
 class Platform extends GameObject {
-    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "brown", borderColor: "black" }) {
+    constructor(x, y, width = 30, height = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "BROWN") {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
     }
 
     render(canvas) {
         if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString) {
-                if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
-                if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
-            }
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
             else
                 console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
@@ -1025,148 +1141,6 @@ class Trampoline extends GameObject {
                 if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
                 if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
             }
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            // TODO draw image representing this platform
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
-}
-
-class SizeChanger extends GameObject {
-    static CHANGE_TYPES = {
-        GROW: 1,
-        SHRINK: -1
-    };
-
-    constructor(x, y, width = 30, height = 30, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
-        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString)
-        this.changeType = changeType;
-        this.changeAmount = changeAmount;
-    }
-
-    render() {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-            canvas.setFillColor("black");
-            if(this.changeType === SizeChanger.CHANGE_TYPES.GROW)
-                canvas.drawRectangle(this.x, this.y, this.width/4, this.height/2);
-            canvas.drawRectangle(this.x, this.y, this.width/2, this.height/4);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            // TODO draw image representing this platform
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
-
-    onTrigger(other) {
-        if (other.constructor.name === "Player") {
-            other.width += this.changeType*this.changeAmount*5/other.game.canvas.fps;
-            other.height += this.changeType*this.changeAmount*5/other.game.canvas.fps;
-        }
-    }
-}
-
-class Star extends GameObject {
-    constructor(x, y, size = 30, worth = 100, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
-        super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
-        this.worth = worth;
-    }
-
-    onTrigger(other) {
-        if (other.constructor.name === "Player") {
-            other.game.objects.splice(other.game.objects.indexOf(this), 1);
-            other.game.scoreEarnedThisLevel += this.worth;
-        }
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawStar(this.x, this.y, this.width / 2);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            // TODO draw image representing this platform
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
-}
-
-class MovingPlatform extends GameObject {
-
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
-        super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
-        this.movementAxis = movementAxis;
-        this.anchorX = x;
-        this.anchorY = y;
-        this.movementDirection = BearcatPlatformer.MOVEMENT_TYPES.FORWARD;
-        this.movementSpeed = movementSpeed;
-        this.maxDistance = maxDistance;
-        this.theta = 0;
-    }
-
-    update(game) {
-        switch (this.movementAxis) {
-            case BearcatPlatformer.MOVEMENT_AXES.VERTICAL:
-                this.y += this.movementSpeed * this.movementDirection;
-                if (Math.abs(this.anchorY - this.y) >= this.maxDistance)
-                    this.movementDirection *= -1;
-                break;
-            case BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL:
-                this.x += this.movementSpeed * this.movementDirection;
-                if (Math.abs(this.anchorX - this.x) >= this.maxDistance)
-                    this.movementDirection *= -1;
-                break;
-            case BearcatPlatformer.MOVEMENT_AXES.INCREASING_DIAGONAL:
-                this.x += this.movementSpeed * this.movementDirection;
-                this.y -= this.movementSpeed * this.movementDirection;
-                let dist = Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY));
-                if (dist >= this.maxDistance)
-                    this.movementDirection *= -1;
-                break;
-            case BearcatPlatformer.MOVEMENT_AXES.DECREASING_DIAGONAL:
-                this.x += this.movementSpeed * this.movementDirection;
-                this.y += this.movementSpeed * this.movementDirection;
-                if (Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY)) >= this.maxDistance)
-                    this.movementDirection *= -1;
-                break;
-            case BearcatPlatformer.MOVEMENT_AXES.CIRCLE:
-                this.x = this.anchorX + this.maxDistance * Math.sin(this.theta);
-                this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
-                break;
-            case BearcatPlatformer.MOVEMENT_AXES.FOLLOW:
-                if (!game.player) return;
-                else if (this.distanceTo(game.player) <= this.maxDistance) {
-                    let xDir = this.x > game.player.x ? -1 : 1;
-                    let yDir = this.y > game.player.y ? -1 : 1;
-                    this.x += this.movementSpeed * xDir;
-                    this.y += this.movementSpeed * yDir;
-                }
-                break;
-            default:
-                console.error(`${this.movementAxis} IS AN INVALID MOVEMENT AXIS; VALID AXES ARE: VERTICAL, HORIZONTAL, INCREASING_DIAGONAL, DECREASING_DIAGONAL, CIRCLE`);
-                break;
-        }
-        this.theta += (this.movementSpeed / 60) % 360;
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
             else
                 console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
@@ -1254,57 +1228,98 @@ class MovingTrampoline extends GameObject {
     }
 }
 
+class Star extends GameObject {
+    constructor(x, y, size = 30, worth = 100, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
+        super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+        this.worth = worth;
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
+            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+            other.game.scoreEarnedThisLevel += this.worth;
+        }
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawStar(this.x, this.y, this.width / 2);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+}
+
 class Enemy extends GameObject {
+    // deprecated
+    static MOVEMENT_TYPES = {
+        FORWARD: 1,
+        BACKWARD: -1
+    };
+
+    // deprecated
+    static MOVEMENT_AXES = {
+        VERTICAL: 1,
+        HORIZONTAL: 2,
+        INCREASING_DIAGONAL: 3,
+        DECREASING_DIAGONAL: 4,
+        CIRCLE: 5,
+        FOLLOW: 6
+    };
 
     constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "RED") {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
         this.anchorY = y;
-        this.movementDirection = BearcatPlatformer.MOVEMENT_TYPES.FORWARD;
+        this.movementDirection = Enemy.MOVEMENT_TYPES.FORWARD;
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
     }
 
     onCollision(other) {
-        if (other.constructor.name === "Player"){
+        if (other.constructor.name === "Player")
             other.game.reloadLevel();
-            if(other.game.livesEnabled === true)
-                other.game.lives--;
-        }
     }
 
-    update(game) {
+    update() {
         switch (this.movementAxis) {
-            case BearcatPlatformer.MOVEMENT_AXES.VERTICAL:
+            case Enemy.MOVEMENT_AXES.VERTICAL:
                 this.y += this.movementSpeed * this.movementDirection;
                 if (Math.abs(this.anchorY - this.y) >= this.maxDistance)
                     this.movementDirection *= -1;
                 break;
-            case BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL:
+            case Enemy.MOVEMENT_AXES.HORIZONTAL:
                 this.x += this.movementSpeed * this.movementDirection;
                 if (Math.abs(this.anchorX - this.x) >= this.maxDistance)
                     this.movementDirection *= -1;
                 break;
-            case BearcatPlatformer.MOVEMENT_AXES.INCREASING_DIAGONAL:
+            case Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL:
                 this.x += this.movementSpeed * this.movementDirection;
                 this.y -= this.movementSpeed * this.movementDirection;
                 let dist = Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY));
                 if (dist >= this.maxDistance)
                     this.movementDirection *= -1;
                 break;
-            case BearcatPlatformer.MOVEMENT_AXES.DECREASING_DIAGONAL:
+            case Enemy.MOVEMENT_AXES.DECREASING_DIAGONAL:
                 this.x += this.movementSpeed * this.movementDirection;
                 this.y += this.movementSpeed * this.movementDirection;
                 if (Math.sqrt((this.x - this.anchorX) * (this.x - this.anchorX) + (this.y - this.anchorY) * (this.y - this.anchorY)) >= this.maxDistance)
                     this.movementDirection *= -1;
                 break;
-            case BearcatPlatformer.MOVEMENT_AXES.CIRCLE:
+            case Enemy.MOVEMENT_AXES.CIRCLE:
                 this.x = this.anchorX + this.maxDistance * Math.sin(this.theta);
                 this.y = this.anchorY + this.maxDistance * Math.cos(this.theta);
                 break;
-            case BearcatPlatformer.MOVEMENT_AXES.FOLLOW:
+            case Enemy.MOVEMENT_AXES.FOLLOW:
                 if (!game.player) return;
                 else if (this.distanceTo(game.player) <= this.maxDistance) {
                     let xDir = this.x > game.player.x ? -1 : 1;
@@ -1333,6 +1348,158 @@ class Enemy extends GameObject {
         }
         else
             console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (this.enabled === false) return;
+        if (other.constructor.name === "Player") {
+            other.game.loadLevel(this.levelName);
+        }
+    }
+}
+
+class SizeChanger extends GameObject {
+    static CHANGE_TYPES = {
+        GROW: 1,
+        SHRINK: -1
+    };
+
+    constructor(x, y, width = 30, height = 30, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString)
+        this.changeType = changeType;
+        this.changeAmount = changeAmount;
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString)
+                canvas.setFillColor(this.renderString);
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            canvas.setFillColor("black");
+            if (this.changeType === SizeChanger.CHANGE_TYPES.GROW)
+                canvas.drawRectangle(this.x, this.y, this.width / 4, this.height / 2);
+            canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player" && other.width > 0 && other.height > 0) {
+            other.width += this.changeType * this.changeAmount * 5 / other.game.canvas.fps;
+            other.height += this.changeType * this.changeAmount * 5 / other.game.canvas.fps;
+        }
+    }
+}
+
+class AntiGravityBlock extends GameObject {
+
+    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "black", secondaryColor: "white" }) {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+                this.renderString = { primaryColor: "black", secondaryColor: "white" }
+            }
+            canvas.setFillColor(this.renderString.primaryColor);
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            canvas.setFillColor(this.renderString.secondaryColor);
+            canvas.drawRectangle(this.x - this.width / 3, this.y, this.width / 8, this.height / 8);
+            canvas.drawRectangle(this.x, this.y, this.width / 8, this.height / 8);
+            canvas.drawRectangle(this.x + this.width / 3, this.y, this.width / 8, this.height / 8);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
+            other.gravityMultiplier *= -1;
+            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+        }
+    }
+}
+
+class ZeroGravityBlock extends GameObject {
+
+    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "black", secondaryColor: "white" }) {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+                this.renderString = { primaryColor: "black", secondaryColor: "white" }
+            }
+            canvas.setFillColor(this.renderString.primaryColor);
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            canvas.setFillColor(this.renderString.secondaryColor);
+            canvas.drawOval(this.x, this.y, this.width / 4, this.height / 3);
+            canvas.setFillColor(this.renderString.primaryColor);
+            canvas.drawOval(this.x, this.y, this.width / 12, this.height / 9);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
+            other.toggleGravity();
+            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+        }
+    }
+}
+
+class Treadmill extends GameObject {
+    constructor(x, y, width = 50, height = 30, direction = LEFT, speed = 1, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "gold", secondaryColor: "lightyellow" }) {
+        super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+        this.direction = direction;
+        this.speed = speed;
+    }
+
+    render(canvas) {
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+                this.renderString = { primaryColor: "gold", secondaryColor: "lightyellow" }
+            }
+            canvas.setFillColor(this.renderString.primaryColor);
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+            canvas.setFillColor(this.renderString.secondaryColor);
+            canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4);
+            let smaller = this.width > this.height ? this.height / 2 : this.width / 2;
+            if (this.direction === LEFT)
+                canvas.drawTriangle(this.x - this.width / 4, this.y, smaller, FILLFRAME, -90)
+            else
+                canvas.drawTriangle(this.x + this.width / 4, this.y, smaller, FILLFRAME, 90)
+            canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4, FILL);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
+            // TODO draw image representing this platform
+        }
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
+    }
+
+    onTrigger(other) {
+        if (other.constructor.name === "Player") {
+            other.x += this.speed * this.direction;
+        }
     }
 }
 
@@ -1378,13 +1545,13 @@ class Door extends GameObject {
 
 class Player extends GameObject {
     constructor(
-        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "green"
+        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravityMultiplier = 1, xVelocity = 0, yVelocity = 0, canMove = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "green"
     ) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.game = game;
         this.moveSpeed = moveSpeed;
         this.jumpHeight = jumpHeight;
-        this.gravity = gravity;
+        this.gravityMultiplier = gravityMultiplier;
         this.xVelocity = xVelocity;
         this.yVelocity = yVelocity;
         this.canMove = canMove;
@@ -1395,20 +1562,24 @@ class Player extends GameObject {
         this.collidingBelow = false;
         this.collidingLeft = false;
         this.collidingRight = false;
-        this.wallJumpEnabled = false;
-        this.wallJumped = false;
-        this.doubleJumpEnabled = false;
-        this.jumpKeyCount = 0;
-        this.doubleJumped = false;
-        this.collisionCoefficient = 0;
-    }
-
-    enableWallJump(){
         this.wallJumpEnabled = true;
+        this.wallJumped = false;
+        this.doubleJumpEnabled = true;
+        this.jumpKeyCount = 0;
+        this.collisionCoefficient = 0;
+        this.gravityEnabled = true;
     }
 
-    enableDoubleJump(){
-        this.doubleJumpEnabled = true;
+    toggleGravity() {
+        this.gravityEnabled = !this.gravityEnabled;
+    }
+
+    toggleWallJump() {
+        this.wallJumpEnabled = !this.wallJumpEnabled;
+    }
+
+    toggleDoubleJump() {
+        this.doubleJumpEnabled = !this.doubleJumpEnabled;
     }
 
     update() {
@@ -1419,78 +1590,124 @@ class Player extends GameObject {
 
         // check for collisions
         for (let obj of this.game.objects) {
-            if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline") {
-                if (this.inHorizontalBounds(obj)) {
-                    if (this.isBelow(obj)) {
-                        if(obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline")
+            if (this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)) {
+                if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline" || obj.constructor.name === "Treadmill") {
+                    if (this.isRightOf(obj)) this.collidingLeft = true;
+                    else if (this.isLeftOf(obj)) this.collidingRight = true;
+                    else if (this.isAbove(obj)) this.collidingAbove = true;
+                    else if (this.isBelow(obj)) {
+                        if (obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline")
                             this.collisionCoefficient = obj.collisionCoefficient;
                         this.collidingBelow = true;
-                        this.y = obj.y - obj.height / 2 - this.height / 2 - BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
-                    } else if (this.isAbove(obj)){
-                        this.collidingAbove = true;
-                        this.y = obj.y + obj.height / 2 + this.height / 2 + BearcatPlatformer.VERTICAL_COLLISION_EPSILON;
                     }
                 }
-                else if (this.inVerticalBounds(obj))
-                    if (this.isLeftOf(obj)){
-                        this.collidingLeft = true;
-                        this.x = obj.x + obj.width / 2 + this.width / 2 + BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
-                    }
-                    else if (this.isRightOf(obj)){
-                        this.collidingRight = true;
-                        this.x = obj.x - obj.width / 2 - this.width / 2 - BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON;
-                    }
-            } else if(this.inHorizontalBounds(obj) && this.inVerticalBounds(obj))
                 obj.handleCollision(this);
+            }
         }
 
-        this.xVelocity = 0;
+        if (this.gravityEnabled)
+            this.xVelocity = 0;
         if (!this.canMove) return;
         else if (this.moveLeftKeyDown && !this.collidingLeft) this.xVelocity = -this.moveSpeed;
         else if (this.moveRightKeyDown && !this.collidingRight) this.xVelocity = this.moveSpeed;
         this.x += this.xVelocity;
 
-        if (this.collidingAbove && this.yVelocity > 0)
+        let collidingWithFloor = false;
+        let collidingWithCeiling = false;
+        let jumpDirection = 1;
+
+        if (this.gravityMultiplier > 0) {
+            collidingWithFloor = this.collidingBelow;
+            collidingWithCeiling = this.collidingAbove;
+            jumpDirection = 1;
+        }
+        else {
+            collidingWithFloor = this.collidingAbove;
+            collidingWithCeiling = this.collidingBelow;
+            jumpDirection = -1;
+        }
+
+        if (collidingWithCeiling && this.yVelocity * jumpDirection > 0)
             this.yVelocity = -this.yVelocity * 0.5;
-        if (this.collidingBelow && this.yVelocity <= 0){
+        if (collidingWithFloor && this.yVelocity * jumpDirection <= 0) {
             this.yVelocity = this.collisionCoefficient * -this.yVelocity;
             this.jumpKeyCount = 0;
-            if(this.wallJumpEnabled)
+            if (this.wallJumpEnabled)
                 this.wallJumped = false;
-            if(this.doubleJumpEnabled)
+            if (this.doubleJumpEnabled)
                 this.doubleJumped = false;
         }
-        else
-            this.yVelocity -= BearcatPlatformer.GRAVITY / canvas.fps;
+        else if (this.gravityEnabled)
+            this.yVelocity -= BearcatPlatformer.GRAVITY * this.gravityMultiplier / canvas.fps;
 
-        if(this.jumpKeyDown && !this.collidingAbove){
-            if (this.collidingBelow)
-                this.yVelocity = this.jumpHeight;
-            else if(this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft)){
-                this.yVelocity = this.jumpHeight;
-                this.wallJumped = true;
-            } 
-            else if(this.doubleJumpEnabled && !this.doubleJumped && this.jumpKeyCount >= 1){
-                this.yVelocity = this.jumpHeight;
-                this.doubleJumped = true;
+        if (this.jumpKeyDown) {
+            console.log(); // TODO
+            let canJump = false;
+            if (!collidingWithCeiling) {
+                if (collidingWithFloor)
+                    canJump = true;
+                else if (this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft)) {
+                    canJump = true;
+                    this.wallJumped = true;
+                    console.log("wall");
+                }
+                else if (this.doubleJumpEnabled && !this.doubleJumped && this.jumpKeyCount >= 1 && !(this.wallJumpEnabled && this.jumpKeyCount >= 2 && (this.collidingRight || this.collidingLeft && this.yVelocity > 9 * this.jumpHeight * jumpDirection / 10))) {
+                    canJump = true;
+                    console.log("double");
+                    this.doubleJumped = true;
+                }
+            }
+            if (canJump) {
+                this.yVelocity = this.jumpHeight * jumpDirection;
             }
         }
+
         this.y -= this.yVelocity;
-        this.collisionCoefficient = 0;
-
-        if (this.y >= this.game.canvas.height + this.game.canvas.height / 10)
+        if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
             this.game.reloadLevel();
-
 
         this.collidingLeft = false;
         this.collidingRight = false;
         this.collidingAbove = false;
         this.collidingBelow = false;
+        this.collisionCoefficient = 0;
     }
 
     render(canvas) {
         canvas.setFillColor(this.renderString);
         canvas.drawRectangle(this.x, this.y, this.width, this.height);
+    }
+
+    onCollision(other) {
+        switch (other.constructor.name) {
+            // case "Platform":
+            //     if (this.isRightOf(other)) {
+            //         this.collidingLeft = true;
+            //     }
+            //     if (this.isLeftOf(other)) {
+            //         this.collidingRight = true;
+            //     }
+            //     if (this.isAbove(other)) {
+            //         this.y = other.y + other.height / 2 + this.height / 2;
+            //         this.collidingAbove = true;
+            //     }
+            //     if (this.isBelow(other)) {
+            //         this.y = other.y - other.height / 2 - this.height / 2;
+            //         this.collidingBelow = true;
+            //     }
+            //     console.log(this.collidingBelow);
+            //     break;
+            case "Enemy":
+                this.game.reloadLevel();
+                break;
+            case "Door":
+                this.game.loadLevel(other.levelName);
+                break;
+            case "Star":
+                this.game.objects.splice(this.game.objects.indexOf(other), 1);
+                this.game.scoreEarnedThisLevel += 100;
+                break;
+        }
     }
 }
 
@@ -1505,5 +1722,42 @@ function createGameOverScreenBackground(){
     canvas.setFillColor("red");
     canvas.drawText("GAME OVER", canvas.width / 2, canvas.height / 2);
 }
+
+let VERTICAL = 1;
+let HORIZONTAL = 2;
+let INCREASING_DIAGONAL = 3;
+let DECREASING_DIAGONAL = 4;
+let CIRCLE = 5;
+let FOLLOW = 6;
+let FORWARD = 1;
+let BACKWARD = -1;
+let FILL = -123456789;
+let FRAME = 123456789;
+let FILLFRAME = 0;
+let RIGHT = 1;
+let LEFT = -1;
+let GROW = 1;
+let SHRINK = -1;
+
+let COLORS = {
+    darkred: "#7D0000",
+    red: "#FF0000",
+    pink: "#FF9696",
+    darkorange: "#A35200",
+    orange: "#FF8000",
+    lightorange: "#FFB366",
+    darkyellow: "#9C9C00",
+    yellow: "FFFF00",
+    lightyellow: "#FFFF63",
+    darkgreen: "#009100",
+    green: "#00FF00",
+    lightgreen: "#6EFF6E",
+    darkblue: "#000082",
+    blue: "#0000FF",
+    lightblue: "#5E5EFF",
+    darkpurple: "#7D0099",
+    purple: "#D000FF",
+    lightpurple: "#E46BFF",
+};
 
 // DZ was here
