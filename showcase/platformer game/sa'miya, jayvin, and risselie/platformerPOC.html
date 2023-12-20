@@ -1,0 +1,90 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level two", createLevelTwo);
+        game.createLevel("Level 3", createLevel3);
+        game.createLevel("Level 4", createLevel4);
+        game.loadLevel("Level 1");
+    }
+
+    function createLevel1() {
+       game.addPlatform(200, 300, 100);
+       game.addPlatform(350, 400, 100);
+       game.addPlatform(450, 250, 100);
+       game.addPlatform(550, 500, 100);
+       game.addPlatform(150, 200, 100);
+       game.addPlatform(350, 645, 100);
+       game.addDoor(350, 600, "Level two");
+       game.addStar(400, 500, 20);
+       game.addEnemy(250, 200, 30, 30, Enemy.MOVEMENT_AXES.VERTICAL,5,50);
+       game.addPlayer(200, 250);     
+    }
+
+    function createLevelTwo() {
+       game.addPlatform(700, 150, 100);
+       game.addPlatform(199, 366, 50);
+       game.addPlatform(299, 115, 100);
+       game.addPlatform(160, 575, 100);
+       game.addPlatform(256, 554, 100); 
+       game.addPlatform(89, 453, 100);
+       game.addPlatform(117, 396, 100);
+       game.addPlatform(200, 745, 100);
+       game.addPlatform(358, 646, 100);
+       game.addPlatform(517, 376, 100);
+       game.addDoor(400, 600, "Level 3");
+       game.addStar(400, 445, 20)
+       game.addEnemy(330, 550, 400, 20, Enemy.MOVEMENT_AXES.CIRCLE, 5,50); 
+       game.addPlayer(200, 250);     
+    }
+      
+    function createLevel3() {
+       game.addPlatform(600, 240, 100);
+       game.addPlatform(350, 220, 100);
+       game.addPlatform(400, 340, 100);
+       game.addPlatform(104, 55, 100);
+       game.addPlatform(240, 440, 100);
+       game.addStar(615, 573, 20);
+       game.addStar(350, 300, 20);
+       game.addMovingPlatform(400, 550, 100, 20, BearcatPlatformer.MOVEMENT_AXES.CIRCLE, 3, 100);
+       game.addEnemy(200, 250, 20, 350, Enemy.MOVEMENT_AXES.VERTICAL, 5,50);
+       game.addEnemy(600, 660, 200, 20, Enemy.MOVEMENT_AXES.VERTICAL, 5,50);
+       game.addEnemy(60, 750, 20, 100, Enemy.MOVEMENT_AXES.VERTICAL, 5,15);
+       game.addDoor(25, 750, "Level 4");
+       game.addPlayer(600, 200);
+
+    }
+    function createLevel4() {
+        game.addPlatform(547, 229, 100)
+        game.addPlatform(117, 429, 100)
+        game.addTrampoline(646, 390, 100, 30)
+        game.addStar(414, 452, 20)
+        game.addEnemy(358, 427, 100, 20, Enemy.MOVEMENT_AXES.HORIZONTAL, 10, 100)
+        game.addDoor(209, 753, "Level 1")
+        game.addStar(494, 569, 20)
+        game.addEnemy(208, 695, 100, 20, Enemy.MOVEMENT_AXES.HORIZONTAL, 0, 0)
+        game.addPlatform(525, 590, 100)
+        game.addPlayer(547, 200);
+
+    
+}
+    function drawBackground() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+
+    }
+
+</script>

@@ -1,0 +1,110 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level 2", createLevel2);
+        game.createLevel("Level 3", createLevel3);
+        game.loadLevel("Level 3");
+    }
+
+    function createLevel1() {
+        game.addPlatform(400, 800, 800, 25);
+        game.addPlatform(215, 730, 50, 10);
+        game.addPlatform(460, 600, 50, 10);
+        game.addPlatform(350, 685, 50, 10);
+        game.addPlatform(615, 535, 50, 10);
+        game.addPlatform(460, 450, 50, 10);
+        game.addPlatform(350, 345, 50, 10);
+        game.addPlatform(215, 235, 50, 10);
+        game.addPlatform(530, 200, 50, 10);
+        game.addDoor(530, 170, "Level 2");
+        game.addPlayer(50, 700, 25, 25, 5, 6);
+        game.addEnemy(530, 170, 10, 10, Enemy.MOVEMENT_AXES.CIRCLE, 20, 130)
+
+
+    }
+    function createLevel2() {
+        game.addPlatform(50, 800, 50, 25);
+        game.addPlatform(170, 800, 50, 25);
+        game.addPlatform(290, 800, 50, 25);
+        game.addPlatform(410, 800, 50, 25);
+        game.addPlatform(540, 800, 50, 25);
+        game.addPlatform(650, 800, 50, 25);
+        game.addPlatform(760, 690, 50, 10);
+        game.addEnemy(100, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        game.addEnemy(230, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        game.addEnemy(350, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        game.addEnemy(480, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        game.addEnemy(600, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        game.addEnemy(710, 800, 10, 10, Enemy.MOVEMENT_AXES.VERTICAL, 20, 130);
+        let star = game.addStar(770, 665, 30)
+        star.renderString = "blue";
+        star.onDestroy = () => {
+            game.addPlatform(600, 585);
+            game.addPlatform(455, 500);
+            game.addPlatform(300, 425);
+            game.addPlatform(140, 330);
+            game.addPlatform(300, 250);
+            game.addPlatform(455, 150);
+            game.addPlatform(600, 100);
+            game.addDoor(600, 60);
+            game.addEnemy(455, 500, 10, 10, Enemy.MOVEMENT_AXES.CIRCLE, 20, 130)
+            game.addEnemy(140, 330, 10, 10, Enemy.MOVEMENT_AXES.CIRCLE, 20, 130)
+        };
+        game.addPlayer(50, 665, 25, 25, 5, 6);
+    }
+    function createLevel3() {
+        game.addPlatform(50, 800, 50, 25);
+        game.addPlatform(230, 750, 50, 25);
+        game.addPlatform(410, 800, 50, 25);
+        game.addPlatform(650, 750, 50, 25);
+        game.addPlatform(780, 640, 50, 25);
+        game.addEnemy(230, 750, 10, 10, Enemy.MOVEMENT_AXES.CIRCLE, 20, 130);
+        game.addEnemy(651, 750, 10, 10, Enemy.MOVEMENT_AXES.CIRCLE, 20, 130);
+        let star = game.addStar(770, 575, 30);
+        star.renderString = "blue";
+        star.onDestroy = () => {
+            game.objects.shift();
+            game.objects.shift();
+            game.objects.shift();
+            game.objects.shift();
+            game.objects.shift();
+            game.objects.shift();
+            game.objects.shift();
+            game.addPlatform(410, 640, 850, 25);
+            game.addEnemy(410, 730, 850, 25, Enemy.MOVEMENT_AXES.VERTICAL, 5, 900);
+            game.addPlatform(410, 640, 850, 25);
+            game.addPlatform(430, 545, 50, 15);
+            game.addPlatform(430, 450, 50, 15);
+            game.addPlatform(430, 345, 50, 15);
+            game.addPlatform(430, 250, 50, 15);
+            game.addPlatform(430, 145, 50, 15);
+            game.addEnemy(430, 500, 20, 25, Enemy.MOVEMENT_AXES.HORIZONTAL, -10, 400);
+            game.addEnemy(430, 400, 20, 25, Enemy.MOVEMENT_AXES.HORIZONTAL, 10, 400);
+            game.addEnemy(430, 300, 20, 25, Enemy.MOVEMENT_AXES.HORIZONTAL, -10, 400);
+            game.addEnemy(430, 200, 20, 25, Enemy.MOVEMENT_AXES.HORIZONTAL, 10, 400);
+            game.addDoor(430, 105)
+        };
+        game.addPlayer(50, 590, 25, 25, 4, 6);
+
+    }
+
+    function drawBackground() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+    }
+
+</script>

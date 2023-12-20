@@ -1,0 +1,149 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="./BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level 2", createLevel2);
+        game.createLevel("Level 3", createLevel3);
+        game.createLevel("Level Mariah", createLevelMariah);
+        game.createLevel("Level 4", createLevel4);
+        game.createLevel("Level 5", createLevel5);
+        game.loadLevel("Level 1");
+       
+    }
+
+    function createLevel1() {
+        game.setBackgroundFunction(drawBackgroundLevel1);
+        game.addPlatform(1,800,600,10)
+        game.addPlatform(615,635,50,10)
+        game.addDoor(615,600,"Level 2")
+        game.addEnemy(460,368,30,900,50,20)
+        let player = game.addPlayer(40,778,30,50,50,20);
+        player.enableDoubleJump();
+    }
+
+    function createLevel2() {
+        game.setBackgroundFunction(drawBackgroundLevel2);
+        game.addPlatform(74,111,300,10)
+        game.addEnemy(82,416,1300,10)
+        game.addPlayer(50,80,30,50,50,20)
+        game.addEnemy(800,420,10,900,50,10)
+        game.addEnemy(5,622,10,400,50,20)
+        game.addPlatform(327,690,100,10)
+        game.addDoor(336,649,"Level 3")
+    }
+
+    function createLevel3() {
+        game.setBackgroundFunction(drawBackgroundLevel3);
+        game.addPlatform(10,100,50,10)
+        game.addPlatform(200,50,10,1400)
+        game.addPlatform(1,800,1600,20)
+        game.addPlatform(0,15,10,1600)
+        game.addTrampoline(490,780,30,10,1.5)
+        game.addEnemy(1,580,100,10, Enemy.MOVEMENT_AXES.FOLLOW, 2, 200)
+        game.addEnemy(25,226,100,10, Enemy.MOVEMENT_AXES.FOLLOW, 2, 200)
+        game.addEnemy(100,350,100,10, Enemy.MOVEMENT_AXES.FOLLOW, 2, 200)
+        game.addEnemy(700,480,100,10, Enemy.MOVEMENT_AXES.FOLLOW, 2, 200)
+        game.addEnemy(320,250,100,10, Enemy.MOVEMENT_AXES.FOLLOW, 2, 200)
+        game.addPlayer(14,68,30,40,10,10).render = (canvas) => {
+            canvas.drawCircle(game.player.x, game.player.y, 10);
+            //canvas.drawMrGross(game.player.x, game.player.y, 0.3, 0.3);
+        }
+        game.addDoor(176,2,"Level Mariah")
+        game.addDoor(800,5,"Level 4")
+
+    }
+
+    function createLevel4(){
+        game.setBackgroundFunction(drawBackgroundLevel4);
+        game.addPlatform(30, 750, 100, 10);
+        game.addTrampoline(70, 740, 50, 10);
+        game.addEnemy(620, 20, 20, 400, -1);
+        game.addEnemy(680, 20, 20, 400, -1);
+        game.addEnemy(620, 600, 20, 600, -1);
+        game.addEnemy(680, 600, 20, 600, -1);
+        game.addDoor(815, 675, "Level 5");
+        game.addPlayer(30, 720, 30,50,50,13);
+    }
+
+
+    function drawBackgroundLevel4() {
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+    }
+    
+    function createLevel5(){
+        game.setBackgroundFunction(drawBackgroundLevel5);
+        game.addAntiGravityBlock(274,218)
+        game.addMovingPlatform(421,450,50,10,HORIZONTAL,8,200)
+        game.addMovingPlatform(395,619,50,10,VERTICAL,8,200)
+        game.addMovingPlatform(275,340,50,10,VERTICAL,10,200)
+        game.addEnemy(366,410,20,20,HORIZONTAL,20,300)
+        game.addEnemy(366,410,20,20,VERTICAL,30,400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+    function createLevelMariah(){
+        game.setBackgroundFunction(drawBackgroundLevelMariah);
+        game.addPlatform(37,773,50,10)
+        game.addPlayer(38,736,30,40,50,10) 
+        game.addDoor(800,665,"Level 3")
+    }
+
+    function drawBackgroundLevel1() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.drawImage("./download.jpeg", 466, 344 , 100, 100)
+    }
+
+    function drawBackgroundLevel2() {
+        canvas.setFillColor("lightgrey");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.drawImage("./download (1).jpeg", 405,248,200,200)
+    }
+
+    function drawBackgroundLevel3() {
+        canvas.setFillColor("green");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+       canvas.drawImage("./Nothing Fish.jpeg", 100,100,400,400)
+    }
+
+    function drawBackgroundLevelMariah(){
+        canvas.setFillColor("darkgrey");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+    canvas.drawImage("./Mariah.jpeg", 1,5,500,500)
+    }
+    
+    function drawBackgroundLevel5() {
+        canvas.setFillColor("black");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+
+
+    }
+
+ </script>
+
+   

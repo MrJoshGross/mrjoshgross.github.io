@@ -1,0 +1,97 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="./BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level 2", createLevel2);
+        game.createLevel("Level 3", createLevel3);
+        game.loadLevel("Level 1");
+
+    }
+    function drawBackground() {
+        canvas.setFillColor("White");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        canvas.setFillColor("Black");
+        canvas.drawRectangle(670, 700, 295, 200)
+        canvas.setFillColor("Red")
+        canvas.drawRectangle(523, 800, 5, 110)
+        
+    }
+
+    function createLevel1() {
+        game.addEnemy(800, 0, 30, 1000, 0, 0, 0)
+        game.addPlatform(241, 540, 7, 1).renderString = "White"
+        game.addPlatform(800, 800, 10000000, 12).renderString = "Black"
+        game.addPlatform(800, 800, 20, 100000).renderString = "Black"
+        game.addPlatform(0, 0, 1, 10000000).renderString = "Black"
+        game.addPlatform(660, 620, 273, 270).renderString = "Black"
+        game.addEnemy(523, 623, 5, 276, 0, 0, 0)///523 749
+        game.addPlatform(642, 308, 50, 200).renderString = "Black"
+        game.addPlatform(700, 311, 142, 6).renderString = "Black"
+        game.addPlatform(6, 195, 70, 6).renderString = "Black"
+        game.addEnemy(617, 308, 2, 200, 0, 0, 0)
+        game.addDoor(22, 159, "Level 2")
+        game.addStar(777, 777)
+        game.addPlayer(18, 783, 20, 20).renderString = "Gray"
+
+
+
+
+    }
+
+    function createLevel2() {
+        game.setBackgroundFunction(drawBackground2);
+        game.addPlatform(800, 900, 10000000, 230).renderString = "Black"
+        game.addPlatform(800, 800, 1, 100000).renderString = "Black"
+        game.addEnemy(600, 200, 250, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 2, 100);
+        game.addEnemy(200, 200, 300, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 2, 100)
+        game.addEnemy(600, 300, 350, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 1, 100)
+        game.addEnemy(200, 300, 300, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 1, 100)
+        game.addEnemy(600, 400, 250, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 2, 100)
+        game.addEnemy(200, 400, 420, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 2, 100)
+        game.addEnemy(600, 500, 250, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 3, 100)
+        game.addEnemy(200, 500, 350, 5, Enemy.MOVEMENT_AXES.HORIZONTAL, 3, 100)
+        game.addPlatform(0, 0, 1, 10000000).renderString = "Black"
+        game.addPlatform(400, 80, 200, 4).renderString = "Black"
+        game.addPlatform(100, 800, 250, 2000).renderString = "Black"
+        game.addPlatform(700, 800, 250, 2000).renderString = "Black"
+        game.addPlayer(401, 66, 20, 20).renderString = "Gray"
+        game.addDoor(403, 760, "Level 3")
+
+    }
+
+    function drawBackground2() {
+        canvas.setFillColor("white");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+    }
+
+    function createLevel3() {
+        game.addPlatform(800, 900, 10000000, 230).renderString = "Black"
+        game.addPlatform(800, 800, 1, 100000).renderString = "Black"
+        game.addPlatform(800, 800, 10000000, 12).renderString = "Black";
+        game.addPlatform(800, 800, 1, 100000).renderString = "Black"
+        game.addPlatform(0, 0, 1, 10000000).renderString = "Black";
+        game.addEnemy(800, 800, 20, 10000000, 0, 0, 0);
+        game.addEnemy(262, 188, 5, 83, 0, 0, 0);
+        game.addEnemy(673, 310, 5, 195, 0, 0, 0);
+        game.addPlatform(390, 560, 150, 95,);
+        game.addEnemy(397, 362, 200, 200, Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL, 20, 500)
+        game.addEnemy(200, 362, 50, 50, Enemy.MOVEMENT_AXES.CIRCLE, 25, 500)
+        game.addEnemy(394, 364, 50, 50, Enemy.MOVEMENT_AXES.CIRCLE, 25, 350)
+        game.addDoor(390, 488, "Level 1")
+        game.addPlayer(753, 765, 3, 3).renderString = "lightblue"
+
+    }
+</script>

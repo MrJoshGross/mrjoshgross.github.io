@@ -1,0 +1,89 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.createLevel("Level 2", createLevel2);
+        game.createLevel("Level 3", createLevel3);
+        game.createLevel("Level 4", createLevel4);
+        game.loadLevel("Level 1");
+    }
+
+    function createLevel1() {
+        game.addPlatform(200, 200, 750, );  
+        game.addPlatform(572,269 , 750, ); 
+        game.addPlatform(29,333, 750, ); 
+        game.addPlatform(367, 407,150,); 
+        game.addPlatform(566,495, 150, ); 
+        game.addPlatform(691,605, 150, );
+        game.addPlatform(454,672, 150, );
+        game.addPlatform(384,774, 1000, );
+        game.addDoor(20,153,"Level 2");
+        game.addPlayer(35,690);
+    }
+
+    function createLevel2() {
+        game.addPlatform(108, 120, 60, )
+        game.addPlatform(316, 373, 50, )
+        game.addMovingTrampoline(380,578,150,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addPlatform(39, 69, 50,)
+        game.addDoor(43,30,"Level 3");
+        game.addMovingPlatform(297,280,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addPlatform(367,785 , 900, ); 
+        game.addPlayer(50, 750);
+        game.addPlatform(672,629 , 60, ); 
+        
+        
+
+        
+    }
+
+    function createLevel3(){
+        game.addPlatform(29, 758, 50, )
+        game.addPlayer(50,715,)
+        game.addMovingTrampoline(305,688,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addMovingTrampoline(449,570,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addPlatform(771, 80, 70, )
+        game.addPlatform(379, 338, 60, )
+        game.addPlatform(613,409, 70, )
+        game.addPlatform(597, 180, 70, )
+        game.addPlatform(111, 505, 70, )
+        game.addDoor(772,40,"Level 4");
+        
+
+
+
+
+    }
+
+    function createLevel4(){
+        game.addPlatform(704, 625,25, )
+        game.addMovingTrampoline(341,685,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addPlayer(17,590,)
+        game.addMovingPlatform(719,174,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addMovingPlatform(705,439,50,30,BearcatPlatformer.MOVEMENT_AXES.HORIZONTAL, 5, 100)
+        game.addPlatform(43, 23,25, )
+        game.addPlatform(500, 70,25, 100)
+        game.addDoor(46,0,"lobby");
+        game.addPlatform(18, 684,25, )
+    }
+
+    function drawBackground() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        
+    }
+
+</script>
