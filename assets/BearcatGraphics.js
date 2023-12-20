@@ -774,7 +774,7 @@ class BearcatPlatformer {
         for (let obj of this.objects) {
             if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
                 this.#checkForCollisions(obj, objsAlreadyCollided);
-            if (obj.update) obj.update();
+            if (obj.update) obj.update(this);
         }
         this.timeSinceLevelStart += 1 / this.canvas.fps;
     }
