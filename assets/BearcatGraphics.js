@@ -1738,7 +1738,7 @@ class CollisionMap{
     }
 
     removeAll(obj){
-        for(let collision of this.collisions[obj])
+        for(let collision in this.collisions[obj])
             delete this.collisions[obj][collision];
         delete this.collisions[obj];
     }
