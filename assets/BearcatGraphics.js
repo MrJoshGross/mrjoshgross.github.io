@@ -668,6 +668,16 @@ class BearcatPlatformer {
         BearcatPlatformer.VERTICAL_COLLISION_EPSILON = thickness;
         BearcatPlatformer.HORIZONTAL_COLLISION_EPSILON = thickness;
     }
+    destroy(obj){
+        if(this.objects.includes(obj)){
+            this.objects.splice(this.objects.indexOf(obj), 1);
+            this.collisions.removeAll(obj);
+            if(obj.onDestroy)
+                obj.onDestroy();
+        }
+        else
+            console.error("Attempting to delete object ", obj, "but it isn't in the list of objects in this level.");
+    }
     
 
     handleKeyDown(e, game) {
@@ -725,9 +735,12 @@ class BearcatPlatformer {
         this.showScore = true;
         this.showTime = true;
         this.showLevel = true;
+        this.active = true;
+        this.collisions = new CollisionMap();
     }
 
     #update() {
+        if(this.active === false) return;
         this.#drawGUI();
         this.#handleLogic();
     }
@@ -770,27 +783,39 @@ class BearcatPlatformer {
             this.loadLevel("Game Over");
             return;
         }
-        let objsAlreadyCollided = [];
         for (let obj of this.objects) {
-            if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE)
-                this.#checkForCollisions(obj, objsAlreadyCollided);
+            if (obj.collisionType !== GameObject.COLLIDE_STATES.NOCOLLIDE || obj !== this.player)
+                this.#checkForCollisions(obj);
             if (obj.update) obj.update(this);
         }
         this.timeSinceLevelStart += 1 / this.canvas.fps;
     }
 
-    #checkForCollisions(obj, objsAlreadyCollided) {
+    #checkForCollisions(obj) {
         for (let o of this.objects) {
-            if (o === obj || o.collisionType === GameObject.COLLIDE_STATES.NOCOLLIDE) continue;
-            if (!objsAlreadyCollided[o])
-                objsAlreadyCollided[o] = [];
-            if ((!objsAlreadyCollided[o][obj]) && o.inVerticalBounds(obj) && o.inHorizontalBounds(obj)) {
-                obj.handleCollision(o);
-                o.handleCollision(obj);
-                if (!objsAlreadyCollided[obj])
-                    objsAlreadyCollided[obj] = [];
-                objsAlreadyCollided[o][obj] = 1;
-                objsAlreadyCollided[obj][o] = 1;
+            if (o === this.player ||  o === obj || o.collisionType === GameObject.COLLIDE_STATES.NOCOLLIDE) continue;
+            if (o.inVerticalBounds(obj) && o.inHorizontalBounds(obj)) {
+                // collision stay
+                let alreadyColliding = false;
+                if(this.collisions.contains(o, obj)){
+                    obj.handleCollision(o);
+                    o.handleCollision(obj);
+                    alreadyColliding = true;
+                }
+
+                // collision enter
+                if(!alreadyColliding){
+                    this.collisions.add(o, obj);
+                    obj.handleCollisionEnter(o);
+                    o.handleCollisionEnter(obj);
+                }
+            } else{
+                // collision exit
+                if(this.collisions.contains(o, obj)){
+                    this.collisions.remove(o, obj);
+                    obj.handleCollisionExit(o);
+                    o.handleCollisionExit(obj);
+                }
             }
         }
     }
@@ -800,24 +825,24 @@ class BearcatPlatformer {
     }
 
     reloadLevel() {
-        this.scoreEarnedThisLevel = 0;
+        this.lives--;
         this.loadLevel(this.currentLevel);
     }
 
     loadLevel(name) {
+        this.active = false;
         if (!this.levels[name])
             console.error(`Cannot find level ${name}`);
         else {
             this.objects = [];
             this.player = null;
-            if (this.scoreEarnedThisLevel !== 0) {
-                this.score += this.scoreEarnedThisLevel;
-                this.scoreEarnedThisLevel = 0;
-            }
+            this.score += this.scoreEarnedThisLevel;
+            this.scoreEarnedThisLevel = 0;
             this.timeSinceLevelStart = 0;
             this.currentLevel = name;
             this.levels[name]();
         }
+        this.active = true;
     }
 
 
@@ -940,6 +965,22 @@ class GameObject {
         }
     }
 
+    handleCollisionEnter(other) {
+        switch (this.collisionType) {
+            case GameObject.COLLIDE_STATES.NOCOLLIDE: return;
+            case GameObject.COLLIDE_STATES.TRIGGER: this.onTriggerEnter(other); break;
+            case GameObject.COLLIDE_STATES.COLLIDABLE: this.onCollisionEnter(other); break;
+        }
+    }
+
+    handleCollisionExit(other) {
+        switch (this.collisionType) {
+            case GameObject.COLLIDE_STATES.NOCOLLIDE: return;
+            case GameObject.COLLIDE_STATES.TRIGGER: this.onTriggerExit(other); break;
+            case GameObject.COLLIDE_STATES.COLLIDABLE: this.onCollisionExit(other); break;
+        }
+    }
+
     render(canvas) {
         throw new Error("Must implement 'render' in subclasses!");
     }
@@ -948,13 +989,17 @@ class GameObject {
         this.render = () => {};
     }
 
-    onTrigger() {
+    onTrigger() {}
 
-    }
+    onTriggerEnter(){}
 
-    onCollision() {
+    onTriggerExit(){}
 
-    }
+    onCollision() {}
+
+    onCollisionEnter(){}
+
+    onCollisionExit(){}
 
 
     isRightOf(other) {
@@ -1077,7 +1122,7 @@ class MovingPlatform extends GameObject {
                     other.y += this.movementSpeed * this.movementDirection/2;
                     break;
                 case Enemy.MOVEMENT_AXES.HORIZONTAL:
-                    other.x += this.movementSpeed * this.movementDirection/2;
+                    other.x += this.movementSpeed * this.movementDirection;
                     break;
                 case Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL:
                     other.x += this.movementSpeed * this.movementDirection/2;
@@ -1096,8 +1141,8 @@ class MovingPlatform extends GameObject {
                     else if (this.distanceTo(game.player) <= this.maxDistance) {
                         let xDir = this.x > game.player.x ? -1 : 1;
                         let yDir = this.y > game.player.y ? -1 : 1;
-                        other.x += this.movementSpeed * xDir/2;
-                        other.y += this.movementSpeed * yDir/2;
+                        other.x += this.movementSpeed * xDir;
+                        other.y += this.movementSpeed * yDir;
                     }
                     break;
                 default:
@@ -1234,9 +1279,9 @@ class Star extends GameObject {
         this.worth = worth;
     }
 
-    onTrigger(other) {
+    onTriggerEnter(other) {
         if (other.constructor.name === "Player") {
-            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+            other.game.destroy(this);
             other.game.scoreEarnedThisLevel += this.worth;
         }
     }
@@ -1286,8 +1331,10 @@ class Enemy extends GameObject {
     }
 
     onCollision(other) {
-        if (other.constructor.name === "Player")
+        if (other.constructor.name === "Player"){
+            other.game.destroy(this);
             other.game.reloadLevel();
+        }
     }
 
     update() {
@@ -1393,6 +1440,7 @@ class SizeChanger extends GameObject {
         if (other.constructor.name === "Player" && other.width > 0 && other.height > 0) {
             other.width += this.changeType * this.changeAmount * 5 / other.game.canvas.fps;
             other.height += this.changeType * this.changeAmount * 5 / other.game.canvas.fps;
+            other.y -= this.changeType * this.changeAmount * 5 / other.game.canvas.fps;
         }
     }
 }
@@ -1423,10 +1471,10 @@ class AntiGravityBlock extends GameObject {
             console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
-    onTrigger(other) {
+    onTriggerEnter(other) {
         if (other.constructor.name === "Player") {
             other.gravityMultiplier *= -1;
-            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+            other.game.destroy(this);
         }
     }
 }
@@ -1457,10 +1505,10 @@ class ZeroGravityBlock extends GameObject {
             console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
-    onTrigger(other) {
+    onTriggerEnter(other) {
         if (other.constructor.name === "Player") {
             other.toggleGravity();
-            other.game.objects.splice(other.game.objects.indexOf(this), 1);
+            other.game.destroy(this);
         }
     }
 }
@@ -1677,38 +1725,40 @@ class Player extends GameObject {
         canvas.setFillColor(this.renderString);
         canvas.drawRectangle(this.x, this.y, this.width, this.height);
     }
+}
 
-    onCollision(other) {
-        switch (other.constructor.name) {
-            // case "Platform":
-            //     if (this.isRightOf(other)) {
-            //         this.collidingLeft = true;
-            //     }
-            //     if (this.isLeftOf(other)) {
-            //         this.collidingRight = true;
-            //     }
-            //     if (this.isAbove(other)) {
-            //         this.y = other.y + other.height / 2 + this.height / 2;
-            //         this.collidingAbove = true;
-            //     }
-            //     if (this.isBelow(other)) {
-            //         this.y = other.y - other.height / 2 - this.height / 2;
-            //         this.collidingBelow = true;
-            //     }
-            //     console.log(this.collidingBelow);
-            //     break;
-            case "Enemy":
-                this.game.reloadLevel();
-                break;
-            case "Door":
-                this.game.loadLevel(other.levelName);
-                break;
-            case "Star":
-                this.game.objects.splice(this.game.objects.indexOf(other), 1);
-                this.game.scoreEarnedThisLevel += 100;
-                break;
-        }
+class CollisionMap{
+    constructor(){
+        this.collisions = {};
     }
+    add(obj1, obj2){
+        if(!this.collisions[obj1])
+            this.collisions[obj1] = {};
+        this.collisions[obj1][obj2] = 1;
+    }
+
+    removeAll(obj){
+        for(let collision of this.collisions[obj])
+            delete this.collisions[obj][collision];
+        delete this.collisions[obj];
+    }
+
+    remove(obj1, obj2){
+        if(!this.contains(obj1, obj2)) return;
+        delete this.collisions[obj1][obj2];
+        delete this.collisions[obj2][obj1];
+    }
+
+    contains = (obj1, obj2) => (this.collisions[obj1] && this.collisions[obj1][obj2]) || (this.collisions[obj2] && this.collisions[obj2][obj1]);
+}
+
+class Pair{
+    constructor(a, b){
+        this.a = a;
+        this.b = b;
+    }
+
+    contains = (x) => (this.a === x || this.b === x);
 }
 
 function createGameOverScreenLevel(){
