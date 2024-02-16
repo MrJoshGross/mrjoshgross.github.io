@@ -1,0 +1,43 @@
+<!--Import graphics functionality-->
+<body><script src="BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update, 800, 800);
+
+    canvas.setLineThickness(2);
+
+    let numVertices = 10;
+
+    let vertices = [];
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawComplete();
+    }
+
+    function drawComplete(){
+        canvas.setBorderColor("gray");
+        canvas.drawCircle(400, 400, 100, FRAME);
+        canvas.setBorderColor("black");
+        for(let p1 of vertices){
+            for(let p2 of vertices){
+                canvas.drawLine(p1, p2);
+            }
+        }
+        for(point of vertices){
+            canvas.drawCircle(point.x, point.y, 10);
+        }
+        
+    }
+
+    function createVertices(){
+        let slice = 360/numVertices;
+        for(let i = 0; i < numVertices; i++){
+            vertices.push(new Point(400 + 100*Math.cos(i*slice*Math.PI/180), 400 - 100*Math.sin(i*slice*Math.PI/180)));
+        }
+    }
+
+    createVertices();
+
+</script>
