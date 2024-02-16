@@ -1,10 +1,14 @@
 <!--Import graphics functionality-->
-<body><script src="BearcatGraphics.js"></script></body>
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+    Draw the complete graph of <input type="number" min="1" max="20" onchange="setNumVerts(this.value)" value="10"> vertices<br>
+</body>
 
 <script>
     // canvas object
     let canvas = new BearcatGraphics(update, 800, 800);
-
+    canvas.debug = false;
     canvas.setLineThickness(2);
 
     let numVertices = 10;
@@ -16,25 +20,31 @@
         drawComplete();
     }
 
-    function drawComplete(){
+    function drawComplete() {
         canvas.setBorderColor("gray");
         canvas.drawCircle(400, 400, 100, FRAME);
         canvas.setBorderColor("black");
-        for(let p1 of vertices){
-            for(let p2 of vertices){
+        for (let p1 of vertices) {
+            for (let p2 of vertices) {
                 canvas.drawLine(p1, p2);
             }
         }
-        for(point of vertices){
+        for (point of vertices) {
             canvas.drawCircle(point.x, point.y, 10);
         }
-        
+
     }
 
-    function createVertices(){
-        let slice = 360/numVertices;
-        for(let i = 0; i < numVertices; i++){
-            vertices.push(new Point(400 + 100*Math.cos(i*slice*Math.PI/180), 400 - 100*Math.sin(i*slice*Math.PI/180)));
+    function setNumVerts(newValue) {
+        numVertices = newValue;
+        createVertices();
+    }
+
+    function createVertices() {
+        let slice = 360 / numVertices;
+        vertices = [];
+        for (let i = 0; i < numVertices; i++) {
+            vertices.push(new Point(400 + 100 * Math.cos(i * slice * Math.PI / 180), 400 - 100 * Math.sin(i * slice * Math.PI / 180)));
         }
     }
 
