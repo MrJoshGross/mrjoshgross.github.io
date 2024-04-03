@@ -184,7 +184,11 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    dibujaRectangulo = (x, y, width, height, style, rotation) => this.drawRectangle(x, y, width, height, style, rotation);
+
     drawSquare = (x, y, length, style = FILLFRAME, rotation) => this.drawRectangle(x, y, length, length, style, rotation);
+
+    dibujaCuadrado = (x, y, length, style = FILLFRAME, rotation) => this.drawSquare(x, y, length, style, rotation);
 
     drawOval(x, y, xRadius, yRadius, style = FILLFRAME, rotation = 0) {
         if (rotation) this.#rotate(x, y, rotation);
@@ -200,9 +204,15 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    dibujaOval = (x, y, xRadius, yRadius, style, rotation) => this.drawOval(x, y, xRadius, yRadius, style, rotation);
+
     drawCircle = (x, y, radius, style = FILLFRAME, rotation) => this.drawOval(x, y, radius, radius, style, rotation);
 
+    dibujaCirculo = (x, y, radius, style = FILLFRAME, rotation) => this.drawCircle(x, y, radius, style, rotation);
+
     drawTriangle = (x, y, length, style = FILLFRAME, rotation) => this.drawEquilateralTriangle(x, y, length, style, rotation);
+
+    dibujaTriangulo = (x, y, length, style, rotation) => this.drawTriangle(x, y, length, style, rotation);
 
     drawEquilateralTriangle(x, y, length, style = FILLFRAME, rotation) {
         let h = Math.sqrt(3 * length * length) / 2;
@@ -248,6 +258,8 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    dibujaHexagono = (x, y, length, style, rotation) => this.drawHexagon(x, y, length, style, rotation);
+
     drawStar(x, y, length, style = FILLFRAME, rotation, rotateAroundPoint) {
         if (!rotation) rotation = BearcatGraphics.STAR_ROTATION_CORRECTION; // determine the correct formula iot not need this
         let points = [];
@@ -260,6 +272,8 @@ class BearcatGraphics {
         }
         this.drawPolygon(points, style, rotation, rotateAroundPoint);
     }
+
+    dibujaEstrella = (x, y, length, style, rotation, rotateAroundPoint) => this.drawStar(x, y, length, style, rotation, rotateAroundPoint);
 
     drawPolygon(points, style = FILLFRAME, rotation, rotateAroundPoint) {
         if (rotation) {
@@ -282,6 +296,8 @@ class BearcatGraphics {
         if (rotation) this.resetCanvasRotation();
     }
 
+    dibujaPoligono = (points, style, rotation, rotateAroundPoint) => this.drawPolygon(points, style, rotation, rotateAroundPoint);
+
     drawLine(p1, p2, style = FILLFRAME, rotation) {
         if (rotation) this.#rotate((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, rotation);
         this.canvas.beginPath();
@@ -295,6 +311,8 @@ class BearcatGraphics {
         }
         if (rotation) this.resetCanvasRotation();
     }
+
+    dibujaLinea = (p1, p2, style, rotation) => this.drawLine(p1, p2, style, rotation);
 
     findCenter(points) {
         let xAverage = 0;
@@ -344,6 +362,8 @@ class BearcatGraphics {
         canvas.drawRectangle(x + width / 8, y + 7 * height / 8, width / 4, 3 * height / 4, FILLFRAME, rotation);
     }
 
+    dibujaPersona = (x, y, width, height, color, rotation) => this.drawPerson(x, y, width, height, color, rotation); 
+
     // adapted from code written by Santiago L, Fall 2023
     drawMrGross(x = 200, y = 580, widthPercent = 1, heightPercent = 1) {
         canvas.translate(x, y);
@@ -377,6 +397,8 @@ class BearcatGraphics {
         canvas.drawLine({ x: -7, y: -60 }, { x: 8, y: -60 });
         canvas.resetCanvasRotation();
     }
+
+    dibujaSrGross = (x, y, widthPercent, heightPercent) => this.drawMrGross(x, y, widthPercent, heightPercent);
 
     // adapted from code written by Yuddy N, Fall 2023
     drawFoodTruck(x, y, direction = RIGHT, rotation, widthPercent = 1, heightPercent = 1) {
@@ -425,6 +447,9 @@ class BearcatGraphics {
         canvas.drawCircle((116 * direction), 55, 1, FILLFRAME, rotation);
         canvas.resetCanvasRotation();
     }
+
+    dibujaCamionDeComida = (x, y, direction = RIGHT, rotation, widthPercent, heightPercent) => this.drawFoodTruck(x, y, direction, rotation, widthPercent, heightPercent); 
+
     // adapted from code written by Cristian I, Fall 2023
     drawSoccerBall(x, y, scalePercent = 1){
         canvas.canvas.translate(x, y); 
@@ -440,6 +465,8 @@ class BearcatGraphics {
         canvas.drawHexagon(0, -20, 4, FILLFRAME);
         canvas.resetCanvasRotation();
     }
+
+    dibujaBalonDeFutbol = (x, y, scalePercent) => this.drawSoccerBall(x, y, scalePercent);
 
     // adapted from code written by Cristian I, Fall 2023
     drawPizza(x, y, scalePercent = 1, showToppings = true){
@@ -472,7 +499,7 @@ class BearcatGraphics {
         const image = new Image(width, height)
         image.src = path;
         if (rotation) this.#rotate(x, y, rotation);
-        this.canvas.drawImage(image, x + width / 2, y + height / 2, width, height);
+        this.canvas.drawImage(image, x - width / 2, y - height / 2, width, height);
         if (rotation) this.resetCanvasRotation();
     }
 
