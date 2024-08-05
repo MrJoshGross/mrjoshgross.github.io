@@ -1856,5 +1856,3 @@ let COLORS = {
     purple: "#D000FF",
     lightpurple: "#E46BFF",
 };
-
-// DZ was here
