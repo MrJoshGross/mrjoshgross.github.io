@@ -1,0 +1,228 @@
+<!--Import graphics functionality-->
+<body><script src="https://mrjoshgross.github.io/showcase/city scenery projects/BearcatGraphics.js"></script></body>
+
+<script>
+    // canvas object
+    let canvas = new BearcatGraphics(update,1000);
+
+    let offset = 0;
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+        drawSky();
+        drawBuildings();
+        drawSidewalk();
+        drawRoad();
+        drawCar();
+        drawGrass();
+        if(offset < 750 )
+            offset = offset + 2;
+        else
+            offset = -550;
+    }
+
+    function drawSky(){
+    // background  
+    canvas.setFillColor("midnightblue")
+    canvas.drawRectangle(283, 237, 1500, 1500)          
+
+    // road
+    canvas.setFillColor("black")
+    canvas.drawRectangle(182, 449, 1800, 180)    
+    canvas.setFillColor("yellow")    
+    canvas.drawRectangle(56, 413, 50 , 8)   
+    canvas.drawRectangle(151, 412, 50, 8)
+    canvas.drawRectangle(253, 415, 50, 8)
+    canvas.drawRectangle(345, 417, 50, 8 )
+    canvas.drawRectangle(443, 419, 50 ,8)
+    canvas.drawRectangle(542, 420, 50 ,8)
+    canvas.drawRectangle(629, 423, 50, 8)  
+    canvas.drawRectangle(728, 423, 50, 8)
+    canvas.drawRectangle(827, 425, 50, 8)  
+    canvas.drawRectangle(918, 425, 50, 8)
+
+
+    canvas.setFillColor("grey")
+    canvas.drawRectangle(146, 320, 1800, 90)
+    canvas.setFillColor("orange")
+    canvas.drawRectangle(547, 204, 110, 140)
+    canvas.setFillColor("darkgreen") 
+    canvas.drawSquare(432, 218, 110)
+    canvas.drawSquare(517, 171, 15) 
+    canvas.drawSquare(552, 174, 15) 
+    canvas.drawSquare(586, 173, 15)
+    canvas.drawSquare(520, 210, 15)
+    canvas.drawSquare(555, 211, 15)   
+    canvas.drawSquare(588, 211, 15) 
+    canvas.drawSquare(520, 252, 15)
+    canvas.drawSquare(587, 253, 15) 
+    canvas.drawRectangle(557, 257, 20, 40) 
+    canvas.setFillColor("white") 
+    canvas.drawSquare(407, 202, 30)
+    canvas.drawSquare(465, 203, 30)
+    canvas.drawRectangle(440, 258,35, 40)
+    canvas.setFillColor("black")   
+    canvas.drawCircle(419, 208, 5)  
+    canvas.drawCircle(479, 208, 5)  
+    canvas.drawRectangle(445, 262, 15, 3)   
+    canvas.setFillColor("pink")   
+    canvas.drawRectangle(317, 225, 110, 100) 
+    canvas.setFillColor("teal")   
+    canvas.drawSquare(282, 205, 20) 
+    canvas.drawSquare(320, 205, 20) 
+    canvas.drawSquare(355, 205, 20) 
+    canvas.drawRectangle(324, 254, 20, 40)  
+    canvas.setFillColor("red")
+    canvas.drawCircle(550, 260, 3)  
+    canvas.drawCircle(330, 256, 3) 
+
+    // faris wheel
+
+    let CENTER = {x: 51, y: 150, amount: offset/2}
+    canvas.drawCircle(51, 150, 100, FILLFRAME, CENTER)
+    canvas.setFillColor("white")
+    canvas.drawRectangle(61, 36, 70, 40, FILLFRAME, CENTER)
+    canvas.drawRectangle(165, 82, 70, 40,FILLFRAME, CENTER)
+    canvas.drawRectangle(180, 166, 70, 40, FILLFRAME, CENTER)
+    canvas.drawRectangle(135, 244, 70, 40, FILLFRAME, CENTER)  
+    canvas.drawRectangle(41, 267, 60, 40, FILLFRAME, CENTER)    
+    canvas.setFillColor("midnightblue")
+    canvas.drawSquare(65, 41, 25, FILLFRAME, CENTER)
+    canvas.drawSquare(170, 90, 25, FILLFRAME, CENTER)
+    canvas.drawSquare(182, 173, 25, FILLFRAME, CENTER)
+    canvas.drawSquare(136, 250, 25, FILLFRAME, CENTER) 
+    canvas.drawSquare(42, 273, 25, FILLFRAME, CENTER)
+    canvas.drawPerson(139, 254, 8, 8, "white", CENTER) 
+    canvas.drawPerson(45, 276, 8, 8, "white", CENTER)
+    canvas.drawPerson(184, 174, 8, 8, "white", CENTER)
+    canvas.drawPerson(172, 93, 8, 8, "white", CENTER)
+    canvas.drawPerson(68, 47, 8, 8, "white", CENTER)
+    canvas.setFillColor("black")
+    canvas.drawStar(62, 150, 50, FILLFRAME, CENTER)
+    canvas.setFillColor("purple")
+    canvas.drawStar(65, 152, 22, FILLFRAME, CENTER)    
+    //ionk.
+    canvas.drawTriangle(549, 95, 115)  
+    canvas.setFillColor("yellow")
+    canvas.drawStar(287, 48, 3)
+    canvas.drawStar(344, 79, 3)
+    canvas.drawStar(374, 46, 3)
+    canvas.drawStar(304, 102, 3)
+    canvas.drawStar(407, 87, 3)
+    canvas.drawStar(447, 53, 3)
+    canvas.drawStar(472, 110, 3)
+    canvas.drawStar(372, 128, 3)
+    canvas.drawFoodTruck(78, 333, 0)    
+    canvas.setFillColor("white")
+    
+    // persons
+    canvas.drawPerson(239, 263, 20, 20)   
+    
+    
+    canvas.drawPerson(586, 319, 20, 20)
+    canvas.drawPerson(382, 299, 20, 20) 
+    canvas.drawPerson(297, 320, 20, 20)
+    canvas.drawPerson(497, 297, 20, 20) 
+    //idk... 
+    canvas.setFillColor("grey")
+    canvas.drawSquare(551, 98, 40)
+    canvas.drawPerson(554, 101, 10, 12) 
+    canvas.setFillColor("purple")
+    canvas.drawStar(137, 320, 10)
+    canvas.drawStar(32, 354, 11)
+    canvas.drawPerson(543, 112, 4, 4)   
+    canvas.drawPerson(406, 322, 6, 6)
+    canvas.drawPerson(264, 287, 6, 6)
+    // bank
+    canvas.setFillColor("grey")
+    canvas.drawSquare(669, 209, 128)
+    canvas.drawSquare(800, 209, 128)    
+    canvas.setFillColor("grey")
+    canvas.drawTriangle(733, 70, 250)
+    canvas.setFontSize(40); 
+    canvas.setFillColor("white")
+    canvas.drawText("BANK", 733, 104);  
+    canvas.setFillColor("white")    
+    canvas.setFillColor("black")    
+    canvas.setFillColor("white") 
+    canvas.drawRectangle(721, 242, 20, 60)  
+    canvas.drawRectangle(748, 242, 20, 60)  
+    canvas.setFillColor("black")
+    canvas.drawRectangle(657, 213, 60, 80)
+    canvas.drawRectangle(810, 214, 60, 80)  
+    //  
+    canvas.drawPerson(641, 240, 10, 10)
+    canvas.drawPerson(662, 234, 20, 14)
+    canvas.drawPerson(836, 237, 10, 10) 
+    canvas.drawPerson(825, 236, 10, 13) 
+    canvas.drawPerson(809, 241, 10, 10)
+    canvas.drawPerson(793, 242, 10, 10)
+    canvas.drawPerson(680, 240, 10, 10) 
+    // car
+    canvas.setFillColor("hotpink")
+    canvas.drawRectangle(494 + offset, 410, 50, 45)  
+    canvas.setFillColor("black") 
+    canvas.drawCircle(476 + offset, 429, 11)
+    canvas.drawCircle(512 + offset, 430, 11) 
+    canvas.setFillColor("lightblue")
+    canvas.drawSquare(486 + offset, 405, 11)
+    canvas.drawSquare(507 + offset, 405, 11) 
+    canvas.setFillColor("pink") 
+    canvas.drawCircle(515 + offset, 431, 4)
+    canvas.drawCircle(479 + offset, 431, 4)
+    
+    // 2nd car
+    canvas.drawSquare(301 + offset, 409, 40) 
+    canvas.setFillColor("black") 
+    canvas.drawCircle(288 + offset, 424, 9)  
+    canvas.drawCircle(315 + offset, 425, 9)
+    canvas.setFillColor("lightblue")
+    canvas.drawSquare(294 + offset, 403, 9) 
+    canvas.drawSquare(312 + offset, 403, 9)  
+    canvas.setFillColor("white")  
+    canvas.drawCircle(287 + offset, 426, 4)  
+    canvas.drawCircle(317 + offset, 426, 4)
+    canvas.setFillColor("brown")    
+    canvas.drawRectangle(909, 235, 20, 80)
+    canvas.setFillColor("green")
+    canvas.drawCircle(894, 181, 17)
+    canvas.drawCircle(921, 180, 17)
+    canvas.drawCircle(908, 160, 17) 
+    canvas.setFillColor("brown") 
+    canvas.drawRectangle(975, 216, 20, 116)  
+    canvas.setFillColor("green") 
+    canvas.drawCircle(953, 144, 19)
+    canvas.drawCircle(985, 143, 19)
+    canvas.drawCircle(970, 121, 19) 
+    canvas.setFillColor("white")
+    canvas.drawCircle(909, 66, 50)  
+    canvas.setFillColor("midnightblue")  
+    canvas.drawCircle(888, 67, 50, FILL)  
+    canvas.drawPerson(673, 296, 13, 20)     
+    canvas.setFillColor("yellow")
+    canvas.drawStar(862, 47, 6) 
+    canvas.drawStar(905, 85, 6)
+    
+    }
+
+    function drawBuildings(){
+
+    }
+
+    function drawSidewalk(){
+
+    }
+
+    function drawRoad(){
+
+    }
+
+    function drawCar(){
+
+    }
+
+    function drawGrass(){
+        
+    }
+
+</script>
