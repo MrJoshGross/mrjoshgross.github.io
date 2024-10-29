@@ -1,0 +1,294 @@
+<h1>Hit Control + Shift + I to view output</h1>
+<script>
+
+    // if this is set to true, tests will run.
+    // if this is set to false, tictactoe will run.
+    let runTests = true;
+
+    /**
+     * Below are the variables needed to control this file. 
+     * board represents the board itself, which is a 2D array.
+     * X and O represent the character to put on the board whenever 
+     * player X and O place a piece.
+     * player represents the player whose turn it currently is.
+     * endingText is the message to display when the game is over.
+     * It will either display a win for one of the players or a draw.
+    */
+    let board = null;
+    let X = "X";
+    let O = "O";
+    let FREE = " ";
+    let player = X;
+    let endingText = "";
+
+    /**
+     * Implement the following functions as described in the comments above each one.
+     * Each function does a very specific thing that, when combined with all others,
+     * completely implements tic tac toe.
+     * In order to test if your implementation of a function is correct, ensure 
+     * the boolean runTest variable is set to true.
+     * In order to enjoy the fruits of your labors and play tic tac toe, ensure
+     * the boolean runTest variable to set to false.
+     */
+
+    /*
+    Creates a 3-element array.
+    Each element in the array is a 3-element array.
+    Each element in each 3-element array is a space " "
+    So, board should look like:
+    [" ", " ", " "]
+    [" ", " ", " "]
+    [" ", " ", " "] 
+    This 2D, 3x3 array is then stored in the board variable.
+    */
+    function createBoard() {
+
+    }
+
+    /*
+    Determines if the game is over.
+    To determine if a game is over, the following checks need to occur:
+        - A player has won if they have 3 pieces in a row, 
+        either vertically, horitzontally, or diagonally.
+        - A game is a draw if all positions on the board are occupied 
+        and no one has won. 
+    If one of these conditions is met, store an appropriate message 
+    in the endingText variable (ex. "X won" if player X won).
+    If one of these conditions is met, return true. Otherwise, return false.
+    */
+    function isGameOver() {
+
+    }
+
+    /*
+    Prints out a layout of the game to the console. 
+    An example board:           Should display something like this:
+    board = [               
+             [X,  , O],         X| |O
+             [ , X, O],          |X|O
+             [ ,  , X]           | |X
+            ]
+    */
+    function printBoard() {
+
+    }
+
+    // Print out whose turn it is.
+    function printTurnText() {
+
+     }
+
+    // Informs the user to enter a number for the "x" coordinate.
+    function printXText() {
+
+     }
+
+    // Informs the user to enter a number for the "y" coordinate.
+    function printYText() {
+
+    }
+
+    // Get input from the user and then ensure
+    // that the obtained input is a valid number (between 0 and 2 inclusive).
+    function getInput() {
+        
+    }
+
+    // Informs the user that a piece is being checked to see if
+    // it can be placed at a given (x, y) position.
+    function printPlacementCheckText(x, y) {
+        
+     }
+
+    // Checks to see if a piece can be placed at the given (x, y) position.
+    // Returns true if that position on the board is empty, false otherwise.
+    function validMove(x, y) {
+
+    }
+
+    // Informs the user that the given (x, y) position was valid
+    // and that a piece has been placed there.
+    function printValidMoveText(x, y) {
+        
+     }
+
+    // Places the appropriate piece (depending on whose turn it is)
+    // at the appropriate index in the board variable.
+    function placePiece(x, y) {
+        
+    }
+
+    // Changes turns. If it is currently player X's, turn, then
+    // change to player O's turn, and vice versa.
+    function changeTurns() { 
+
+     }
+
+    // Informs the user that they attempted to make an invalid move.
+    function printInvalidMoveText() {
+        
+     }
+
+    // Informs the user of the end result of the game. 
+    // Simply print the value of the endingText variable. 
+    function printEndingMessage() {
+        
+    }
+
+    /**
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE!
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE!
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE!
+     * 
+     * EVERYTHING BELOW THIS IS LOOK ONLY!
+     * ASSIGNMENT FRAME CODE BELOW THIS LINE
+     * EVERYTHING BELOW THIS IS LOOK ONLY!
+     * 
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE!
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE!
+     * DO NOT MODIFY ANY CODE BELOW THIS LINE! 
+     */
+
+    /**
+     * Main loop of the game. Contains all logic for the 
+     * control flow of the game itself.
+     */
+    function runGame() {
+        createBoard();
+        while (!isGameOver()) {
+            printBoard();
+            printTurnText();
+            printXText();
+            let x = getInput();
+            printYText();
+            let y = getInput();
+            printPlacementCheckText(x, y);
+            if (validMove(x, y)) {
+                printValidMoveText(x, y)
+                placePiece(x, y);
+                changeTurns();
+            } else
+                printInvalidMoveText(x, y);
+        }
+        printEndingMessage();
+    }
+
+    /**
+     * TESTING VARIABLES
+    */
+
+    let tb1 = [
+        [FREE, FREE, FREE],
+        [FREE, FREE, FREE],
+        [FREE, FREE, FREE]
+    ];
+
+    let tb2 = [
+        [X, FREE, O],
+        [O, X, X],
+        [FREE, X, O]
+    ];
+
+    let tb3 = [
+        [O, FREE, X],
+        [FREE, X, FREE],
+        [X, FREE, O]
+    ];
+
+    let tb4 = [
+        [X, O, X],
+        [X, O, O],
+        [O, X, X]
+    ];
+
+    function test() {
+        console.log("Running tests");
+        testCreateBoard();
+        testIsGameOver();
+        testValidMove();
+        testPlacePiece();
+        testChangeTurns();
+        console.log("Tests have finished running - if no errors, congratulations! If errors.. well.. this is awkward.. :/");
+    }
+
+    function testCreateBoard() {
+        createBoard();
+        if (board === null || board === undefined){
+            console.error("testCreateBoard: board is null or undefined but should be populated after createBoard is called.");
+            return;
+        }
+            for (let row of board)
+            for (let cell of row)
+                if (cell !== " ")
+                    console.error(`testCreateBoard: at least one cell in the board is not populated with a space character \" \" but should be after createBoard is called. Found value: ${cell}`);
+    }
+
+    function testIsGameOver() {
+        board = tb1;
+        if (isGameOver())
+            console.error("testIsGameOver: Test Board 1 (tb1) returned TRUE but should return FALSE");
+        board = tb2;
+        if (isGameOver())
+            console.error("testIsGameOver: Test Board 2 (tb2) returned TRUE but should return FALSE");
+        board = tb3;
+        if (!isGameOver())
+            console.error("testIsGameOver: Test Board 3 (tb3) returned FALSE but should return TRUE");
+        board = tb4;
+        if (!isGameOver())
+            console.error("testIsGameOver: Test Board 4 (tb4) returned FALSE but should return TRUE");
+    }
+
+    function testValidMove() {
+        board = tb1;
+        for (let i = 0; i < 3; i++)
+            for (let j = 0; j < 3; j++)
+                if (!validMove(i, j))
+                    console.error(`testValidMove: (${i}, ${j} is FREE on Test Board 1 (tb1) and placing a piece here should be allowed but it isn't.`);
+
+        board = tb2;
+        if (validMove(0, 0))
+            console.error("testValidMove: (0, 0) is X on Test Board 2 (tb2) and placing a piece here should not be allowed but it is.");
+        if (!validMove(0, 1))
+            console.error("testValidMove: (0, 1) is FREE on Test Board 2 (tb2) and placing a piece here should be allowed but it isn't");
+
+        board = tb3
+        if (validMove(2, 2))
+            console.error("testValidMove: (2, 2) is O on Test Board 3 (tb3) and placing a piece here should not be allowed but it is.");
+        if (!validMove(1, 2))
+            console.error("testValidMove: (2, 1) is FREE on Test Board 3 (tb3) and placing a piece here should be allowed but is not.");
+
+        board = tb4
+        for (let i = 0; i < 3; i++)
+            for (let j = 0; j < 3; j++)
+                if (validMove(i, j))
+                    console.error(`testValidMove: (${i}, ${j} is OCCUPIED on Test Board 4 (tb4) and placing a piece here shouldn't be allowed but it is.`);
+    }
+
+    function testPlacePiece() {
+        board = tb1
+        for (let i = 0; i < 3; i++)
+            for (let j = 0; j < 3; j++) {
+                placePiece(i, j);
+                if (board[i][j] !== player)
+                    console.error(`testPlacePiece: (${i}, ${j}) should now have piece ${player} on it but instead has piece ${board[i][j]}`);
+                changeTurns();
+            }
+    }
+
+    function testChangeTurns() {
+        player = X;
+        changeTurns();
+        if (player !== O)
+            console.error("testChangeTurns: player is X but should be O");
+        changeTurns();
+        if (player !== X)
+            console.error("testChangeTurns: player is O but should be X");
+    }
+
+    // core control flow to determine if unit tests or game is ran
+    if (runTests)
+        test();
+    else
+        runGame();
+
+</script>
