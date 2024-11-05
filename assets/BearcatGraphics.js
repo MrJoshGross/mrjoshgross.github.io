@@ -1716,6 +1716,7 @@ class Player extends GameObject {
         if (this.gravityEnabled)
             this.xVelocity = 0;
         if (!this.canMove) return;
+        else if(this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
         else if (this.moveLeftKeyDown && !this.collidingLeft) this.xVelocity = -this.moveSpeed;
         else if (this.moveRightKeyDown && !this.collidingRight) this.xVelocity = this.moveSpeed;
         this.x += this.xVelocity;
