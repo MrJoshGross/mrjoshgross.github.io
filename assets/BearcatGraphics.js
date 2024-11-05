@@ -652,7 +652,8 @@ class Point {
 class BearcatPlatformer {
 
     static GRAVITY = 9.81;
-    static COLLISION_EPSILON = 10;
+    static COLLISION_EPSILON_X = 0;
+    static COLLISION_EPSILON_Y = 10;
 
     static MOVEMENT_TYPES = {
         FORWARD: 1,
@@ -1047,11 +1048,15 @@ class GameObject {
 
 
     isRightOf(other) {
-        return this.x - this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x + other.width / 2 && this.x - this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x + other.width / 2;
+        let buffer = 20/other.width;
+        return this.x - this.width / 2 + BearcatPlatformer.COLLISION_EPSILON_X + buffer >= other.x + other.width / 2 && this.x - this.width / 2 - BearcatPlatformer.COLLISION_EPSILON_X - buffer <= other.x + other.width / 2;
     }
 
     isLeftOf(other) {
-        return this.x + this.width / 2 + BearcatPlatformer.COLLISION_EPSILON >= other.x - other.width / 2 && this.x + this.width / 2 - BearcatPlatformer.COLLISION_EPSILON <= other.x - other.width / 2;
+        let buffer = 20/other.width;
+        let otherLeftSide = other.x - other.width/2;
+        let rightSide = this.x + this.width/2;
+        return rightSide >= otherLeftSide - BearcatPlatformer.COLLISION_EPSILON_X - buffer && rightSide <= otherLeftSide + BearcatPlatformer.COLLISION_EPSILON_X + buffer
     }
 
     inHorizontalBounds(other) {
@@ -1066,6 +1071,8 @@ class GameObject {
     }
 
     inVerticalBounds(other) {
+        let dist = Math.abs(this.y - other.y);
+        return dist <= this.height/2 + other.height/2;
         let otherTopEdge = other.y - other.height / 2;
         let otherBottom = other.y + other.height / 2;
         let thisTopEdge = this.y - this.height / 2;
@@ -1074,11 +1081,15 @@ class GameObject {
     }
 
     isBelow(other) {
-        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y + this.height / 2 <= other.y - other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
+        // this.y + height/2 = bottom of self
+        // other.y - height/2 = top of other
+        return this.y + this.height / 2 >= other.y - other.height / 2 - BearcatPlatformer.COLLISION_EPSILON_Y && this.y + this.height / 2 <= other.y - other.height / 2 + BearcatPlatformer.COLLISION_EPSILON_Y;
     }
 
     isAbove(other) {
-        return this.y - this.height / 2 >= other.y + other.height / 2 - BearcatPlatformer.COLLISION_EPSILON && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.COLLISION_EPSILON;
+        // this.y - this.height/2 = top of self
+        // other.y + other.height/2 = bottom of other
+        return this.y - this.height / 2 >= other.y + other.height / 2 - BearcatPlatformer.COLLISION_EPSILON_Y && this.y - this.height / 2 <= other.y + other.height / 2 + BearcatPlatformer.COLLISION_EPSILON_Y;
     }
 
     distanceTo(other) {
@@ -1685,16 +1696,18 @@ class Player extends GameObject {
 
         // check for collisions
         for (let obj of this.game.objects) {
+            if(obj === this)
+                continue;
             if (this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)) {
                 if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline" || obj.constructor.name === "Treadmill") {
-                    if (this.isRightOf(obj)) this.collidingLeft = true;
-                    else if (this.isLeftOf(obj)) this.collidingRight = true;
-                    else if (this.isAbove(obj)) this.collidingAbove = true;
+                    if (this.isAbove(obj)) this.collidingAbove = true;
                     else if (this.isBelow(obj)) {
                         if (!this.moveDownKeyDown && obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline")
                             this.collisionCoefficient = obj.collisionCoefficient;
                         this.collidingBelow = true;
                     }
+                    else if (this.isRightOf(obj)) this.collidingLeft = true;
+                    else if (this.isLeftOf(obj)) this.collidingRight = true;
                 }
                 obj.handleCollision(this);
             }
@@ -1744,12 +1757,12 @@ class Player extends GameObject {
                 else if (this.wallJumpEnabled && !this.wallJumped && (this.collidingRight || this.collidingLeft)) {
                     canJump = true;
                     this.wallJumped = true;
-                    console.log("wall");
+                    this.jumpKeyDown = false;
                 }
                 else if (this.doubleJumpEnabled && !this.doubleJumped && this.jumpKeyCount >= 1 && !(this.wallJumpEnabled && this.jumpKeyCount >= 2 && (this.collidingRight || this.collidingLeft && this.yVelocity > 9 * this.jumpHeight * jumpDirection / 10))) {
                     canJump = true;
-                    console.log("double");
                     this.doubleJumped = true;
+                    this.jumpKeyDown = false;
                 }
             }
             if (canJump) {
@@ -1757,7 +1770,12 @@ class Player extends GameObject {
             }
         }
 
+        
         this.y -= this.yVelocity;
+
+        // if(this.yVelocity < 0)
+        //     this.yVelocity = 0;
+
         if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
             this.game.reloadLevel();
 
