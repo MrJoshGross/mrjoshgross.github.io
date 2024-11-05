@@ -1174,10 +1174,10 @@ class MovingPlatform extends GameObject {
         if (other.constructor.name === "Player") {
             switch (this.movementAxis) {
                 case Enemy.MOVEMENT_AXES.VERTICAL:
-                    other.y += this.movementSpeed * this.movementDirection / 2;
+                    other.y = this.y - this.height/2 - other.height/2;
                     break;
                 case Enemy.MOVEMENT_AXES.HORIZONTAL:
-                    other.x += this.movementSpeed * this.movementDirection;
+                    other.x += this.movementSpeed * this.movementDirection / 2;
                     break;
                 case Enemy.MOVEMENT_AXES.INCREASING_DIAGONAL:
                     other.x += this.movementSpeed * this.movementDirection / 2;
