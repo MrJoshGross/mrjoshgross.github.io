@@ -678,9 +678,6 @@ class BearcatPlatformer {
         this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, (e) => (this.handleKeyUp(e, this)));
         this.#init();
         this.currentLevel = "Level 1";
-        this.livesEnabled = false;
-        this.countDownEnabled = false;
-        this.lives = 5;
         this.createLevel("Game Over", createGameOverScreenLevel);
     }
 
@@ -692,6 +689,11 @@ class BearcatPlatformer {
     enableCountDownSystem() {
         this.countDownEnabled = true;
     }
+
+    toggleAirResistance() {
+        this.airResistanceEnabled = !this.airResistanceEnabled;
+    }
+
     setFPS(fps) {
         this.canvas.fps = fps;
         this.timeSlice = 1 / fps;
@@ -780,6 +782,11 @@ class BearcatPlatformer {
         this.showLevel = true;
         this.active = true;
         this.collisions = new CollisionMap();
+        this.livesEnabled = false;
+        this.countDownEnabled = false;
+        this.lives = 5;
+        this.airResistanceEnabled = false;
+        this.airResistanceCoefficient = 0.99;
     }
 
     #update() {
@@ -792,7 +799,7 @@ class BearcatPlatformer {
         this.backgroundFunction = func;
     }
 
-    setForegroundFunction(func){
+    setForegroundFunction(func) {
         this.foregroundFunction = func;
     }
 
@@ -876,18 +883,18 @@ class BearcatPlatformer {
         this.loadLevel(this.currentLevel);
     }
 
-    handleLevelComplete(){
+    handleLevelComplete() {
         this.score += this.scoreEarnedThisLevel;
     }
 
-    handleLevelFail(){
-        if(this.livesEnabled){
+    handleLevelFail() {
+        if (this.livesEnabled) {
             this.lives--;
-            if(this.lives <= 0)
+            if (this.lives <= 0)
                 this.loadLevel("Game Over");
             else
                 this.reloadLevel();
-        } else reloadLevel();
+        } else this.reloadLevel();
     }
 
     loadLevel(name) {
@@ -1116,7 +1123,7 @@ class GameObject {
 
 class MovingPlatform extends GameObject {
 
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, frictionCoefficient, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
@@ -1125,6 +1132,7 @@ class MovingPlatform extends GameObject {
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
+        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: frictionCoefficient};
     }
 
     update(game) {
@@ -1226,12 +1234,13 @@ class MovingPlatform extends GameObject {
 }
 
 class Platform extends GameObject {
-    constructor(x, y, width = 30, height = 5, renderType, renderString) {
+    constructor(x, y, width = 30, height = 5, frictionCoefficient = 0, renderType, renderString) {
         if (renderType === undefined && renderString === undefined) {
             renderType = GameObject.RENDER_TYPES.COLOR;
             renderString = "BROWN";
         }
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
+        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: frictionCoefficient};
     }
 
     render(canvas) {
@@ -1252,7 +1261,7 @@ class Platform extends GameObject {
 class Trampoline extends GameObject {
     constructor(x, y, width = 30, height = 5, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "lightgreen", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
-        this.collisionCoefficient = bounceCoefficient;
+        this.collisionSurfaceInformation = {bounceCoefficient: bounceCoefficient, groundFriction: 0};
     }
 
     render(canvas) {
@@ -1284,7 +1293,7 @@ class MovingTrampoline extends GameObject {
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
-        this.collisionCoefficient = bounceCoefficient;
+        this.collisionSurfaceInformation = {bounceCoefficient: bounceCoefficient, groundFriction: 0};
     }
 
     update(game) {
@@ -1692,10 +1701,16 @@ class Player extends GameObject {
         this.jumpKeyCount = 0;
         this.collisionCoefficient = 0;
         this.gravityEnabled = true;
+        this.airStrafeEnabled = true;
+        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: 0};
     }
 
     toggleGravity() {
         this.gravityEnabled = !this.gravityEnabled;
+    }
+
+    toggleAirStrafing() {
+        this.airStrafeEnabled = !this.airStrafeEnabled;
     }
 
     toggleWallJump() {
@@ -1720,8 +1735,8 @@ class Player extends GameObject {
                 if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline" || obj.constructor.name === "Treadmill") {
                     if (this.isAbove(obj)) this.collidingAbove = true;
                     else if (this.isBelow(obj)) {
-                        if (!this.moveDownKeyDown && obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline")
-                            this.collisionCoefficient = obj.collisionCoefficient;
+                        if (!this.moveDownKeyDown)
+                            this.collisionSurfaceInformation = obj.collisionSurfaceInformation;
                         this.collidingBelow = true;
                     }
                     else if (this.isRightOf(obj)) this.collidingLeft = true;
@@ -1731,14 +1746,7 @@ class Player extends GameObject {
             }
         }
 
-        if (this.gravityEnabled)
-            this.xVelocity = 0;
-        if (!this.canMove) return;
-        else if (this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
-        else if (this.moveLeftKeyDown && !this.collidingLeft) this.xVelocity = -this.moveSpeed;
-        else if (this.moveRightKeyDown && !this.collidingRight) this.xVelocity = this.moveSpeed;
-        this.x += this.xVelocity;
-
+        // orientation calculation for gravity / antigravity
         let collidingWithFloor = false;
         let collidingWithCeiling = false;
         let jumpDirection = 1;
@@ -1754,10 +1762,12 @@ class Player extends GameObject {
             jumpDirection = -1;
         }
 
+        // y movement calculations
+
         if (collidingWithCeiling && this.yVelocity * jumpDirection > 0)
             this.yVelocity = -this.yVelocity * 0.5;
         if (collidingWithFloor && this.yVelocity * jumpDirection <= 0) {
-            this.yVelocity = this.collisionCoefficient * -this.yVelocity;
+            this.yVelocity = this.collisionSurfaceInformation.bounceCoefficient * -this.yVelocity;
             this.jumpKeyCount = 0;
             if (this.wallJumpEnabled)
                 this.wallJumped = false;
@@ -1766,6 +1776,20 @@ class Player extends GameObject {
         }
         else if (this.gravityEnabled)
             this.yVelocity -= BearcatPlatformer.GRAVITY * this.gravityMultiplier / canvas.fps;
+
+        // x movement calculations
+
+        if (this.gravityEnabled)
+            if (this.game.airResistanceEnabled && !collidingWithFloor){
+                this.xVelocity *= this.game.airResistanceCoefficient;
+            }
+            else
+                this.xVelocity *= this.collisionSurfaceInformation.groundFriction;
+        if (!this.canMove) return;
+        else if (this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
+        else if (this.moveLeftKeyDown && !this.collidingLeft && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = -this.moveSpeed;
+        else if (this.moveRightKeyDown && !this.collidingRight && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = this.moveSpeed;
+        this.x += this.xVelocity;
 
         if (this.jumpKeyDown) {
             console.log(); // TODO
@@ -1784,16 +1808,14 @@ class Player extends GameObject {
                     this.jumpKeyDown = false;
                 }
             }
-            if (canJump) {
+            if (canJump)
                 this.yVelocity = this.jumpHeight * jumpDirection;
-            }
         }
 
 
         this.y -= this.yVelocity;
 
-        // if(this.yVelocity < 0)
-        //     this.yVelocity = 0;
+        
 
         if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
             this.game.handleLevelFail();
@@ -1802,7 +1824,7 @@ class Player extends GameObject {
         this.collidingRight = false;
         this.collidingAbove = false;
         this.collidingBelow = false;
-        this.collisionCoefficient = 0;
+        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: 1};
     }
 
     render(canvas) {
