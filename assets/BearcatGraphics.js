@@ -872,6 +872,10 @@ class BearcatPlatformer {
         this.loadLevel(this.currentLevel);
     }
 
+    completeLevel(){
+        this.score += this.scoreEarnedThisLevel;
+    }
+
     loadLevel(name) {
         this.active = false;
         if (!this.levels[name])
@@ -879,7 +883,6 @@ class BearcatPlatformer {
         else {
             this.objects = [];
             this.player = null;
-            this.score += this.scoreEarnedThisLevel;
             this.scoreEarnedThisLevel = 0;
             this.timeSinceLevelStart = 0;
             this.currentLevel = name;
@@ -1048,14 +1051,14 @@ class GameObject {
 
 
     isRightOf(other) {
-        let buffer = 20/other.width;
+        let buffer = 20 / other.width;
         return this.x - this.width / 2 + BearcatPlatformer.COLLISION_EPSILON_X + buffer >= other.x + other.width / 2 && this.x - this.width / 2 - BearcatPlatformer.COLLISION_EPSILON_X - buffer <= other.x + other.width / 2;
     }
 
     isLeftOf(other) {
-        let buffer = 20/other.width;
-        let otherLeftSide = other.x - other.width/2;
-        let rightSide = this.x + this.width/2;
+        let buffer = 20 / other.width;
+        let otherLeftSide = other.x - other.width / 2;
+        let rightSide = this.x + this.width / 2;
         return rightSide >= otherLeftSide - BearcatPlatformer.COLLISION_EPSILON_X - buffer && rightSide <= otherLeftSide + BearcatPlatformer.COLLISION_EPSILON_X + buffer
     }
 
@@ -1072,7 +1075,7 @@ class GameObject {
 
     inVerticalBounds(other) {
         let dist = Math.abs(this.y - other.y);
-        return dist <= this.height/2 + other.height/2;
+        return dist <= this.height / 2 + other.height / 2;
         let otherTopEdge = other.y - other.height / 2;
         let otherBottom = other.y + other.height / 2;
         let thisTopEdge = this.y - this.height / 2;
@@ -1174,7 +1177,7 @@ class MovingPlatform extends GameObject {
         if (other.constructor.name === "Player") {
             switch (this.movementAxis) {
                 case Enemy.MOVEMENT_AXES.VERTICAL:
-                    other.y = this.y - this.height/2 - other.height/2;
+                    other.y = this.y - this.height / 2 - other.height / 2;
                     break;
                 case Enemy.MOVEMENT_AXES.HORIZONTAL:
                     other.x += this.movementSpeed * this.movementDirection / 2;
@@ -1644,6 +1647,7 @@ class Door extends GameObject {
     onTrigger(other) {
         if (this.enabled === false) return;
         if (other.constructor.name === "Player") {
+            other.game.completeLevel();
             other.game.loadLevel(this.levelName);
         }
     }
@@ -1696,7 +1700,7 @@ class Player extends GameObject {
 
         // check for collisions
         for (let obj of this.game.objects) {
-            if(obj === this)
+            if (obj === this)
                 continue;
             if (this.inHorizontalBounds(obj) && this.inVerticalBounds(obj)) {
                 if (obj.constructor.name === "Platform" || obj.constructor.name === "MovingPlatform" || obj.constructor.name === "Trampoline" || obj.constructor.name === "MovingTrampoline" || obj.constructor.name === "Treadmill") {
@@ -1716,7 +1720,7 @@ class Player extends GameObject {
         if (this.gravityEnabled)
             this.xVelocity = 0;
         if (!this.canMove) return;
-        else if(this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
+        else if (this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
         else if (this.moveLeftKeyDown && !this.collidingLeft) this.xVelocity = -this.moveSpeed;
         else if (this.moveRightKeyDown && !this.collidingRight) this.xVelocity = this.moveSpeed;
         this.x += this.xVelocity;
@@ -1771,7 +1775,7 @@ class Player extends GameObject {
             }
         }
 
-        
+
         this.y -= this.yVelocity;
 
         // if(this.yVelocity < 0)
@@ -1788,8 +1792,12 @@ class Player extends GameObject {
     }
 
     render(canvas) {
-        canvas.setFillColor(this.renderString);
-        canvas.drawRectangle(this.x, this.y, this.width, this.height);
+        if (this.renderType === GameObject.RENDER_TYPES.IMAGE)
+            canvas.drawImage(this.x, this.y, this.width, this.height);
+        else {
+            canvas.setFillColor(this.renderString);
+            canvas.drawRectangle(this.x, this.y, this.width, this.height);
+        }
     }
 }
 
