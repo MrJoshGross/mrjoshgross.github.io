@@ -804,19 +804,19 @@ class BearcatPlatformer {
     }
 
     #drawDisplay() {
-        if (this.showScore === true) {
+        if (this.showScore) {
             this.canvas.setFillColor("white");
             this.canvas.setFontSize(20);
             let scoreText = this.scoreEarnedThisLevel !== 0 ? `Score: ${this.score} (+${this.scoreEarnedThisLevel})` : `Score: ${this.score}`;
             this.canvas.drawText(scoreText, 75, 25);
         }
-        if (this.showTime === true) {
+        if (this.showTime) {
             let timeText = `Time: ${this.timeSinceLevelStart.toFixed(2)}`;
             this.canvas.drawText(timeText, 250, 25);
         }
-        if (this.showLevel === true)
+        if (this.showLevel)
             this.canvas.drawText(this.currentLevel, 600, 25);
-        if (this.livesEnabled === true)
+        if (this.livesEnabled)
             this.canvas.drawText(`Lives: ${this.lives}`, 425, 25);
     }
 
@@ -873,12 +873,21 @@ class BearcatPlatformer {
     }
 
     reloadLevel() {
-        this.lives--;
         this.loadLevel(this.currentLevel);
     }
 
-    completeLevel(){
+    handleLevelComplete(){
         this.score += this.scoreEarnedThisLevel;
+    }
+
+    handleLevelFail(){
+        if(this.livesEnabled){
+            this.lives--;
+            if(this.lives <= 0)
+                this.loadLevel("Game Over");
+            else
+                this.reloadLevel();
+        } else reloadLevel();
     }
 
     loadLevel(name) {
@@ -1399,7 +1408,7 @@ class Enemy extends GameObject {
     onCollision(other) {
         if (other.constructor.name === "Player") {
             other.game.destroy(this);
-            other.game.reloadLevel();
+            other.game.handleLevelFail();
         }
     }
 
@@ -1652,7 +1661,7 @@ class Door extends GameObject {
     onTrigger(other) {
         if (this.enabled === false) return;
         if (other.constructor.name === "Player") {
-            other.game.completeLevel();
+            other.game.handleLevelComplete();
             other.game.loadLevel(this.levelName);
         }
     }
@@ -1787,7 +1796,7 @@ class Player extends GameObject {
         //     this.yVelocity = 0;
 
         if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
-            this.game.reloadLevel();
+            this.game.handleLevelFail();
 
         this.collidingLeft = false;
         this.collidingRight = false;
