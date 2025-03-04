@@ -792,10 +792,15 @@ class BearcatPlatformer {
         this.backgroundFunction = func;
     }
 
+    setForegroundFunction(func){
+        this.foregroundFunction = func;
+    }
+
     #drawGUI() {
         if (this.backgroundFunction) this.backgroundFunction();
         this.#drawObjects();
         this.#drawDisplay();
+        if (this.foregroundFunction) this.foregroundFunction();
     }
 
     #drawDisplay() {
