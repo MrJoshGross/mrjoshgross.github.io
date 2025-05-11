@@ -1,0 +1,135 @@
+<!--Import graphics functionality-->
+<script src="BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let canvas = null;
+
+    let WIDTH = 600;
+    let HEIGHT = 600;
+
+    let startX = -2;
+    let endX = 2;
+    let startY = -2;
+    let endY = 2;
+    let iterCounts = [];
+    let iterCountsMap = new Map();
+    let spectrumMap = new Map();
+    let colorMap = new Map();
+    let total = 0;
+    const MAX_ITERS = 1000;
+
+    // call to set everything up
+    init();
+
+    // function that sets everything up
+    function init() {
+
+        // create canvas to display graphics in and do other setup stuff
+        canvas = new BearcatGraphics(null, WIDTH, HEIGHT);
+        draw();
+
+        // set thickness of shape borders
+        canvas.setLineThickness(5);
+    }
+
+    function draw() {
+        initMaps();
+        calculateIterCounts();
+        calculateIterCountMap();
+        calculateSpectrumMap();
+        calculateColorMap();
+        drawPlot();
+    }
+
+    function drawPlot() {
+        for (let y = 0; y < HEIGHT; y++) {
+            for (let x = 0; x < WIDTH; x++) {
+                canvas.setFillColor(colorMap.get(iterCounts[x][y]));
+                canvas.drawPoint(x, y);
+            }
+        }
+    }
+
+    function calculateIterCountMap() {
+        for (let y = 0; y < HEIGHT; y++) {
+            for (let x = 0; x < WIDTH; x++) {
+                let count = iterCounts[x][y];
+                if (iterCountsMap.has(count))
+                    iterCountsMap.set(count, iterCountsMap.get(count) + 1);
+                else
+                    iterCountsMap.set(count, 1);
+            }
+        }
+    }
+
+    function calculateColorMap() {
+        for (const [key, value] of spectrumMap) {
+            let frequency = value / total;
+            if (key === MAX_ITERS)
+                colorMap.set(key, "black");
+            else
+                colorMap.set(key, color(
+                    Math.round(Math.sin(frequency * Math.PI / 2) * 255),
+                    Math.round(Math.sin(frequency * Math.PI) * 255),
+                    Math.round(Math.cos(frequency * Math.PI / 2) * 255)
+                ));
+        }
+    }
+
+
+    function calculateSpectrumMap() {
+        let sum = 0;
+        for (const [key, value] of iterCountsMap) {
+            let val = sum + value / 2 + 1;
+            spectrumMap.set(key, val);
+            sum += value;
+        }
+        total = sum;
+    }
+
+    function calculateIterCounts() {
+        for (let y = 0; y < HEIGHT; y++) {
+            for (let x = 0; x < WIDTH; x++) {
+                let complex = getComplex(x, y);
+                let iterCount = computeIters(complex);
+                iterCounts[x][y] = iterCount;
+            }
+        }
+    }
+
+    function initMaps() {
+        iterCounts = [];
+        for (let y = 0; y < HEIGHT; y++) {
+            iterCounts.push(new Array(WIDTH));
+        }
+    }
+
+    function computeIters(c) {
+        let z = new Complex(0, 0);
+        let currentIters = 0;
+        while (z.magnitude() <= 2.0 && currentIters < MAX_ITERS) {
+            z = z.multiply(z).add(c);
+            currentIters++;
+        }
+        return currentIters;
+    }
+
+    function getComplex(x, y) {
+        let xSlice = (endX - startX) / WIDTH;
+        let ySlice = (endY - startY) / HEIGHT;
+        return new Complex(startX + xSlice * x, startX + ySlice * y);
+    }
+
+    // every frame (1/60th of a second) draw everything
+    function update() {
+
+    }
+
+    function getColor(x, y) {
+        return color(x, y, (x + y));
+    }
+
+</script>
