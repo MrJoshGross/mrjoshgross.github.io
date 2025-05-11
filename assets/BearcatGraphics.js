@@ -164,6 +164,10 @@ class BearcatGraphics {
         this.drawRectangle(this.width / 2, this.height / 2, this.width, this.height);
     }
 
+    drawPoint = (x, y) => {
+        this.canvas.fillRect(x, y, 1, 1);
+    }
+
     /**
      * Draws a rectangle with the given information. To change the color, call `setFillColor(color)` or `setBorderColor(color)` beforehand.
      * @param {Number} x                                The X coordinate of the center of the rectangle, between 0 and `canvas.width`, starting from the left edge of the canvas.
@@ -631,7 +635,7 @@ class BearcatGraphics {
 
 function color(colorString) { return COLORS[colorString]; }
 
-function color(r, g, b) { return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; }
+function color(r, g, b) { if (r < 0 || g < 0 || b < 0 || r > 255 || g > 255 || b > 255) console.error(`invalid color values: r=${r}|g=${g}|b=${b}`); else return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; }
 
 class RotationAnchor {
     constructor(x, y, rotation) {
@@ -1132,7 +1136,7 @@ class MovingPlatform extends GameObject {
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
-        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: frictionCoefficient};
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: frictionCoefficient };
     }
 
     update(game) {
@@ -1240,7 +1244,7 @@ class Platform extends GameObject {
             renderString = "BROWN";
         }
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
-        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: frictionCoefficient};
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: frictionCoefficient };
     }
 
     render(canvas) {
@@ -1261,7 +1265,7 @@ class Platform extends GameObject {
 class Trampoline extends GameObject {
     constructor(x, y, width = 30, height = 5, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "lightgreen", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
-        this.collisionSurfaceInformation = {bounceCoefficient: bounceCoefficient, groundFriction: 0};
+        this.collisionSurfaceInformation = { bounceCoefficient: bounceCoefficient, groundFriction: 0 };
     }
 
     render(canvas) {
@@ -1293,7 +1297,7 @@ class MovingTrampoline extends GameObject {
         this.movementSpeed = movementSpeed;
         this.maxDistance = maxDistance;
         this.theta = 0;
-        this.collisionSurfaceInformation = {bounceCoefficient: bounceCoefficient, groundFriction: 0};
+        this.collisionSurfaceInformation = { bounceCoefficient: bounceCoefficient, groundFriction: 0 };
     }
 
     update(game) {
@@ -1702,7 +1706,7 @@ class Player extends GameObject {
         this.collisionCoefficient = 0;
         this.gravityEnabled = true;
         this.airStrafeEnabled = true;
-        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: 0};
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 0 };
     }
 
     toggleGravity() {
@@ -1780,7 +1784,7 @@ class Player extends GameObject {
         // x movement calculations
 
         if (this.gravityEnabled)
-            if (this.game.airResistanceEnabled && !collidingWithFloor){
+            if (this.game.airResistanceEnabled && !collidingWithFloor) {
                 this.xVelocity *= this.game.airResistanceCoefficient;
             }
             else
@@ -1815,7 +1819,7 @@ class Player extends GameObject {
 
         this.y -= this.yVelocity;
 
-        
+
 
         if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
             this.game.handleLevelFail();
@@ -1824,7 +1828,7 @@ class Player extends GameObject {
         this.collidingRight = false;
         this.collidingAbove = false;
         this.collidingBelow = false;
-        this.collisionSurfaceInformation = {bounceCoefficient: 0, groundFriction: 1};
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 1 };
     }
 
     render(canvas) {
@@ -1881,6 +1885,25 @@ function createGameOverScreenBackground() {
     canvas.setFontSize(40);
     canvas.setFillColor("red");
     canvas.drawText("GAME OVER", canvas.width / 2, canvas.height / 2);
+}
+
+class Complex {
+    constructor(real, imag) {
+        this.real = real;
+        this.imag = imag;
+    }
+
+    add(other) {
+        return new Complex(this.real + other.real, this.imag + other.imag);
+    }
+
+    multiply(other) {
+        return new Complex((this.real * other.real) - (this.imag * other.imag), (this.real * other.imag) + (this.imag * other.real));
+    }
+
+    magnitude() {
+        return Math.sqrt(this.real * this.real + this.imag * this.imag);
+    }
 }
 
 let VERTICAL = 1;
