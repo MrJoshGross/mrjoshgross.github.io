@@ -212,7 +212,8 @@ class BearcatGraphics {
 
     drawCircle = (x, y, radius, style = FILLFRAME, rotation) => this.drawOval(x, y, radius, radius, style, rotation);
 
-    drawHalfCircle = (x, y, radius, isTopHalf = true, style = FILLFRAME) => {
+    drawHalfCircle = (x, y, radius, isTopHalf = true, style = FILLFRAME, rotation = 0) => {
+        if (rotation) this.#rotate(x, y, rotation);
         this.canvas.beginPath();
         this.canvas.moveTo(x - radius, y);
         this.canvas.arc(x, y, radius, 0,Math.PI, isTopHalf);
@@ -223,6 +224,7 @@ class BearcatGraphics {
             this.canvas.stroke();
             this.canvas.fill();
         }
+        if (rotation) this.resetCanvasRotation();
     }
 
     dibujaCirculo = (x, y, radius, style = FILLFRAME, rotation) => this.drawCircle(x, y, radius, style, rotation);
