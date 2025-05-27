@@ -1142,7 +1142,7 @@ class GameObject {
 
 class MovingPlatform extends GameObject {
 
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, frictionCoefficient, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, frictionCoefficient = 0, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
@@ -1621,6 +1621,7 @@ class Treadmill extends GameObject {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.direction = direction;
         this.speed = speed;
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 1 };
     }
 
     render(canvas) {
@@ -1808,6 +1809,7 @@ class Player extends GameObject {
         else if (this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
         else if (this.moveLeftKeyDown && !this.collidingLeft && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = -this.moveSpeed;
         else if (this.moveRightKeyDown && !this.collidingRight && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = this.moveSpeed;
+        else    this.xVelocity = 0;
         this.x += this.xVelocity;
 
         if (this.jumpKeyDown) {
@@ -1843,7 +1845,7 @@ class Player extends GameObject {
         this.collidingRight = false;
         this.collidingAbove = false;
         this.collidingBelow = false;
-        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 1 };
+        this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 0 };
     }
 
     render(canvas) {
