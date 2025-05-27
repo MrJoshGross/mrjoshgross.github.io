@@ -212,6 +212,19 @@ class BearcatGraphics {
 
     drawCircle = (x, y, radius, style = FILLFRAME, rotation) => this.drawOval(x, y, radius, radius, style, rotation);
 
+    drawHalfCircle = (x, y, radius, isTopHalf = true, style = FILLFRAME) => {
+        this.canvas.beginPath();
+        this.canvas.moveTo(x - radius, y);
+        this.canvas.arc(x, y, radius, 0,Math.PI, isTopHalf);
+        if (style === FRAME || style === FILLFRAME) this.canvas.lineTo(x + radius, y);
+        if (style === FILL) this.canvas.fill();
+        else if (style === FRAME) this.canvas.stroke();
+        else if (style === FILLFRAME) {
+            this.canvas.stroke();
+            this.canvas.fill();
+        }
+    }
+
     dibujaCirculo = (x, y, radius, style = FILLFRAME, rotation) => this.drawCircle(x, y, radius, style, rotation);
 
     drawTriangle = (x, y, length, style = FILLFRAME, rotation) => this.drawEquilateralTriangle(x, y, length, style, rotation);
