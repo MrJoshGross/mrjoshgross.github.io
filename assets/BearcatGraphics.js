@@ -216,7 +216,7 @@ class BearcatGraphics {
         if (rotation) this.#rotate(x, y, rotation);
         this.canvas.beginPath();
         this.canvas.moveTo(x - radius, y);
-        this.canvas.arc(x, y, radius, 0,Math.PI, isTopHalf);
+        this.canvas.arc(x, y, radius, 0, Math.PI, isTopHalf);
         if (style === FRAME || style === FILLFRAME) this.canvas.lineTo(x + radius, y);
         if (style === FILL) this.canvas.fill();
         else if (style === FRAME) this.canvas.stroke();
@@ -1035,7 +1035,7 @@ class GameObject {
         IMAGE: 123
     }
 
-    constructor(x, y, width, height, collisionType = GameObject.COLLIDE_STATES.COLLIDABLE, renderType = GameObject.RENDER_TYPES.COLOR, renderString) {
+    constructor(x, y, width, height, collisionType = GameObject.COLLIDE_STATES.COLLIDABLE, renderType = GameObject.RENDER_TYPES.COLOR, renderString, renderFunc = (canvas) => canvas.drawRectangle(this.x, this.y, this.width, this.height)) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -1043,6 +1043,7 @@ class GameObject {
         this.collisionType = collisionType;
         this.renderType = renderType;
         this.renderString = renderString;
+        this.renderFunc = renderFunc;
     }
 
     handleCollision(other) {
@@ -1070,7 +1071,22 @@ class GameObject {
     }
 
     render(canvas) {
-        throw new Error("Must implement 'render' in subclasses!");
+        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+            if (this.renderString && this.renderString.fillColor && this.renderString.borderColor) {
+                canvas.setFillColor(this.renderString.fillColor);
+                canvas.setBorderColor(this.renderString.borderColor);
+            }
+            else
+                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+            this.renderFunc(canvas);
+        }
+        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE)
+            if (!this.renderString)
+                console.error("Render type set to GameObject.RENDER_TYPES.IMAGE but no image was provided.");
+            else
+                canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
+        else
+            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     dontRender() {
@@ -1142,7 +1158,7 @@ class GameObject {
 
 class MovingPlatform extends GameObject {
 
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, frictionCoefficient = 0, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "gray") {
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, frictionCoefficient = 0, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "grey", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
@@ -1199,21 +1215,6 @@ class MovingPlatform extends GameObject {
         this.theta += (this.movementSpeed / 60) % 360;
     }
 
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
-
     onCollision(other) {
         if (other.constructor.name === "Player") {
             switch (this.movementAxis) {
@@ -1253,27 +1254,9 @@ class MovingPlatform extends GameObject {
 }
 
 class Platform extends GameObject {
-    constructor(x, y, width = 30, height = 5, frictionCoefficient = 0, renderType, renderString) {
-        if (renderType === undefined && renderString === undefined) {
-            renderType = GameObject.RENDER_TYPES.COLOR;
-            renderString = "BROWN";
-        }
+    constructor(x, y, width = 30, height = 5, frictionCoefficient = 0, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "brown", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
         this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: frictionCoefficient };
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE)
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 }
 
@@ -1282,28 +1265,11 @@ class Trampoline extends GameObject {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString);
         this.collisionSurfaceInformation = { bounceCoefficient: bounceCoefficient, groundFriction: 0 };
     }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString) {
-                if (this.renderString.fillColor) canvas.setFillColor(this.renderString.fillColor);
-                if (this.renderString.borderColor) canvas.setBorderColor(this.renderString.borderColor);
-            }
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
 }
 
 class MovingTrampoline extends GameObject {
 
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "lightgreen") {
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, bounceCoefficient = 0.8, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "lightgreen", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
@@ -1359,26 +1325,11 @@ class MovingTrampoline extends GameObject {
         }
         this.theta += (this.movementSpeed / 60) % 360;
     }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
 }
 
 class Star extends GameObject {
-    constructor(x, y, size = 30, worth = 100, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
-        super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+    constructor(x, y, size = 30, worth = 100, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "yellow", borderColor: "black" }) {
+        super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString, (canvas) => canvas.drawStar(this.x, this.y, this.width / 2));
         this.worth = worth;
     }
 
@@ -1387,21 +1338,6 @@ class Star extends GameObject {
             other.game.destroy(this);
             other.game.scoreEarnedThisLevel += this.worth;
         }
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawStar(this.x, this.y, this.width / 2);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 }
 
@@ -1422,7 +1358,7 @@ class Enemy extends GameObject {
         FOLLOW: 6
     };
 
-    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "RED") {
+    constructor(x, y, width, height, movementAxis, movementSpeed, maxDistance, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "red", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.COLLIDABLE, renderType, renderString)
         this.movementAxis = movementAxis;
         this.anchorX = x;
@@ -1485,21 +1421,6 @@ class Enemy extends GameObject {
         this.theta += (this.movementSpeed / 60) % 360;
     }
 
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
-    }
-
     onTrigger(other) {
         if (this.enabled === false) return;
         if (other.constructor.name === "Player") {
@@ -1514,29 +1435,17 @@ class SizeChanger extends GameObject {
         SHRINK: -1
     };
 
-    constructor(x, y, width = 30, height = 30, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "YELLOW") {
+    constructor(x, y, width = 30, height = 30, changeAmount = 1.0, changeType = SizeChanger.CHANGE_TYPES.GROW, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "yellow", borderColor: "black" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString)
         this.changeType = changeType;
         this.changeAmount = changeAmount;
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString)
-                canvas.setFillColor(this.renderString);
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+        this.renderFunc = (canvas) => {
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
-            canvas.setFillColor("black");
+            canvas.setFillColor(this.renderString.borderColor);
             if (this.changeType === SizeChanger.CHANGE_TYPES.GROW)
                 canvas.drawRectangle(this.x, this.y, this.width / 4, this.height / 2);
             canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     onTrigger(other) {
@@ -1550,28 +1459,17 @@ class SizeChanger extends GameObject {
 
 class AntiGravityBlock extends GameObject {
 
-    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "black", secondaryColor: "white" }) {
+    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "black", borderColor: "black", secondaryColor: "white" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                this.renderString = { primaryColor: "black", secondaryColor: "white" }
-            }
-            canvas.setFillColor(this.renderString.primaryColor);
+        this.renderFunc = (canvas) => {
+            canvas.setFillColor(this.renderString.fillColor);
+            canvas.setBorderColor(this.renderString.borderColor);
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
             canvas.setFillColor(this.renderString.secondaryColor);
             canvas.drawRectangle(this.x - this.width / 3, this.y, this.width / 8, this.height / 8);
             canvas.drawRectangle(this.x, this.y, this.width / 8, this.height / 8);
             canvas.drawRectangle(this.x + this.width / 3, this.y, this.width / 8, this.height / 8);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     onTriggerEnter(other) {
@@ -1584,28 +1482,17 @@ class AntiGravityBlock extends GameObject {
 
 class ZeroGravityBlock extends GameObject {
 
-    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "black", secondaryColor: "white" }) {
+    constructor(x, y, width = 30, height = 30, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "black", borderColor: "black", secondaryColor: "white" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                this.renderString = { primaryColor: "black", secondaryColor: "white" }
-            }
-            canvas.setFillColor(this.renderString.primaryColor);
+        this.renderFunc = (canvas) => {
+            canvas.setFillColor(this.renderString.fillColor);
+            canvas.setBorderColor(this.renderString.borderColor);
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
             canvas.setFillColor(this.renderString.secondaryColor);
             canvas.drawOval(this.x, this.y, this.width / 4, this.height / 3);
-            canvas.setFillColor(this.renderString.primaryColor);
+            canvas.setFillColor(this.renderString.fillColor);
             canvas.drawOval(this.x, this.y, this.width / 12, this.height / 9);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     onTriggerEnter(other) {
@@ -1617,20 +1504,14 @@ class ZeroGravityBlock extends GameObject {
 }
 
 class Treadmill extends GameObject {
-    constructor(x, y, width = 50, height = 30, direction = LEFT, speed = 1, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { primaryColor: "gold", secondaryColor: "lightyellow" }) {
+    constructor(x, y, width = 50, height = 30, direction = LEFT, speed = 1, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "gold", borderColor: "black", secondaryColor: "lightyellow" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.direction = direction;
         this.speed = speed;
         this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 1 };
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (!(this.renderString && this.renderString.primaryColor && this.renderString.secondaryColor)) {
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
-                this.renderString = { primaryColor: "gold", secondaryColor: "lightyellow" }
-            }
-            canvas.setFillColor(this.renderString.primaryColor);
+        this.renderFunc = (canvas) => {
+            canvas.setFillColor(this.renderString.fillColor);
+            canvas.setBorderColor(this.renderString.borderColor);
             canvas.drawRectangle(this.x, this.y, this.width, this.height);
             canvas.setFillColor(this.renderString.secondaryColor);
             canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4);
@@ -1641,11 +1522,6 @@ class Treadmill extends GameObject {
                 canvas.drawTriangle(this.x + this.width / 4, this.y, smaller, FILLFRAME, 90)
             canvas.drawRectangle(this.x, this.y, this.width / 2, this.height / 4, FILL);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     onTrigger(other) {
@@ -1656,13 +1532,29 @@ class Treadmill extends GameObject {
 }
 
 class Door extends GameObject {
-    constructor(x, y, width = 30, height = 50, levelName, enabled = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { doorColor: "BROWN", knobColor: "YELLOW" }) {
+    constructor(x, y, width = 30, height = 50, levelName, enabled = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "BROWN", borderColor: "BLACK", knobColor: "YELLOW" }) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.levelName = levelName;
         this.enabled = enabled;
+        this.renderFunc = (canvas) => {
+            if (this.enabled === false) {
+                canvas.setFillColor("#00000000");
+                canvas.setLineDash([5, 5])
+                canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
+                canvas.setLineDash([])
+                canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
+            }
+            else if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
+                canvas.setFillColor(this.renderString.doorColor ? this.renderString.doorColor : "BROWN");
+                canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
+                canvas.setFillColor(this.renderString.knobColor ? this.renderString.knobColor : "YELLOW");
+                canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
+            }
+        }
     }
 
     render(canvas) {
+        canvas.setBorderColor(this.renderString.borderColor);
         if (this.enabled === false) {
             canvas.setFillColor("#00000000");
             canvas.setLineDash([5, 5])
@@ -1670,21 +1562,12 @@ class Door extends GameObject {
             canvas.setLineDash([])
             canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.COLOR) {
-            if (this.renderString) {
-                canvas.setFillColor(this.renderString.doorColor ? this.renderString.doorColor : "BROWN");
-                canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
-                canvas.setFillColor(this.renderString.knobColor ? this.renderString.knobColor : "YELLOW");
-                canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
-            }
-            else
-                console.warn("Render type set to GameObject.RENDER_TYPES.COLOR but no color was provided.")
+        else{
+            canvas.setFillColor(this.renderString.fillColor);
+            canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
+            canvas.setFillColor(this.renderString.knobColor);
+            canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
         }
-        else if (this.renderType === GameObject.RENDER_TYPES.IMAGE) {
-            canvas.drawImage(this.renderString, this.x, this.y, this.width, this.height);
-        }
-        else
-            console.error(`${this.renderType} IS AN INVALID RENDERING TYPE; VALID TYPES ARE: GameObject.RENDER_TYPES.COLOR, GameObject.RENDER_TYPES.IMAGE`);
     }
 
     onTrigger(other) {
@@ -1698,7 +1581,7 @@ class Door extends GameObject {
 
 class Player extends GameObject {
     constructor(
-        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravityMultiplier = 1, xVelocity = 0, yVelocity = 0, canMove = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = "green"
+        game, x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravityMultiplier = 1, xVelocity = 0, yVelocity = 0, canMove = true, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "green", borderColor: "black" }
     ) {
         super(x, y, width, height, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
         this.game = game;
@@ -1809,7 +1692,7 @@ class Player extends GameObject {
         else if (this.moveLeftKeyDown && this.moveRightKeyDown) this.xVelocity = 0;
         else if (this.moveLeftKeyDown && !this.collidingLeft && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = -this.moveSpeed;
         else if (this.moveRightKeyDown && !this.collidingRight && ((!this.airStrafeEnabled && this.collidingBelow) || this.airStrafeEnabled)) this.xVelocity = this.moveSpeed;
-        else    this.xVelocity = 0;
+        else this.xVelocity = 0;
         this.x += this.xVelocity;
 
         if (this.jumpKeyDown) {
@@ -1846,15 +1729,6 @@ class Player extends GameObject {
         this.collidingAbove = false;
         this.collidingBelow = false;
         this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 0 };
-    }
-
-    render(canvas) {
-        if (this.renderType === GameObject.RENDER_TYPES.IMAGE)
-            canvas.drawImage(this.x, this.y, this.width, this.height);
-        else {
-            canvas.setFillColor(this.renderString);
-            canvas.drawRectangle(this.x, this.y, this.width, this.height);
-        }
     }
 }
 
