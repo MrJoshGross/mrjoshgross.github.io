@@ -1475,6 +1475,8 @@ class AntiGravityBlock extends GameObject {
     onTriggerEnter(other) {
         if (other.constructor.name === "Player") {
             other.gravityMultiplier *= -1;
+            if(!other.gravityEnabled)
+                other.toggleGravity();
             other.game.destroy(this);
         }
     }
