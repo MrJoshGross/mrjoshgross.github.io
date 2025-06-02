@@ -1475,7 +1475,7 @@ class AntiGravityBlock extends GameObject {
     onTriggerEnter(other) {
         if (other.constructor.name === "Player") {
             other.gravityMultiplier *= -1;
-            if(!other.gravityEnabled)
+            if (!other.gravityEnabled)
                 other.toggleGravity();
             other.game.destroy(this);
         }
@@ -1564,7 +1564,7 @@ class Door extends GameObject {
             canvas.setLineDash([])
             canvas.drawCircle(this.x + this.width / 3, this.y, this.width / 8);
         }
-        else{
+        else {
             canvas.setFillColor(this.renderString.fillColor);
             canvas.drawRectangle(this.x, this.y, this.width * 1.2, this.height * 1.2);
             canvas.setFillColor(this.renderString.knobColor);
@@ -1723,7 +1723,7 @@ class Player extends GameObject {
 
 
 
-        if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && this.gravityMultiplier < 0))
+        if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && (this.gravityMultiplier < 0 || !this.gravityEnabled)))
             this.game.handleLevelFail();
 
         this.collidingLeft = false;
