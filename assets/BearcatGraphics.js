@@ -946,6 +946,11 @@ class BearcatPlatformer {
         return this.#addGameObject(star)
     }
 
+    addInvincibilityStar(x, y, size = 30, duration = 5) {
+        let star = new InvincibilityStar(x, y, size, duration);
+        return this.#addGameObject(star);
+    }
+
     addDoor(x, y, levelName, enabled = true, width = 30, height = 50) {
         let door = new Door(x, y, width, height, levelName, enabled);
         return this.#addGameObject(door)
@@ -1343,6 +1348,34 @@ class Star extends GameObject {
     }
 }
 
+class InvincibilityStar extends GameObject {
+    constructor(x, y, size = 30, duration = 5, renderType = GameObject.RENDER_TYPES.COLOR, renderString = { fillColor: "yellow", borderColor: "black" }) {
+        super(x, y, size, size, GameObject.COLLIDE_STATES.TRIGGER, renderType, renderString);
+        this.renderFunc = (canvas) => {
+            // these gradients can't be static due to their dependence on instance coordinates :(
+            let grd = canvas.canvas.createLinearGradient(0, y - size / 10, 0, y + size / 10);
+            let grd2 = canvas.canvas.createLinearGradient(0, y + size / 10, 0, y - size / 10);
+            grd.addColorStop(0, "yellow");
+            grd.addColorStop(1, "red");
+            grd2.addColorStop(0, "yellow");
+            grd2.addColorStop(1, "red");
+            canvas.setFillColor(grd);
+            canvas.setBorderColor(grd2);
+            canvas.drawStar(this.x, this.y, this.width / 2)
+        }
+        this.duration = duration;
+    }
+
+    onTriggerEnter(other) {
+        if (other.constructor.name === "Player") {
+            other.game.destroy(this);
+            other.startInvulnerability(this.duration);
+        }
+    }
+}
+
+
+
 class Enemy extends GameObject {
     // deprecated
     static MOVEMENT_TYPES = {
@@ -1372,7 +1405,7 @@ class Enemy extends GameObject {
     }
 
     onCollision(other) {
-        if (other.constructor.name === "Player") {
+        if (other.constructor.name === "Player" && !other.isInvulnerable) {
             other.game.destroy(this);
             other.game.handleLevelFail();
         }
@@ -1610,6 +1643,23 @@ class Player extends GameObject {
         this.gravityEnabled = true;
         this.airStrafeEnabled = true;
         this.collisionSurfaceInformation = { bounceCoefficient: 0, groundFriction: 0 };
+        this.isInvulnerable = false;
+        let oldFunc = this.renderFunc;
+        this.renderFunc = (canvas) => {
+            if(this.isInvulnerable)
+                canvas.setFillColor(canvas.getRandomColor());
+            oldFunc(canvas);
+        }
+    }
+
+    startInvulnerability(duration){
+        this.isInvulnerable = true;
+        // very nifty piece of js scoping
+        setTimeout(this.endInvulnerability.bind(this), duration*1000);
+    }
+
+    endInvulnerability(){
+        this.isInvulnerable = false;
     }
 
     toggleGravity() {
