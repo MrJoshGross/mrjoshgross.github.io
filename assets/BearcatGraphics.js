@@ -734,6 +734,7 @@ class BearcatPlatformer {
             console.error("Attempting to delete object ", obj, "but it isn't in the list of objects in this level.");
     }
 
+    clearCurrentLevelExceptPlayer = () => this.objects = [this.player];
 
     handleKeyDown(e, game) {
         if (e.key === "r" || e.key === "R") game.reloadLevel();
