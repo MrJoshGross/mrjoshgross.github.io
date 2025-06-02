@@ -698,6 +698,7 @@ class BearcatPlatformer {
         this.#init();
         this.currentLevel = "Level 1";
         this.createLevel("Game Over", createGameOverScreenLevel);
+        this.createLevel("Victory", createVictoryScreenLevel);
     }
 
 
@@ -1772,12 +1773,24 @@ function createGameOverScreenLevel() {
     game.setBackgroundFunction(createGameOverScreenBackground);
 }
 
+function createVictoryScreenLevel() {
+    game.setBackgroundFunction(createVictoryScreenBackground);
+}
+
 function createGameOverScreenBackground() {
     canvas.setFillColor("black");
     canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
     canvas.setFontSize(40);
     canvas.setFillColor("red");
     canvas.drawText("GAME OVER", canvas.width / 2, canvas.height / 2);
+}
+
+function createVictoryScreenBackground() {
+    canvas.setFillColor("black");
+    canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+    canvas.setFontSize(40);
+    canvas.setFillColor("green");
+    canvas.drawText("VICTORY", canvas.width / 2, canvas.height / 2);
 }
 
 class Complex {
