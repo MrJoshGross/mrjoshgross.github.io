@@ -1775,7 +1775,7 @@ class Player extends GameObject {
 
 
 
-        if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && this.gravityMultiplier > 0) || (this.y <= -this.game.canvas.height / 10 && (this.gravityMultiplier < 0 || !this.gravityEnabled)))
+        if ((this.y >= this.game.canvas.height + this.game.canvas.height / 10 && (this.gravityMultiplier > 0 || !this.gravityEnabled)) || (this.y <= -this.game.canvas.height / 10 && (this.gravityMultiplier < 0 || !this.gravityEnabled)))
             this.game.handleLevelFail();
 
         this.collidingLeft = false;
@@ -1811,15 +1811,6 @@ class CollisionMap {
     contains = (obj1, obj2) => (this.collisions[obj1] && this.collisions[obj1][obj2]) || (this.collisions[obj2] && this.collisions[obj2][obj1]);
 }
 
-class Pair {
-    constructor(a, b) {
-        this.a = a;
-        this.b = b;
-    }
-
-    contains = (x) => (this.a === x || this.b === x);
-}
-
 function createGameOverScreenLevel() {
     game.setBackgroundFunction(createGameOverScreenBackground);
 }
@@ -1842,6 +1833,15 @@ function createVictoryScreenBackground() {
     canvas.setFontSize(40);
     canvas.setFillColor("green");
     canvas.drawText("VICTORY", canvas.width / 2, canvas.height / 2);
+}
+
+class Pair {
+    constructor(a, b) {
+        this.a = a;
+        this.b = b;
+    }
+
+    contains = (x) => (this.a === x || this.b === x);
 }
 
 class Complex {
