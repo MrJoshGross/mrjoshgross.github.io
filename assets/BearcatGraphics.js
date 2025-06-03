@@ -51,6 +51,7 @@ class BearcatGraphics {
         this.mouseX = -1;
         this.mouseY = -1;
         this.time = 0;
+        this.rawTime = 0;
         this.days = 1;
         this.years = 1;
         this.timeScale = 10;
@@ -585,6 +586,7 @@ class BearcatGraphics {
 
     #calculateTime() {
         this.time = (this.time + this.timeScale / this.fps);
+        this.rawTime = (this.rawTime + this.timeScale / this.fps);
         if (this.time >= 2400) {
             this.time -= 2400;
             this.days++;
