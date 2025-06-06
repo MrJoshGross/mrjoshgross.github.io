@@ -1,0 +1,47 @@
+<!--Import graphics functionality-->
+
+<body>
+    <script src="BearcatGraphics.js"></script>
+</body>
+
+<script>
+
+    let game, canvas;
+
+    init();
+
+    function init() {
+        game = new BearcatPlatformer(800, 800);
+        canvas = game.canvas;
+        game.setBackgroundFunction(drawBackground);
+        game.createLevel("Level 1", createLevel1);
+        game.loadLevel("Level 1");
+    }
+
+    function createLevel1() {
+        game.addPlatform(30, 800);
+        game.addPlatform(30, 600);
+        game.addTreadmill(150, 800);
+        game.addMovingTrampoline(450, 250);
+        game.addStar(100, 100);
+        game.addEnemy(200, 200);
+        game.addSizeChanger(300, 300);
+        game.addAntiGravityBlock(400, 550);
+        game.addZeroGravityBlock(500, 550);
+        game.addInvincibilityStar(100, 400);
+
+        game.addFoodTruck(300, 700);
+        // game.addMovingPlatform(450, 250);
+        game.addPlayer();
+        game.addDoor(600, 600, "Victory");
+    }
+
+    function drawBackground() {
+        canvas.setFillColor("lightblue");
+        canvas.drawRectangle(canvas.width / 2, canvas.height / 2, canvas.width, canvas.height);
+        //     drawRectangle(starting x + radius * Math.cos(time / slowdownNumber), 
+        //                   starting y + radius * Math.sin(time / slowdownNumber))
+        canvas.drawRectangle(100 + 10 * Math.tan(canvas.rawTime/10), 100  + 10 * Math.sin(canvas.rawTime/10), 50, 50);
+    }
+
+</script>
