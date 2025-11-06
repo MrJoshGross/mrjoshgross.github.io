@@ -61,6 +61,8 @@ class BearcatGraphics {
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
     }
 
+    setFPS = (fps) => this.fps = fps;
+
     /**
      * Creates a div containing debug information such as mouse X and Y coordinates.
      */
@@ -660,7 +662,12 @@ class BearcatGraphics {
 
 function color(colorString) { return COLORS[colorString]; }
 
-function color(r, g, b) { if (r < 0 || g < 0 || b < 0 || r > 255 || g > 255 || b > 255) console.error(`invalid color values: r=${r}|g=${g}|b=${b}`); else return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; }
+function color(r, g, b) { 
+    if(r < 0) r = 0; else if(r > 255) r = 255;
+    if(g < 0) g = 0; else if(g > 255) g = 255;
+    if(b < 0) b = 0; else if(b > 255) b = 255;
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; 
+}
 
 class RotationAnchor {
     constructor(x, y, rotation) {
@@ -726,10 +733,6 @@ class BearcatPlatformer {
         this.airResistanceEnabled = !this.airResistanceEnabled;
     }
 
-    setFPS(fps) {
-        this.canvas.fps = fps;
-        this.timeSlice = 1 / fps;
-    }
     setLineThickness(thickness) {
         this.canvas.setLineThickness(thickness);
         BearcatPlatformer.VERTICAL_COLLISION_EPSILON = thickness;
@@ -1922,7 +1925,7 @@ class BearcatTowerDefense{
     activeEnemies = [];
     towers = [];
     ENEMY_TYPES = {
-        BASIC: "EnemyTD",
+        BASIC: "BasicEnemyTD",
         SCOUT: "ScoutEnemyTD",
         GHOST: "GhostEnemyTD"
     };
@@ -1950,6 +1953,7 @@ class BearcatTowerDefense{
         this.width = width;
         this.height = height;
         this.canvas = new BearcatGraphics(() => this.#loop(), width, height);
+        this.canvas.setFPS(30);
         // this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYDOWN, (e) => { this.handleKeyDown(e, this) });
         // this.canvas.addEventListener(BearcatGraphics.EVENT_TYPES.KEYUP, (e) => (this.handleKeyUp(e, this)));
     }
@@ -1976,21 +1980,21 @@ class BearcatTowerDefense{
 
         switch(type){
             case "basic": 
-                this.enemiesInWave.push(new EnemyTD(time, this));
+                this.enemiesInWave.push(new BasicEnemyTD(time, this));
             break;
             case "leeandrew":
             case "scout": 
-                this.enemiesInWave.push(new ScoutEnemy(time, this));
+                this.enemiesInWave.push(new ScoutEnemyTD(time, this));
             break;
             case "yohan":
             case "ghost": 
-                this.enemiesInWave.push(new GhostEnemy(time, this));
+                this.enemiesInWave.push(new GhostEnemyTD(time, this));
             break;
             default: return;
         }
     }
     
-    addTower(type, x, y){
+    addTower(type, x, y, game){
         // TODO get rid of the switch statement and replace with something like this
         /*
         if(this.ENEMY_TYPES.type)
@@ -2003,7 +2007,7 @@ class BearcatTowerDefense{
         switch(type){
             case "basic": 
                 tower = "Tower";
-                cost = tower.cost;
+                cost = 3; // TODO pick from dictionary with information about the towers
             break;
             default: return;
         }
@@ -2011,7 +2015,7 @@ class BearcatTowerDefense{
         if(this.money >= cost){
             this.addMoney(-cost);
             // disgusting
-            tower = eval(`new ${tower}(${x},${y})`);
+            tower = eval(`new ${tower}(${x},${y}, this)`);
             this.towers.push(tower);
         } else{
             console.log(
@@ -2224,12 +2228,11 @@ class BearcatTowerDefense{
                     }
                 }
             }
-            tower.updateSightLine();
         }
     }
 }
 
-class EnemyTD{
+class BasicEnemyTD{
     time;
     x;
     y;
@@ -2312,7 +2315,7 @@ class EnemyTD{
     }
 }
 
-class ScoutEnemy{
+class ScoutEnemyTD{
     time;
     x = -100;
     y = -100;
@@ -2445,5 +2448,190 @@ class ScoutEnemy{
 }
 
 class GhostEnemyTD{
+    time;
+    x = -100;
+    y = -100;
+    targetPivotPoint;
+    size;
+    health = 1;
+    damage = 1;
+    movementSpeed = 1;
+    sprite;
+    spriteComponents = [];
+    game;
+    isAlive = true;
+    
+    constructor(time, game){
+        this.size = 10;
+        this.time = time;
+        this.game = game;
+    }
+    
+    setTargetPivotPoint(point){
+        this.targetPivotPoint = point;
+    }
+    
+    jumpToTarget(){
+        this.x = this.targetPivotPoint.x;
+        this.y = this.targetPivotPoint.y;
+    }
+    
+    draw(){
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
+        
+        this.game.canvas.setFillColor("white");
+        this.game.canvas.drawCircle(this.x, this.y, this.size*0.9, FILL);
+        
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawCircle(this.x, this.y+5, this.size/2, FILL);
+        
+        this.game.canvas.setFillColor("pink");
+        this.game.canvas.drawCircle(this.x, this.y+5, this.size/2.5, FILL);
+        
+        // var rect = new Rectangle(this.size/2,this.size/2);
+        // rect.setPosition(this.x-6, this.y-6);
 
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawRectangle(this.x-this.size/2.5, this.y-this.size/3, this.size/2, this.size/2, FILL);
+        this.game.canvas.drawRectangle(this.x+this.size/2.5, this.y-this.size/3, this.size/2, this.size/2, FILL);
+
+        this.game.canvas.setFillColor("red");
+        this.game.canvas.drawCircle(this.x-4, this.y-3, this.size/6, FILL);
+
+
+        this.game.canvas.setFillColor("red");
+        this.game.canvas.drawCircle(this.x+4, this.y-3, this.size/6, FILL);
+    }
+    
+    removeSprite(){
+        for(let component of this.spriteComponents){
+            remove(component);
+        }
+    }
+    
+    
+    updateComponentPosition(component, dx, dy){
+        component.setPosition(component.getX() + dx, component.getY() + dy);
+    }
+    
+    handleDamageEffects(tower){
+        
+        this.health -= tower.damage;
+        // effects
+        
+        if(this.isDead()){
+            this.game.handleEnemyDeath(this);
+        } else{
+            this.drawDamage();
+        }
+    }
+    
+    drawDamage(){
+        this.sprite.setColor("red");
+        setTimeout(this.revertColoring.bind(this), 100);
+    }
+    
+    revertColoring(){
+        this.sprite.setColor("black");
+    }
+    
+    isDead(){
+        return this.health <= 0;
+    }
+    
+    move(){
+        let tp = this.targetPivotPoint;
+        let xDist = tp.x - this.x;
+        let yDist = tp.y - this.y;
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        let xStep = this.movementSpeed * xDist / dist;
+        let yStep = this.movementSpeed * yDist / dist;
+        if(dist < this.movementSpeed){
+            this.jumpToTarget();
+        } else{
+            this.x += xStep;
+            this.y += yStep;
+        }
+    }
+    initializeMovement(pivotPoints){
+        this.setTargetPivotPoint(pivotPoints[0]);
+        this.jumpToTarget();
+    }
+}
+
+class Tower{
+    cooldownTimer = 3;
+    damage = 1;
+    cooldown = this.cooldownTimer*1000;
+    size = 20;
+    target;
+    x; y;
+    sprite;
+    range;
+    cost = 3;
+    range = 60;
+    rangeRing;
+    sightLine;
+    
+    constructor(x = -100, y = -100, game){
+        this.x = x;
+        this.y = y;
+        this.game = game;
+    }
+
+    draw(){
+        this.#drawTower();
+        this.#drawRangeRing();
+        this.#drawSightLine();
+    }
+
+    #drawTower(){
+        this.game.canvas.setColors("blue");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    #drawRangeRing(){
+        this.game.canvas.setFillColor("#00FF0022");
+        this.game.canvas.setBorderColor("#00000077");
+        this.game.canvas.drawCircle(this.x, this.y, this.range);
+    }
+
+    #drawSightLine(){
+        if(this.target){
+            let cooldownPercentage = this.cooldown/1000/this.cooldownTimer;
+            // TODO fix this
+            this.game.canvas.setColors(color(cooldownPercentage*255, 255-(cooldownPercentage*255), 0));
+            this.game.canvas.drawLine({x:this.x, y:this.y}, {x: this.target.x, y: this.target.y});
+        }
+    }
+    
+    decreaseCooldown(deltaTime){
+        if(this.cooldown > 0) this.cooldown -= deltaTime;
+    }
+    
+    isInRange(enemy){
+        let dist = Math.sqrt((this.x - enemy.x)**2 + (this.y - enemy.y)**2);
+        let radiiSum = this.range + enemy.size;
+        return radiiSum > dist;
+    }
+    
+    canShoot(){
+        return this.target && this.cooldown <= 0;
+    }
+    
+    shoot(){
+        this.cooldown = this.cooldownTimer * 1000;
+        if(this.target){
+            this.target.handleDamageEffects(this);
+        }
+    }
+    
+    loseTarget(){
+        this.target = null;
+    }
+    
+    setTarget(enemy){
+        this.target = enemy;
+    }
 }
