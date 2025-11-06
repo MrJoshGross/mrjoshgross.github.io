@@ -140,6 +140,8 @@ class BearcatGraphics {
      */
     setBorderColor = (color) => this.canvas.strokeStyle = color;
 
+    setColors = (color) => {this.setFillColor(color); this.setBorderColor(color)};
+
     /**
      * @param {Array} arr   an array containing two numbers to indicate line width and spacing,
      *                      or an empty array to indicate a solid line
@@ -549,12 +551,12 @@ class BearcatGraphics {
 
     setUpdateFunction(func) {
         if (!func) return;
-        this.update = () => { this.clear(); this.#calculateTime(); func(); this.#handleDebug() };
+        this.update = () => { this.clear(); this.#calculateTime(); func(); this.#handleDebug()};
         setInterval(this.update, 1000 / this.fps);
     }
 
     setFontTotally(color, size, fontFamily){
-        this.setFillColor(color);
+        this.setColors(color);
         if(size) this.setFontSize(size);
         if(fontFamily) this.setFontFamily(fontFamily);
     }
@@ -1920,15 +1922,15 @@ class BearcatTowerDefense{
     activeEnemies = [];
     towers = [];
     ENEMY_TYPES = {
-        BASIC: "Enemy",
-        SCOUT: "ScoutEnemy",
-        GHOST: "GhostEnemy"
+        BASIC: "EnemyTD",
+        SCOUT: "ScoutEnemyTD",
+        GHOST: "GhostEnemyTD"
     };
     TOWER_TYPES= {
         BASIC: "Tower"
     };
     pivotPoints = [];
-    static GAME_STATES = {PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3};
+    GAME_STATES = {PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3};
     currentGameState = this.GAME_STATES.PAUSED;
     timeSinceGameStarted = 0;
     timeSinceWaveStarted = 0;
@@ -1974,7 +1976,7 @@ class BearcatTowerDefense{
 
         switch(type){
             case "basic": 
-                this.enemiesInWave.push(new Enemy(time, this));
+                this.enemiesInWave.push(new EnemyTD(time, this));
             break;
             case "leeandrew":
             case "scout": 
@@ -2001,7 +2003,7 @@ class BearcatTowerDefense{
         switch(type){
             case "basic": 
                 tower = "Tower";
-                cost = Tower.cost;
+                cost = tower.cost;
             break;
             default: return;
         }
@@ -2019,39 +2021,43 @@ class BearcatTowerDefense{
     }
     
     buildRoad(){
-        this.canvas.setFillColor("lightblue");
+        this.canvas.setColors("lightblue");
         this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
-        this.roadFunction();
         this.drawPivotPoints();
     }
     
     drawPivotPoints(){
-        this.canvas.setFillColor("tan");
+        this.canvas.setColors("tan");
         // TODO look at implementing line width and line drawing.
-        this.canvas.drawCircle(this.pivotPoints[0].x, this.pivotPoints[0].y, 10);
+        this.canvas.drawCircle(this.pivotPoints[0].x, this.pivotPoints[0].y, 10, FILL);
 
         for(let i = 0; i < this.pivotPoints.length - 1; i++){
             let start = this.pivotPoints[i];
             let end = this.pivotPoints[i+1];
             // TODO redo using canvas lines
-            let line = new Line(start.x, start.y, end.x, end.y);
-            line.setLineWidth(20);
-            this.canvas.drawCircle(end.x, end.y, 10);
+            // let line = new Line(start.x, start.y, end.x, end.y);
+            // line.setLineWidth(20);
+            this.canvas.setLineThickness(20);
+            this.canvas.drawLine(start, end);
+            this.canvas.setLineThickness(5);
+            this.canvas.drawCircle(end.x, end.y, 10, FILL);
         }
     }
     
     setup(){
+        this.roadFunction();
         this.buildRoad();
         this.towerFunction();
+        this.currentGameState = this.GAME_STATES.PLAYING;
         this.#loop();
     }
     
     drawGUI(){
-        this.canvas.setFontTotally("black", 15, "Impact");
-        this.canvas.drawText("Wave: " + (this.waveIndex+1) + "/" + this.waves.length, 0, 25);
-        this.canvas.drawText("Lives: " + this.lives, this.width - 25, 25);
-        this.canvas.drawText("Money: " + this.money, this.width/2 - 25, 25);
-        this.canvas.drawText("Enemies: " + this.activeEnemies.length + "/" + (this.activeEnemies.length + this.enemiesInWave.length), 0, 50);
+        this.canvas.setFontTotally("black", 20, "Impact");
+        this.canvas.drawText("Wave: " + (this.waveIndex+1) + "/" + this.waves.length, 0, 25, FILL);
+        this.canvas.drawText("Lives: " + this.lives, this.width - 25, 25, FILL);
+        this.canvas.drawText("Money: " + this.money, this.width/2 - 25, 25, FILL);
+        this.canvas.drawText("Enemies: " + this.activeEnemies.length + "/" + (this.activeEnemies.length + this.enemiesInWave.length), 0, 50, FILL);
     }
     
     handleWaveChange(){
@@ -2084,13 +2090,12 @@ class BearcatTowerDefense{
         this.handleEnemies(this.deltaTime);
         this.handleTowers(this.deltaTime);
         this.drawFrame();
-        setTimeout(this.#loop.bind(this), 1000/30);
     }
 
     drawFrame(){
         switch(this.currentGameState){
             case this.GAME_STATES.PLAYING:
-                this.drawRoad();
+                this.buildRoad();
                 this.drawTowers();
                 this.drawEnemies();
                 this.drawGUI();
@@ -2105,15 +2110,24 @@ class BearcatTowerDefense{
                 this.drawGameOver();
                 break;
         }
-    }    
+    }   
     
+    drawTowers(){
+        for(let tower of this.towers){
+            tower.draw();
+        }
+    }
+    
+    drawPaused(){
+        // TODO
+    }
     
 
     drawVictory(){
         this.canvas.setFillColor("lightgreen");
         this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
         this.canvas.setFontTotally("darkgreen", 30, "Impact");
-        this.canvas.drawText("Victory!", this.width/2 - 50, this.height/2);
+        this.canvas.drawText("Victory!", this.width/2 - 50, this.height/2, FILL);
         // TODO stats?
     }
 
@@ -2121,7 +2135,7 @@ class BearcatTowerDefense{
         this.canvas.setFillColor("red");
         this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
         this.canvas.setFontTotally("darkred", 30, "Impact");
-        this.canvas.drawText("Game Over", this.width/2 - 20, this.getHeight/2);
+        this.canvas.drawText("Game Over", this.width/2 - 20, this.getHeight/2, FILL);
     }
     
     handleTime(){
@@ -2135,7 +2149,6 @@ class BearcatTowerDefense{
     handleEnemies(deltaTime){
         this.handleEnemySpawning();
         this.handleEnemyMoving();
-        this.drawEnemies();
     }
     
     handleEnemyDeath(enemy){
@@ -2181,7 +2194,7 @@ class BearcatTowerDefense{
             this.handleEnemyAtEndOfMap(enemy);
         } else{
             // HACKY - MOVE THIS TO LOGIC TO ENEMY SUBCLASS
-            if(enemy instanceof GhostEnemy){
+            if(enemy instanceof GhostEnemyTD){
                 enemy.setTargetPivotPoint(this.pivotPoints[this.pivotPoints.length-1]);
             } else{
                 enemy.setTargetPivotPoint(this.pivotPoints[currentPivotIndex+1]);
@@ -2214,4 +2227,223 @@ class BearcatTowerDefense{
             tower.updateSightLine();
         }
     }
+}
+
+class EnemyTD{
+    time;
+    x;
+    y;
+    targetPivotPoint;
+    size;
+    health = 1;
+    damage = 1;
+    movementSpeed = 2;
+    sprite;
+    game;
+    isAlive = true;
+    
+    constructor(time, game){
+        this.size = 10;
+        this.time = time;
+        this.game = game;
+    }
+    
+    setTargetPivotPoint(point){
+        this.targetPivotPoint = point;
+    }
+    
+    jumpToTarget(){
+        this.x = this.targetPivotPoint.x;
+        this.y = this.targetPivotPoint.y;
+    }
+    
+    removeSprite(){
+        remove(this.sprite);
+    }
+    
+    draw(){
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+    
+    handleDamageEffects(tower){
+        
+        this.health -= tower.damage;
+        // effects
+        
+        if(this.isDead()){
+            this.game.handleEnemyDeath(this);
+        } else{
+            this.drawDamage();
+        }
+    }
+    
+    drawDamage(){
+        this.sprite.setColor("red");
+        setTimeout(this.revertColoring.bind(this), 100);
+    }
+    
+    revertColoring(){
+        this.sprite.setColor("black");
+    }
+    
+    isDead(){
+        return this.health <= 0;
+    }
+    
+    move(){
+        let tp = this.targetPivotPoint;
+        let xDist = tp.x - this.x;
+        let yDist = tp.y - this.y;
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        let xStep = this.movementSpeed * xDist / dist;
+        let yStep = this.movementSpeed * yDist / dist;
+        if(dist < this.movementSpeed){
+            this.jumpToTarget();
+        } else{
+            this.x += xStep;
+            this.y += yStep;
+        }
+    }
+    
+    initializeMovement(pivotPoints){
+        this.setTargetPivotPoint(pivotPoints[0]);
+        this.jumpToTarget();
+    }
+}
+
+class ScoutEnemy{
+    time;
+    x = -100;
+    y = -100;
+    targetPivotPoint;
+    size;
+    health = 1;
+    damage = 1;
+    movementSpeed = 5;
+    sprite;
+    spriteComponents = [];
+    game;
+    isAlive = true;
+    
+    constructor(time, game){
+        this.size = 10;
+        this.time = time;
+        this.game = game;
+        this.createSprite();
+    }
+    
+    createSprite(){
+
+        
+    }
+    
+    setTargetPivotPoint(point){
+        this.targetPivotPoint = point;
+    }
+    
+    jumpToTarget(){
+        this.x = this.targetPivotPoint.x;
+        this.y = this.targetPivotPoint.y;
+    }
+    
+    draw(){
+        this.game.canvas.setColors("#F8F8FF");
+        this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
+        
+
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawCircle(this.x-5, this.y, this.size/3, FILL);
+        this.game.canvas.drawCircle(this.x+5, this.y, this.size/3, FILL);
+        
+
+        this.game.canvas.setColors("#ADD8E6");
+        this.game.canvas.drawCircle(this.x+5, this.y, this.size/6, FILL);
+        this.game.canvas.drawCircle(this.x-5, this.y, this.size/6, FILL);
+    
+        
+        // this.drawOval(x, y, xRadius, yRadius, style, rotation);
+
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawOval(this.x+1, this.y+8, this.size/2.9, this.size/6.1, FILL, 30);
+        this.game.canvas.drawOval(this.x-1, this.y+8, this.size/2.9, this.size/6.1, FILL, 160);
+        
+        this.game.canvas.setColors("#F8F8FF");
+        this.game.canvas.drawCircle(this.x, this.y+4, this.size/3, FILL);
+
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawRectangle(this.x-4+this.size/2, this.y-20+this.size*1.3/2, this.size, this.size*1.3, FILL);
+        
+        // var rect = new Rectangle(this.size, this.size*1.3)
+        // rect.setPosition(this.x-4, this.y-20)
+
+        this.game.canvas.drawRectangle(this.x-6+this.size*1.4/2, this.y-10+this.size/4, this.size*1.4, this.size/2, FILL);
+        //var rect = new Rectangle(this.size*1.4, this.size/2)
+        // rect.setPosition(this.x-6, this.y-10)
+
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawRectangle(this.x-4+this.size/2, this.y-15+this.size/3.1/2, this.size, this.size/3.1, FILL);
+        //var rect = new Rectangle(this.size, this.size/3.1)
+        //rect.setPosition(this.x-4, this.y-15)
+    }
+    
+    removeSprite(){
+        for(let component of this.spriteComponents){
+            remove(component);
+        }
+    }
+    
+    
+    updateComponentPosition(component, dx, dy){
+        component.setPosition(component.getX() + dx, component.getY() + dy);
+    }
+    
+    handleDamageEffects(tower){
+        
+        this.health -= tower.damage;
+        // effects
+        
+        if(this.isDead()){
+            this.game.handleEnemyDeath(this);
+        } else{
+            this.drawDamage();
+        }
+    }
+    
+    drawDamage(){
+        this.sprite.setColor("red");
+        setTimeout(this.revertColoring.bind(this), 100);
+    }
+    
+    revertColoring(){
+        this.sprite.setColor("black");
+    }
+    
+    isDead(){
+        return this.health <= 0;
+    }
+    
+    move(){
+        let tp = this.targetPivotPoint;
+        let xDist = tp.x - this.x;
+        let yDist = tp.y - this.y;
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        let xStep = this.movementSpeed * xDist / dist;
+        let yStep = this.movementSpeed * yDist / dist;
+        if(dist < this.movementSpeed){
+            this.jumpToTarget();
+        } else{
+            this.x += xStep;
+            this.y += yStep;
+        }
+    }
+    
+    initializeMovement(pivotPoints){
+        this.setTargetPivotPoint(pivotPoints[0]);
+        this.jumpToTarget();
+    }
+}
+
+class GhostEnemyTD{
+
 }
