@@ -1,0 +1,33 @@
+<!--Import graphics functionality-->
+<script src="BearcatGraphics.js"></script>
+
+<body></body>
+<!--YOUR CODE HERE-->
+<script>
+    // canvas object
+    let game = null;
+    
+    function init(){
+        game = new BearcatTowerDefense(400, 400);
+        game.addRoadFunction(road);
+        game.addTowerFunction(tower);
+        game.addWave(wave);
+        game.start();
+    }
+
+    function road(){
+        game.addPivotPoint(100, 100);
+        game.addPivotPoint(400, 400);
+    }
+
+    function tower(){
+        
+    }
+
+    function wave(){
+        game.addEnemy("scout", 3);
+    }
+
+    init();
+
+</script>
