@@ -56,12 +56,17 @@ class BearcatGraphics {
         this.years = 1;
         this.timeScale = 10;
         this.debug = true;
+        this.intervalID = -1;
         this.setUpdateFunction(updateFunction);
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSEMOVE, (e) => { this.mouseX = this.getMouseX(e); this.mouseY = this.getMouseY(e); });
         this.addEventListener(BearcatGraphics.EVENT_TYPES.MOUSELEAVE, () => { this.mouseX = -1; this.mouseY = -1 });
     }
 
-    setFPS = (fps) => this.fps = fps;
+    setFPS = (fps) => {
+        this.fps = fps;
+        clearInterval(this.intervalID);
+        this.intervalID = setInterval(this.update, 1000 / this.fps);
+    }
 
     /**
      * Creates a div containing debug information such as mouse X and Y coordinates.
@@ -142,7 +147,7 @@ class BearcatGraphics {
      */
     setBorderColor = (color) => this.canvas.strokeStyle = color;
 
-    setColors = (color) => {this.setFillColor(color); this.setBorderColor(color)};
+    setColors = (color) => { this.setFillColor(color); this.setBorderColor(color) };
 
     /**
      * @param {Array} arr   an array containing two numbers to indicate line width and spacing,
@@ -553,14 +558,14 @@ class BearcatGraphics {
 
     setUpdateFunction(func) {
         if (!func) return;
-        this.update = () => { this.clear(); this.#calculateTime(); func(); this.#handleDebug()};
-        setInterval(this.update, 1000 / this.fps);
+        this.update = () => { this.clear(); this.#calculateTime(); func(); this.#handleDebug() };
+        this.intervalID = setInterval(this.update, 1000 / this.fps);
     }
 
-    setFontTotally(color, size, fontFamily){
+    setFontTotally(color, size, fontFamily) {
         this.setColors(color);
-        if(size) this.setFontSize(size);
-        if(fontFamily) this.setFontFamily(fontFamily);
+        if (size) this.setFontSize(size);
+        if (fontFamily) this.setFontFamily(fontFamily);
     }
 
     setFontSize(size) {
@@ -662,11 +667,11 @@ class BearcatGraphics {
 
 function color(colorString) { return COLORS[colorString]; }
 
-function color(r, g, b) { 
-    if(r < 0) r = 0; else if(r > 255) r = 255;
-    if(g < 0) g = 0; else if(g > 255) g = 255;
-    if(b < 0) b = 0; else if(b > 255) b = 255;
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`; 
+function colorRGB(r, g, b) {
+    if (r < 0) r = 0; else if (r > 255) r = 255;
+    if (g < 0) g = 0; else if (g > 255) g = 255;
+    if (b < 0) b = 0; else if (b > 255) b = 255;
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
 class RotationAnchor {
@@ -971,7 +976,7 @@ class BearcatPlatformer {
         return this.#addGameObject(door)
     }
 
-    
+
 
     addPlayer(x = 25, y = 750, width = 30, height = 30, moveSpeed = 5, jumpHeight = 6, gravity = 1, xVelocity = 0, yVelocity = 0, canMove = true) {
         let player = new Player(this, x, y, width, height, moveSpeed, jumpHeight, gravity, xVelocity, yVelocity, canMove);
@@ -1917,7 +1922,7 @@ let COLORS = {
     lightpurple: "#E46BFF",
 };
 
-class BearcatTowerDefense{
+class BearcatTowerDefense {
     waves = [];
     towerDefs = [];
     enemiesInWave = [];
@@ -1925,15 +1930,18 @@ class BearcatTowerDefense{
     activeEnemies = [];
     towers = [];
     ENEMY_TYPES = {
-        BASIC: "BasicEnemyTD",
-        SCOUT: "ScoutEnemyTD",
-        GHOST: "GhostEnemyTD"
+        basic: "BasicEnemyTD",
+        scout: "ScoutEnemyTD",
+        ghost: "GhostEnemyTD",
+        crazy: "CrazyEnemyTD",
+        regen: "RegenSlimeEnemyTD",
+        spy: "SpyEnemyTD"
     };
-    TOWER_TYPES= {
-        BASIC: "Tower"
+    TOWER_TYPES = {
+        basic: "Tower",
     };
     pivotPoints = [];
-    GAME_STATES = {PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3};
+    GAME_STATES = { PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3 };
     currentGameState = this.GAME_STATES.PAUSED;
     timeSinceGameStarted = 0;
     timeSinceWaveStarted = 0;
@@ -1960,135 +1968,101 @@ class BearcatTowerDefense{
 
     start = () => this.setup();
     setLives = (lives) => this.lives = lives;
-    addPivotPoint = (x, y) => this.pivotPoints.push({x: x, y: y});
-    addEnemy = (type, time) => this.addEnemyToCurrentWave(type, time*1000);
+    addPivotPoint = (x, y) => this.pivotPoints.push({ x: x, y: y });
+    addEnemy = (type, time) => this.addEnemyToCurrentWave(type, time * 1000);
     addWave = (waveFunction) => this.waves.push(waveFunction);
     addRoadFunction = (func) => this.roadFunction = func;
     addTowerFunction = (func) => this.towerFunction = func;
     handleVictory = () => this.currentGameState = this.GAME_STATES.VICTORY;
-    handleGameOver = () => this.waveTransitioning = true;
+    handleGameOver = () => this.currentGameState = this.GAME_STATES.GAME_OVER;
     addMoney = (amount) => this.money += amount;
 
-    addEnemyToCurrentWave(type, time){
-        // TODO get rid of the switch statement and replace with something like this
-        /*
-        if(this.ENEMY_TYPES.type)
-            this.enemiesInWave.push(eval(`new ${this.ENEMY_TYPES.type}(${time}, this)`));
+    addEnemyToCurrentWave(type, time) {
+        if (this.ENEMY_TYPES[type])
+            this.enemiesInWave.push(eval(`new ${this.ENEMY_TYPES[type]}(${time}, this)`));
         else
             console.error("TRYING TO ADD UNKNOWN ENEMY TYPE: " + type);
-        */
-
-        switch(type){
-            case "basic": 
-                this.enemiesInWave.push(new BasicEnemyTD(time, this));
-            break;
-            case "leeandrew":
-            case "scout": 
-                this.enemiesInWave.push(new ScoutEnemyTD(time, this));
-            break;
-            case "yohan":
-            case "ghost": 
-                this.enemiesInWave.push(new GhostEnemyTD(time, this));
-            break;
-            default: return;
-        }
     }
-    
-    addTower(type, x, y, game){
-        // TODO get rid of the switch statement and replace with something like this
-        /*
-        if(this.ENEMY_TYPES.type)
-            this.enemiesInWave.push(eval(`new ${this.ENEMY_TYPES.type}(${time}, this)`));
-        else
-            console.error("TRYING TO ADD UNKNOWN ENEMY TYPE: " + type);
-        */
-        let tower = null;
-        let cost = 100000;
-        switch(type){
-            case "basic": 
-                tower = "Tower";
-                cost = 3; // TODO pick from dictionary with information about the towers
-            break;
-            default: return;
-        }
 
-        if(this.money >= cost){
-            this.addMoney(-cost);
-            // disgusting
-            tower = eval(`new ${tower}(${x},${y}, this)`);
+    addTower(type, x, y) {
+        let tower = null;
+        if (!this.TOWER_TYPES[type]) {
+            console.error("TRYING TO ADD UNKNOWN TOWER TYPE: " + type);
+            return;
+        }
+        tower = eval(`new ${this.TOWER_TYPES[type]}(${x}, ${y}, this)`);
+        if (this.money >= tower.cost) {
+            this.addMoney(-tower.cost);
             this.towers.push(tower);
-        } else{
+        } else {
             console.log(
-                "ERROR: Attempted to add tower that costs " + cost + " but only have " + this.money + " money."
+                "ERROR: Attempted to add tower that costs " + tower.cost + " but only have " + this.money + " money."
             );
         }
     }
-    
-    buildRoad(){
+
+    buildRoad() {
         this.canvas.setColors("lightblue");
-        this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
+        this.canvas.drawRectangle(this.width / 2, this.height / 2, this.width, this.height);
         this.drawPivotPoints();
     }
-    
-    drawPivotPoints(){
+
+    drawPivotPoints() {
         this.canvas.setColors("tan");
-        // TODO look at implementing line width and line drawing.
         this.canvas.drawCircle(this.pivotPoints[0].x, this.pivotPoints[0].y, 10, FILL);
 
-        for(let i = 0; i < this.pivotPoints.length - 1; i++){
+        for (let i = 0; i < this.pivotPoints.length - 1; i++) {
             let start = this.pivotPoints[i];
-            let end = this.pivotPoints[i+1];
-            // TODO redo using canvas lines
-            // let line = new Line(start.x, start.y, end.x, end.y);
-            // line.setLineWidth(20);
+            let end = this.pivotPoints[i + 1];
             this.canvas.setLineThickness(20);
             this.canvas.drawLine(start, end);
             this.canvas.setLineThickness(5);
             this.canvas.drawCircle(end.x, end.y, 10, FILL);
         }
     }
-    
-    setup(){
+
+    setup() {
         this.roadFunction();
         this.buildRoad();
         this.towerFunction();
         this.currentGameState = this.GAME_STATES.PLAYING;
         this.#loop();
     }
-    
-    drawGUI(){
+
+    // TODO fit text on screen
+    drawGUI() {
         this.canvas.setFontTotally("black", 20, "Impact");
-        this.canvas.drawText("Wave: " + (this.waveIndex+1) + "/" + this.waves.length, 0, 25, FILL);
+        this.canvas.drawText("Wave: " + (this.waveIndex + 1) + "/" + this.waves.length, 0, 25, FILL);
         this.canvas.drawText("Lives: " + this.lives, this.width - 25, 25, FILL);
-        this.canvas.drawText("Money: " + this.money, this.width/2 - 25, 25, FILL);
+        this.canvas.drawText("Money: " + this.money, this.width / 2 - 25, 25, FILL);
         this.canvas.drawText("Enemies: " + this.activeEnemies.length + "/" + (this.activeEnemies.length + this.enemiesInWave.length), 0, 50, FILL);
     }
-    
-    handleWaveChange(){
-        if(this.waveTransitioning) 
+
+    handleWaveChange() {
+        if (this.waveTransitioning || this.currentGameState != this.GAME_STATES.PLAYING)
             return;
-        if(this.waveIndex === this.waves.length) 
+        if (this.waveIndex === this.waves.length)
             this.handleVictory();
-        else if(this.enemiesInWave.length === 0 && this.activeEnemies.length === 0)
+        else if (this.enemiesInWave.length === 0 && this.activeEnemies.length === 0)
             this.goToNextWave();
     }
-    
-    goToNextWave(){
+
+    goToNextWave() {
         this.waveTransitioning = true;
         this.waveIndex++;
-        if(this.waveIndex !== this.waves.length)
+        if (this.waveIndex !== this.waves.length)
             setTimeout(this.startWave.bind(this), 1000);
         else
             this.handleVictory();
     }
-    
-    startWave(){
+
+    startWave() {
         this.waveTransitioning = false;
         this.waves[this.waveIndex]();
         this.timeSinceWaveStarted = 0;
     }
-    
-    #loop(){
+
+    #loop() {
         this.handleWaveChange();
         this.handleTime();
         this.handleEnemies(this.deltaTime);
@@ -2096,15 +2070,15 @@ class BearcatTowerDefense{
         this.drawFrame();
     }
 
-    drawFrame(){
-        switch(this.currentGameState){
+    drawFrame() {
+        switch (this.currentGameState) {
             case this.GAME_STATES.PLAYING:
                 this.buildRoad();
                 this.drawTowers();
                 this.drawEnemies();
                 this.drawGUI();
                 break;
-            case this.GAME_STATES.PAUSED: 
+            case this.GAME_STATES.PAUSED:
                 this.drawPaused();
                 break;
             case this.GAME_STATES.VICTORY:
@@ -2114,116 +2088,97 @@ class BearcatTowerDefense{
                 this.drawGameOver();
                 break;
         }
-    }   
-    
-    drawTowers(){
-        for(let tower of this.towers){
-            tower.draw();
-        }
     }
-    
-    drawPaused(){
+
+    drawTowers() {
+        for (let tower of this.towers)
+            tower.draw();
+    }
+
+    drawPaused() {
         // TODO
     }
-    
 
-    drawVictory(){
+
+    drawVictory() {
         this.canvas.setFillColor("lightgreen");
-        this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
+        this.canvas.drawRectangle(this.width / 2, this.height / 2, this.width, this.height);
         this.canvas.setFontTotally("darkgreen", 30, "Impact");
-        this.canvas.drawText("Victory!", this.width/2 - 50, this.height/2, FILL);
+        this.canvas.drawText("Victory!", this.width / 2 - 50, this.height / 2, FILL);
         // TODO stats?
     }
 
-    drawGameOver(){
+    drawGameOver() {
         this.canvas.setFillColor("red");
-        this.canvas.drawRectangle(this.width/2, this.height/2, this.width, this.height);
-        this.canvas.setFontTotally("darkred", 30, "Impact");
-        this.canvas.drawText("Game Over", this.width/2 - 20, this.getHeight/2, FILL);
+        this.canvas.drawRectangle(this.width / 2, this.height / 2, this.width, this.height);
+        // TODO
+        this.canvas.setFontTotally("BLACK", 30, "Impact");
+        this.canvas.drawText("Game Over", this.width / 2 - 20, this.getHeight / 2, FILL);
     }
-    
-    handleTime(){
+
+    handleTime() {
         let newTime = Date.now();
         this.deltaTime = newTime - this.lastTimeStamp;
         this.lastTimeStamp = newTime;
         this.timeSinceGameStarted += this.deltaTime;
         this.timeSinceWaveStarted += this.deltaTime;
     }
-    
-    handleEnemies(deltaTime){
+
+    handleEnemies(deltaTime) {
         this.handleEnemySpawning();
         this.handleEnemyMoving();
     }
-    
-    handleEnemyDeath(enemy){
-        this.addMoney(enemy.damage);
+
+    handleEnemyDeath(enemy) {
+        this.addMoney(enemy.worth);
         this.activeEnemies.splice(this.activeEnemies.indexOf(enemy), 1);
         this.removeTargetFromTowers(enemy);
     }
-    
-    removeTargetFromTowers(enemy){
-        for(let tower of this.towers)
-            if(tower.target === enemy) 
+
+    removeTargetFromTowers(enemy) {
+        for (let tower of this.towers)
+            if (tower.target === enemy)
                 tower.loseTarget();
     }
-    
-    drawEnemies(){
-        for(let enemy of this.activeEnemies)
+
+    drawEnemies() {
+        for (let enemy of this.activeEnemies)
             enemy.draw();
     }
-    
-    handleEnemySpawning(){
-        for(let enemy of this.enemiesInWave){
-            if(enemy.time <= this.timeSinceWaveStarted){
-                enemy.initializeMovement(this.pivotPoints);
+
+    handleEnemySpawning() {
+        for (let enemy of this.enemiesInWave) {
+            if (enemy.time <= this.timeSinceWaveStarted) {
+                enemy.initializeMovement();
                 this.activeEnemies.push(enemy);
                 this.enemiesInWave.splice(this.enemiesInWave.indexOf(enemy), 1);
             }
         }
     }
-    
-    handleEnemyMoving(){
-        for(let enemy of this.activeEnemies){
+
+    handleEnemyMoving() {
+        for (let enemy of this.activeEnemies)
             enemy.move();
-            // TODO this whole thing should be handled in enemy.move()
-            if(enemy.x == enemy.targetPivotPoint.x && enemy.y == enemy.targetPivotPoint.y)
-                this.targetNextPoint(enemy);
-        }
     }
-    
-    // TODO this whole thing should be handled in enemy.move()
-    targetNextPoint(enemy){
-        let currentPivotIndex = this.pivotPoints.indexOf(enemy.targetPivotPoint);
-        if(currentPivotIndex == this.pivotPoints.length - 1){
-            this.handleEnemyAtEndOfMap(enemy);
-        } else{
-            // HACKY - MOVE THIS TO LOGIC TO ENEMY SUBCLASS
-            if(enemy instanceof GhostEnemyTD){
-                enemy.setTargetPivotPoint(this.pivotPoints[this.pivotPoints.length-1]);
-            } else{
-                enemy.setTargetPivotPoint(this.pivotPoints[currentPivotIndex+1]);
-            }
-        }
-    }
-    
-    handleEnemyAtEndOfMap(enemy){
+
+    handleEnemyAtEndOfMap(enemy) {
         this.activeEnemies.splice(this.activeEnemies.indexOf(enemy), 1);
         this.lives -= enemy.damage;
-        if(this.lives == 0)
+        if (this.lives <= 0)
             this.handleGameOver();
     }
-    
-    handleTowers(deltaTime){
+
+    handleTowers(deltaTime) {
         // TODO cooldowns and etc should be handled by the tower
-        for(let tower of this.towers){
+        for (let tower of this.towers) {
             tower.decreaseCooldown(deltaTime);
-            if(tower.target && tower.isInRange(tower.target)){
+            if (tower.target && tower.isInRange(tower.target)) {
                 if (tower.canShoot())
                     tower.shoot();
-            }else{
+            } else {
                 tower.loseTarget();
-                for(let enemy of this.activeEnemies){
-                    if(tower.isInRange(enemy)){
+                for (let enemy of this.activeEnemies) {
+                    if (tower.isInRange(enemy)) {
                         tower.setTarget(enemy);
                     }
                 }
@@ -2232,338 +2187,330 @@ class BearcatTowerDefense{
     }
 }
 
-class BasicEnemyTD{
+class BasicEnemyTD {
     time;
-    x;
-    y;
     targetPivotPoint;
     size;
     health = 1;
     damage = 1;
     movementSpeed = 2;
-    sprite;
     game;
+    worth = 1;
     isAlive = true;
-    
-    constructor(time, game){
+
+    constructor(time, game) {
         this.size = 10;
         this.time = time;
         this.game = game;
+        this.x = -100;
+        this.y = -100;
+        this.movementSpeed = 2;
+        this.calculateSize();
     }
-    
-    setTargetPivotPoint(point){
+
+    setTargetPivotPoint(point) {
         this.targetPivotPoint = point;
     }
-    
-    jumpToTarget(){
+
+    jumpToTarget() {
         this.x = this.targetPivotPoint.x;
         this.y = this.targetPivotPoint.y;
     }
-    
-    removeSprite(){
-        remove(this.sprite);
-    }
-    
-    draw(){
+
+    draw() {
         this.game.canvas.setColors("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size);
     }
-    
-    handleDamageEffects(tower){
-        
+
+    handleDamageEffects(tower) {
+
         this.health -= tower.damage;
+        this.calculateSize();
         // effects
-        
-        if(this.isDead()){
+
+        if (this.isDead()) 
             this.game.handleEnemyDeath(this);
-        } else{
+        else 
             this.drawDamage();
-        }
     }
-    
-    drawDamage(){
-        this.sprite.setColor("red");
+
+    // size of sprite and damage done is based off of remaining health
+    calculateSize() {
+        this.size = 5 + this.health*5;
+        this.damage = this.health;
+    }
+
+    drawDamage() {
+        // TODO
         setTimeout(this.revertColoring.bind(this), 100);
     }
-    
-    revertColoring(){
-        this.sprite.setColor("black");
+
+    revertColoring() {
+        // TODO
     }
-    
-    isDead(){
+
+    isDead() {
         return this.health <= 0;
     }
-    
-    move(){
+
+    move() {
         let tp = this.targetPivotPoint;
+        if(!tp){
+            this.targetNextPoint();
+            return;
+        }
         let xDist = tp.x - this.x;
         let yDist = tp.y - this.y;
-        let dist = Math.sqrt(xDist**2 + yDist**2);
-        let xStep = this.movementSpeed * xDist / dist;
-        let yStep = this.movementSpeed * yDist / dist;
-        if(dist < this.movementSpeed){
+        let dist = Math.sqrt(xDist ** 2 + yDist ** 2);
+        if (dist < this.movementSpeed) {
             this.jumpToTarget();
+            this.targetNextPoint();
         } else{
+            let xStep = this.movementSpeed * xDist / dist;
+            let yStep = this.movementSpeed * yDist / dist;
             this.x += xStep;
             this.y += yStep;
+            return {xStep: xStep, yStep: yStep, dist: dist};
         }
     }
-    
-    initializeMovement(pivotPoints){
-        this.setTargetPivotPoint(pivotPoints[0]);
+
+    targetNextPoint(){
+        let currentPivotIndex = this.game.pivotPoints.indexOf(this.targetPivotPoint);
+        if (currentPivotIndex == this.game.pivotPoints.length - 1) {
+            this.game.handleEnemyAtEndOfMap(this);
+        } else {
+            // ghost enemy.setTargetPivotPoint(this.pivotPoints[this.pivotPoints.length - 1]);
+            this.setTargetPivotPoint(this.game.pivotPoints[currentPivotIndex + 1]);
+        }
+    }
+
+    initializeMovement() {
+        this.setTargetPivotPoint(this.game.pivotPoints[0]);
         this.jumpToTarget();
     }
 }
 
-class ScoutEnemyTD{
-    time;
-    x = -100;
-    y = -100;
-    targetPivotPoint;
-    size;
+class ScoutEnemyTD extends BasicEnemyTD{
+    size = 10;
     health = 1;
     damage = 1;
     movementSpeed = 5;
-    sprite;
-    spriteComponents = [];
-    game;
-    isAlive = true;
-    
-    constructor(time, game){
-        this.size = 10;
-        this.time = time;
-        this.game = game;
-        this.createSprite();
-    }
-    
-    createSprite(){
 
-        
+    constructor(time, game) {
+       super(time, game);
     }
-    
-    setTargetPivotPoint(point){
-        this.targetPivotPoint = point;
-    }
-    
-    jumpToTarget(){
-        this.x = this.targetPivotPoint.x;
-        this.y = this.targetPivotPoint.y;
-    }
-    
-    draw(){
+
+    draw() {
         this.game.canvas.setColors("#F8F8FF");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
-        
 
         this.game.canvas.setColors("black");
-        this.game.canvas.drawCircle(this.x-5, this.y, this.size/3, FILL);
-        this.game.canvas.drawCircle(this.x+5, this.y, this.size/3, FILL);
-        
+        this.game.canvas.drawCircle(this.x - 5, this.y, this.size / 3, FILL);
+        this.game.canvas.drawCircle(this.x + 5, this.y, this.size / 3, FILL);
 
         this.game.canvas.setColors("#ADD8E6");
-        this.game.canvas.drawCircle(this.x+5, this.y, this.size/6, FILL);
-        this.game.canvas.drawCircle(this.x-5, this.y, this.size/6, FILL);
-    
-        
-        // this.drawOval(x, y, xRadius, yRadius, style, rotation);
+        this.game.canvas.drawCircle(this.x + 5, this.y, this.size / 6, FILL);
+        this.game.canvas.drawCircle(this.x - 5, this.y, this.size / 6, FILL);
 
         this.game.canvas.setColors("black");
-        this.game.canvas.drawOval(this.x+1, this.y+8, this.size/2.9, this.size/6.1, FILL, 30);
-        this.game.canvas.drawOval(this.x-1, this.y+8, this.size/2.9, this.size/6.1, FILL, 160);
-        
+        this.game.canvas.drawOval(this.x + 1, this.y + 8, this.size / 2.9, this.size / 6.1, FILL, 30);
+        this.game.canvas.drawOval(this.x - 1, this.y + 8, this.size / 2.9, this.size / 6.1, FILL, 160);
+
         this.game.canvas.setColors("#F8F8FF");
-        this.game.canvas.drawCircle(this.x, this.y+4, this.size/3, FILL);
+        this.game.canvas.drawCircle(this.x, this.y + 4, this.size / 3, FILL);
 
         this.game.canvas.setColors("black");
-        this.game.canvas.drawRectangle(this.x-4+this.size/2, this.y-20+this.size*1.3/2, this.size, this.size*1.3, FILL);
-        
-        // var rect = new Rectangle(this.size, this.size*1.3)
-        // rect.setPosition(this.x-4, this.y-20)
-
-        this.game.canvas.drawRectangle(this.x-6+this.size*1.4/2, this.y-10+this.size/4, this.size*1.4, this.size/2, FILL);
-        //var rect = new Rectangle(this.size*1.4, this.size/2)
-        // rect.setPosition(this.x-6, this.y-10)
+        this.game.canvas.drawRectangle(this.x - 4 + this.size / 2, this.y - 20 + this.size * 1.3 / 2, this.size, this.size * 1.3, FILL);
+        this.game.canvas.drawRectangle(this.x - 6 + this.size * 1.4 / 2, this.y - 10 + this.size / 4, this.size * 1.4, this.size / 2, FILL);
 
         this.game.canvas.setColors("red");
-        this.game.canvas.drawRectangle(this.x-4+this.size/2, this.y-15+this.size/3.1/2, this.size, this.size/3.1, FILL);
-        //var rect = new Rectangle(this.size, this.size/3.1)
-        //rect.setPosition(this.x-4, this.y-15)
-    }
-    
-    removeSprite(){
-        for(let component of this.spriteComponents){
-            remove(component);
-        }
-    }
-    
-    
-    updateComponentPosition(component, dx, dy){
-        component.setPosition(component.getX() + dx, component.getY() + dy);
-    }
-    
-    handleDamageEffects(tower){
-        
-        this.health -= tower.damage;
-        // effects
-        
-        if(this.isDead()){
-            this.game.handleEnemyDeath(this);
-        } else{
-            this.drawDamage();
-        }
-    }
-    
-    drawDamage(){
-        this.sprite.setColor("red");
-        setTimeout(this.revertColoring.bind(this), 100);
-    }
-    
-    revertColoring(){
-        this.sprite.setColor("black");
-    }
-    
-    isDead(){
-        return this.health <= 0;
-    }
-    
-    move(){
-        let tp = this.targetPivotPoint;
-        let xDist = tp.x - this.x;
-        let yDist = tp.y - this.y;
-        let dist = Math.sqrt(xDist**2 + yDist**2);
-        let xStep = this.movementSpeed * xDist / dist;
-        let yStep = this.movementSpeed * yDist / dist;
-        if(dist < this.movementSpeed){
-            this.jumpToTarget();
-        } else{
-            this.x += xStep;
-            this.y += yStep;
-        }
-    }
-    
-    initializeMovement(pivotPoints){
-        this.setTargetPivotPoint(pivotPoints[0]);
-        this.jumpToTarget();
+        this.game.canvas.drawRectangle(this.x - 4 + this.size / 2, this.y - 15 + this.size / 3.1 / 2, this.size, this.size / 3.1, FILL);
     }
 }
 
-class GhostEnemyTD{
-    time;
-    x = -100;
-    y = -100;
-    targetPivotPoint;
-    size;
+class CrazyEnemyTD extends BasicEnemyTD {
+    size = 15;
+    health = 2;
+    damage = 2;
+    movementSpeed = 1.4;
+
+    constructor(time, game) {
+        super(time, game);
+    }
+
+    targetNextPoint(){
+        let currentPivotIndex = this.game.pivotPoints.indexOf(this.targetPivotPoint);
+        if (currentPivotIndex == this.game.pivotPoints.length - 1)
+            this.game.handleEnemyAtEndOfMap(this);
+        else if(currentPivotIndex == 0){
+            this.setTargetPivotPoint(this.game.pivotPoints[1]);
+        } else{
+            let newIndex = Math.random() < 0.5 ? currentPivotIndex-1 : currentPivotIndex+1;
+            this.setTargetPivotPoint(this.game.pivotPoints[newIndex]);
+        }
+    }
+
+    draw() {
+        this.game.canvas.setFillColor("blue");
+        this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
+
+        this.game.canvas.setFillColor("red");
+        this.game.canvas.drawCircle(this.x, this.y, this.size*0.9, FILL);
+
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawCircle(this.x-this.size/2, this.y, this.size/3, FILL);
+        this.game.canvas.drawCircle(this.x+this.size/2, this.y, this.size/3, FILL);
+        
+        this.game.canvas.setFillColor("red");
+        this.game.canvas.drawCircle(this.x+this.size/2, this.y, this.size/4, FILL);
+
+        this.game.canvas.setFillColor("blue");
+        this.game.canvas.drawCircle(this.x-this.size/2, this.y, this.size/6, FILL);
+        this.game.canvas.drawRectangle(this.x, this.y+this.size/2, this.size*0.9, this.size*0.15, FILL);
+    }
+}
+
+class SpyEnemyTD extends BasicEnemyTD {
+    size = 10;
+    health = 1;
+    damage = 2;
+    movementSpeed = 0.1;
+    sneakXLength = 0;
+    sneakYLength = 0;
+    sneakSpeedMultiplier = 15;
+
+    constructor(time, game) {
+        super(time, game);
+        this.sneakXLength = 0;
+        this.sneakYLength = 0;
+    }
+
+    draw() {
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
+
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawCircle(this.x, this.y, this.size/3, FILL);
+        this.game.canvas.setColors("#FF000088");
+        this.game.canvas.drawLine({x: this.x, y: this.y}, {x: this.x+this.sneakXLength, y: this.y+this.sneakYLength});
+    }
+
+    move(){
+        let step = super.move();
+        if(!step) return;
+
+        let tp = this.targetPivotPoint;
+
+        if(step.xStep != NaN) this.sneakXLength += step.xStep*this.sneakSpeedMultiplier;
+        if(step.yStep != NaN) this.sneakYLength += step.yStep*this.sneakSpeedMultiplier;
+
+        let xDist = tp.x - (this.x + this.sneakXLength);
+        let yDist = tp.y - (this.y + this.sneakYLength);
+        let dist = Math.sqrt(xDist ** 2 + yDist ** 2);
+        if(dist < this.movementSpeed * this.sneakSpeedMultiplier){
+            this.jumpToTarget();
+            this.targetNextPoint();
+            this.sneakXLength = 0;
+            this.sneakYLength = 0;
+        }
+    }
+}
+
+class RegenSlimeEnemyTD extends BasicEnemyTD {
+    size = 10;
+    health = 1;
+    damage = 1;
+    movementSpeed = 0.4;
+    healCycleCounter = 0;
+    healCycleLength = 60; // initial value of 2 * game fps
+
+    constructor(time, game) {
+        super(time, game);
+        this.initializeHealCycleLength();
+    }
+
+    draw() {
+        // x = 100 y = 100 size = 100
+        this.game.canvas.setFillColor("black");
+        this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
+
+        this.game.canvas.setFillColor("red");
+        this.game.canvas.drawCircle(this.x - this.size/3, this.y - this.size/3, this.size/5, FILL);
+        this.game.canvas.drawCircle(this.x + this.size/3, this.y - this.size/3, this.size/5, FILL);
+        this.game.canvas.drawRectangle(this.x, this.y + this.size/3, this.size, this.size/3, FILL);    
+        
+        this.game.canvas.setFillColor("orange");
+        this.game.canvas.drawRectangle(this.x - this.size/2, this.y + this.size/3, this.size/10, this.size*0.3, FILL);
+        this.game.canvas.drawRectangle(this.x, this.y + this.size/3, this.size/10, this.size*0.3, FILL);
+        this.game.canvas.drawRectangle(this.x + this.size/2, this.y + this.size/3, this.size/10, this.size*0.3, FILL);
+    }
+
+    initializeHealCycleLength = () => this.healCycleLength = this.game.canvas.fps * 3.5;
+
+    handleDamageEffects(tower) {
+        super.handleDamageEffects(tower);
+        this.healCycleCounter = 0;
+        this.initializeHealCycleLength();
+        this.calculateSize();
+    }
+
+    move(){
+        super.move();
+        this.healCycleCounter++;
+        if(this.healCycleCounter >= this.healCycleLength){
+            this.healCycleCounter = 0;
+            this.health += 1;
+            this.calculateSize();
+        }
+    }
+
+}
+
+class GhostEnemyTD extends BasicEnemyTD {
+    size = 10;
     health = 1;
     damage = 1;
     movementSpeed = 1;
-    sprite;
-    spriteComponents = [];
-    game;
-    isAlive = true;
-    
-    constructor(time, game){
-        this.size = 10;
-        this.time = time;
-        this.game = game;
+
+    constructor(time, game) {
+        super(time, game);
     }
-    
-    setTargetPivotPoint(point){
-        this.targetPivotPoint = point;
+
+    targetNextPoint(){
+        let currentPivotIndex = this.game.pivotPoints.indexOf(this.targetPivotPoint);
+        if (currentPivotIndex == this.game.pivotPoints.length - 1)
+            this.game.handleEnemyAtEndOfMap(this);
+        else
+            this.setTargetPivotPoint(this.game.pivotPoints[this.game.pivotPoints.length - 1]);
     }
-    
-    jumpToTarget(){
-        this.x = this.targetPivotPoint.x;
-        this.y = this.targetPivotPoint.y;
-    }
-    
-    draw(){
+
+    draw() {
         this.game.canvas.setFillColor("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
-        
+
         this.game.canvas.setFillColor("white");
-        this.game.canvas.drawCircle(this.x, this.y, this.size*0.9, FILL);
-        
+        this.game.canvas.drawCircle(this.x, this.y, this.size * 0.9, FILL);
+
         this.game.canvas.setFillColor("black");
-        this.game.canvas.drawCircle(this.x, this.y+5, this.size/2, FILL);
-        
+        this.game.canvas.drawCircle(this.x, this.y + 5, this.size / 2, FILL);
+
         this.game.canvas.setFillColor("pink");
-        this.game.canvas.drawCircle(this.x, this.y+5, this.size/2.5, FILL);
-        
-        // var rect = new Rectangle(this.size/2,this.size/2);
-        // rect.setPosition(this.x-6, this.y-6);
+        this.game.canvas.drawCircle(this.x, this.y + 5, this.size / 2.5, FILL);
 
         this.game.canvas.setFillColor("black");
-        this.game.canvas.drawRectangle(this.x-this.size/2.5, this.y-this.size/3, this.size/2, this.size/2, FILL);
-        this.game.canvas.drawRectangle(this.x+this.size/2.5, this.y-this.size/3, this.size/2, this.size/2, FILL);
+        this.game.canvas.drawRectangle(this.x - this.size / 2.5, this.y - this.size / 3, this.size / 2, this.size / 2, FILL);
+        this.game.canvas.drawRectangle(this.x + this.size / 2.5, this.y - this.size / 3, this.size / 2, this.size / 2, FILL);
 
         this.game.canvas.setFillColor("red");
-        this.game.canvas.drawCircle(this.x-4, this.y-3, this.size/6, FILL);
-
-
-        this.game.canvas.setFillColor("red");
-        this.game.canvas.drawCircle(this.x+4, this.y-3, this.size/6, FILL);
-    }
-    
-    removeSprite(){
-        for(let component of this.spriteComponents){
-            remove(component);
-        }
-    }
-    
-    
-    updateComponentPosition(component, dx, dy){
-        component.setPosition(component.getX() + dx, component.getY() + dy);
-    }
-    
-    handleDamageEffects(tower){
-        
-        this.health -= tower.damage;
-        // effects
-        
-        if(this.isDead()){
-            this.game.handleEnemyDeath(this);
-        } else{
-            this.drawDamage();
-        }
-    }
-    
-    drawDamage(){
-        this.sprite.setColor("red");
-        setTimeout(this.revertColoring.bind(this), 100);
-    }
-    
-    revertColoring(){
-        this.sprite.setColor("black");
-    }
-    
-    isDead(){
-        return this.health <= 0;
-    }
-    
-    move(){
-        let tp = this.targetPivotPoint;
-        let xDist = tp.x - this.x;
-        let yDist = tp.y - this.y;
-        let dist = Math.sqrt(xDist**2 + yDist**2);
-        let xStep = this.movementSpeed * xDist / dist;
-        let yStep = this.movementSpeed * yDist / dist;
-        if(dist < this.movementSpeed){
-            this.jumpToTarget();
-        } else{
-            this.x += xStep;
-            this.y += yStep;
-        }
-    }
-    initializeMovement(pivotPoints){
-        this.setTargetPivotPoint(pivotPoints[0]);
-        this.jumpToTarget();
+        this.game.canvas.drawCircle(this.x - 4, this.y - 3, this.size / 6, FILL);
+        this.game.canvas.drawCircle(this.x + 4, this.y - 3, this.size / 6, FILL);
     }
 }
 
-class Tower{
+class Tower {
     cooldownTimer = 3;
     damage = 1;
-    cooldown = this.cooldownTimer*1000;
+    cooldown = this.cooldownTimer * 1000;
     size = 20;
     target;
     x; y;
@@ -2573,65 +2520,64 @@ class Tower{
     range = 60;
     rangeRing;
     sightLine;
-    
-    constructor(x = -100, y = -100, game){
+
+    constructor(x = -100, y = -100, game) {
         this.x = x;
         this.y = y;
         this.game = game;
     }
 
-    draw(){
+    draw() {
         this.#drawTower();
         this.#drawRangeRing();
         this.#drawSightLine();
     }
 
-    #drawTower(){
+    #drawTower() {
         this.game.canvas.setColors("blue");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
     }
 
-    #drawRangeRing(){
+    #drawRangeRing() {
         this.game.canvas.setFillColor("#00FF0022");
         this.game.canvas.setBorderColor("#00000077");
         this.game.canvas.drawCircle(this.x, this.y, this.range);
     }
 
-    #drawSightLine(){
-        if(this.target){
-            let cooldownPercentage = this.cooldown/1000/this.cooldownTimer;
-            // TODO fix this
-            this.game.canvas.setColors(color(cooldownPercentage*255, 255-(cooldownPercentage*255), 0));
-            this.game.canvas.drawLine({x:this.x, y:this.y}, {x: this.target.x, y: this.target.y});
+    #drawSightLine() {
+        if (this.target) {
+            let cooldownPercentage = Math.round(255 * this.cooldown / 1000 / this.cooldownTimer);
+            this.game.canvas.setColors(colorRGB(cooldownPercentage, 255 - cooldownPercentage, 0));
+            this.game.canvas.drawLine({ x: this.x, y: this.y }, { x: this.target.x, y: this.target.y }, FRAME);
         }
     }
-    
-    decreaseCooldown(deltaTime){
-        if(this.cooldown > 0) this.cooldown -= deltaTime;
+
+    decreaseCooldown(deltaTime) {
+        if (this.cooldown > 0) this.cooldown -= deltaTime;
     }
-    
-    isInRange(enemy){
-        let dist = Math.sqrt((this.x - enemy.x)**2 + (this.y - enemy.y)**2);
+
+    isInRange(enemy) {
+        let dist = Math.sqrt((this.x - enemy.x) ** 2 + (this.y - enemy.y) ** 2);
         let radiiSum = this.range + enemy.size;
         return radiiSum > dist;
     }
-    
-    canShoot(){
+
+    canShoot() {
         return this.target && this.cooldown <= 0;
     }
-    
-    shoot(){
+
+    shoot() {
         this.cooldown = this.cooldownTimer * 1000;
-        if(this.target){
+        if (this.target) {
             this.target.handleDamageEffects(this);
         }
     }
-    
-    loseTarget(){
+
+    loseTarget() {
         this.target = null;
     }
-    
-    setTarget(enemy){
+
+    setTarget(enemy) {
         this.target = enemy;
     }
 }
