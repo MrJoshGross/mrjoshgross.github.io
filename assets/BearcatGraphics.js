@@ -1929,16 +1929,32 @@ class BearcatTowerDefense {
     waveIndex = -1;
     activeEnemies = [];
     towers = [];
+    objects = [];
+    static COLLISION_TYPES = {
+        ENEMY: 0,
+        TOWER: 1
+    }
     ENEMY_TYPES = {
         basic: "BasicEnemyTD",
         scout: "ScoutEnemyTD",
         ghost: "GhostEnemyTD",
         crazy: "CrazyEnemyTD",
         regen: "RegenSlimeEnemyTD",
-        spy: "SpyEnemyTD"
+        spy: "SpyEnemyTD",
+        tank: "TankEnemyTD",                // TODO all these 
+        demon: "DemonEnemyTD",
+        boss: "BossEnemyTD"
     };
     TOWER_TYPES = {
         basic: "Tower",
+        cannon: "CannonTower",              // TODO all these
+        flamethrower: "FlamethrowerTower",
+        acid: "AcidTower",
+        ice: "IceTower",
+        water: "WaterTower",
+        farm: "FarmTower",
+        beacon: "BeaconTower",
+        chapel: "ChapelTower"
     };
     pivotPoints = [];
     GAME_STATES = { PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3 };
@@ -1972,10 +1988,16 @@ class BearcatTowerDefense {
     addEnemy = (type, time) => this.addEnemyToCurrentWave(type, time * 1000);
     addWave = (waveFunction) => this.waves.push(waveFunction);
     addRoadFunction = (func) => this.roadFunction = func;
-    addTowerFunction = (func) => this.towerFunction = func;
+    // TODO this should be deprecated in favor of adding towers at the start of a wave function
+    addTowerFunction = (func) => this.towerFunction = func; 
     handleVictory = () => this.currentGameState = this.GAME_STATES.VICTORY;
     handleGameOver = () => this.currentGameState = this.GAME_STATES.GAME_OVER;
     addMoney = (amount) => this.money += amount;
+
+    addEnemySwarm(type, number, startTime, timeBetweenSpawns){
+        for(let i = 0 ; i < number ; i++)
+            this.addEnemy(type, startTime + i * timeBetweenSpawns);
+    }
 
     addEnemyToCurrentWave(type, time) {
         if (this.ENEMY_TYPES[type])
@@ -1985,12 +2007,11 @@ class BearcatTowerDefense {
     }
 
     addTower(type, x, y) {
-        let tower = null;
         if (!this.TOWER_TYPES[type]) {
             console.error("TRYING TO ADD UNKNOWN TOWER TYPE: " + type);
             return;
         }
-        tower = eval(`new ${this.TOWER_TYPES[type]}(${x}, ${y}, this)`);
+        let tower = eval(`new ${this.TOWER_TYPES[type]}(${x}, ${y}, this)`);
         if (this.money >= tower.cost) {
             this.addMoney(-tower.cost);
             this.towers.push(tower);
@@ -2067,6 +2088,7 @@ class BearcatTowerDefense {
         this.handleTime();
         this.handleEnemies(this.deltaTime);
         this.handleTowers(this.deltaTime);
+        this.handleObjects(this.deltaTime);
         this.drawFrame();
     }
 
@@ -2075,6 +2097,7 @@ class BearcatTowerDefense {
             case this.GAME_STATES.PLAYING:
                 this.buildRoad();
                 this.drawTowers();
+                this.drawObjects();
                 this.drawEnemies();
                 this.drawGUI();
                 break;
@@ -2093,6 +2116,12 @@ class BearcatTowerDefense {
     drawTowers() {
         for (let tower of this.towers)
             tower.draw();
+    }
+
+    drawObjects(){
+        for(let object of this.objects){
+            object.draw();
+        }
     }
 
     drawPaused() {
@@ -2169,41 +2198,77 @@ class BearcatTowerDefense {
     }
 
     handleTowers(deltaTime) {
-        // TODO cooldowns and etc should be handled by the tower
-        for (let tower of this.towers) {
-            tower.decreaseCooldown(deltaTime);
-            if (tower.target && tower.isInRange(tower.target)) {
-                if (tower.canShoot())
-                    tower.shoot();
-            } else {
-                tower.loseTarget();
-                for (let enemy of this.activeEnemies) {
-                    if (tower.isInRange(enemy)) {
-                        tower.setTarget(enemy);
-                    }
-                }
+        for (let tower of this.towers)
+            tower.process(deltaTime);
+    }
+
+    handleObjects(deltaTime){
+        for(let object of this.objects){
+            object.process(deltaTime);
+            this.checkForCollisions(object);
+        }
+    }
+
+    checkForCollisions(object){
+        if(object.canCollideWith(BearcatTowerDefense.COLLISION_TYPES.ENEMY))
+            this.#checkEnemyCollisions(object);
+        else if(object.canCollideWith(BearcatTowerDefense.COLLISION_TYPES.TOWER))
+            this.#checkTowerCollisions(object);
+        else if(object.canCollideWith(BearcatTowerDefense.COLLISION_TYPES.OBJECTS))
+            this.#checkObjectCollision(object);
+    }
+
+    #checkEnemyCollisions = (object) => this.#checkListCollisions(object, this.activeEnemies);
+    #checkTowerCollisions = (object) => this.#checkListCollisions(object, this.towers);
+    #checkObjectCollision = (object) => this.#checkListCollisions(object, this.objects);
+
+    #checkListCollisions(object, list){
+        for(let otherObject of list){
+            if(otherObject === object) continue;
+            if(this.#isColliding(object, otherObject)){
+                object.handleCollision(otherObject);
             }
         }
     }
+
+    #isColliding(obj1, obj2){
+        let dist = Math.sqrt((obj1.x-obj2.x)**2 + (obj1.y-obj2.y)**2);
+        let radii = obj1.size + obj2.size;
+        return radii >= dist;
+    }
+
+
+
+    addObject(object){
+        this.objects.push(object);
+    }
+
+    removeObject(object){
+        this.objects.splice(this.objects.indexOf(object), 1);
+    }
 }
 
-class BasicEnemyTD {
+class GameObjectTD {
+    constructor(x, y, size){
+        this.x = x;
+        this.y = y;
+        this.size = size;
+    }
+}
+
+class BasicEnemyTD extends GameObjectTD {
     time;
     targetPivotPoint;
-    size;
     health = 1;
     damage = 1;
-    movementSpeed = 2;
     game;
     worth = 1;
     isAlive = true;
 
     constructor(time, game) {
-        this.size = 10;
+        super(-100, -100, -1);
         this.time = time;
         this.game = game;
-        this.x = -100;
-        this.y = -100;
         this.movementSpeed = 2;
         this.calculateSize();
     }
@@ -2222,9 +2287,9 @@ class BasicEnemyTD {
         this.game.canvas.drawCircle(this.x, this.y, this.size);
     }
 
-    handleDamageEffects(tower) {
+    handleDamageEffects(damageDealer) {
 
-        this.health -= tower.damage;
+        this.health -= damageDealer.damage;
         this.calculateSize();
         // effects
 
@@ -2345,7 +2410,7 @@ class CrazyEnemyTD extends BasicEnemyTD {
         else if(currentPivotIndex == 0){
             this.setTargetPivotPoint(this.game.pivotPoints[1]);
         } else{
-            let newIndex = Math.random() < 0.5 ? currentPivotIndex-1 : currentPivotIndex+1;
+            let newIndex = Math.random() < 0.45 ? currentPivotIndex-1 : currentPivotIndex+1;
             this.setTargetPivotPoint(this.game.pivotPoints[newIndex]);
         }
     }
@@ -2507,28 +2572,28 @@ class GhostEnemyTD extends BasicEnemyTD {
     }
 }
 
-class Tower {
+class Tower extends GameObjectTD {
     cooldownTimer = 3;
     damage = 1;
     cooldown = this.cooldownTimer * 1000;
-    size = 20;
     target;
-    x; y;
-    sprite;
-    range;
     cost = 3;
     range = 60;
-    rangeRing;
-    sightLine;
 
-    constructor(x = -100, y = -100, game) {
-        this.x = x;
-        this.y = y;
+    constructor(x = -100, y = -100, game, size=20) {
+        super(x, y, size);
         this.game = game;
+        this.cooldownTimer = 3;
+        this.drawTowerFunc = this.#drawTower;
+        this.shootFunc = this.shoot;
     }
 
+    canShoot = () => this.target && this.cooldown <= 0;
+    loseTarget = () => this.target = null;
+    setTarget = (enemy) => this.target = enemy;
+
     draw() {
-        this.#drawTower();
+        this.drawTowerFunc();
         this.#drawRangeRing();
         this.#drawSightLine();
     }
@@ -2552,6 +2617,21 @@ class Tower {
         }
     }
 
+    process(deltaTime){
+        this.decreaseCooldown(deltaTime);
+        if (this.target && this.isInRange(this.target)) {
+            if (this.canShoot())
+                this.shootFunc();
+        } else {
+            this.loseTarget();
+            for (let enemy of this.game.activeEnemies) {
+                if (this.isInRange(enemy)) {
+                    this.setTarget(enemy);
+                }
+            }
+        }
+    }
+
     decreaseCooldown(deltaTime) {
         if (this.cooldown > 0) this.cooldown -= deltaTime;
     }
@@ -2562,22 +2642,85 @@ class Tower {
         return radiiSum > dist;
     }
 
-    canShoot() {
-        return this.target && this.cooldown <= 0;
-    }
-
     shoot() {
         this.cooldown = this.cooldownTimer * 1000;
-        if (this.target) {
+        if (this.target)
             this.target.handleDamageEffects(this);
+    }
+}
+
+class CannonTower extends Tower{
+    damage = 1;
+    size = 25;
+    cost = 5;
+    range = 50;
+
+    constructor(x = -100, y = -100, game) {
+        super(x, y, game, 25);
+        this.cooldownTimer = 5;
+        this.cooldown = this.cooldownTimer * 1000;
+        super.drawTowerFunc = this.#drawTower;
+        super.shootFunc = this.#shoot;
+    }
+
+    #drawTower() {
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    #shoot() {
+        this.cooldown = this.cooldownTimer * 1000;
+        if (this.target){
+            this.game.addObject(new Cannonball(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
         }
     }
+}
 
-    loseTarget() {
-        this.target = null;
+class TowerProjectileTD extends GameObjectTD{
+    constructor(x, y, size){
+        super(x, y, size);
     }
 
-    setTarget(enemy) {
-        this.target = enemy;
+    canCollideWith = (type) => type === BearcatTowerDefense.COLLISION_TYPES.ENEMY;
+}
+
+class Cannonball extends TowerProjectileTD{
+    movementSpeed = 5;
+    constructor(x, y, targetX, targetY, damage, game){
+        super(x, y, 5);
+        this.vector = this.#createVector(this.x, this.y, targetX, targetY);
+        this.damage = damage;
+        this.game = game;
+        setTimeout(this.destroy.bind(this), 500);
+    }
+
+    process(deltaTime){
+        this.#handleMovement();
+    }
+
+    draw(){
+        this.game.canvas.setFillColor("gray");
+        this.game.canvas.setBorderColor("black");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+
+    destroy(){
+        this.game.removeObject(this);
+    }
+
+    #handleMovement(){
+        this.x += this.vector.x*this.movementSpeed;
+        this.y += this.vector.y*this.movementSpeed;
+    }
+
+    handleCollision(enemy){
+        enemy.handleDamageEffects(this);
+    }
+
+    #createVector(x1, y1, x2, y2){
+        let xDist = (x2-x1);
+        let yDist = (y2-y1);
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        return {x: xDist/dist, y: yDist/dist};
     }
 }
