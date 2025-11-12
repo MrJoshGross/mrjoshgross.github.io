@@ -431,50 +431,50 @@ class BearcatGraphics {
 
     // adapted from code written by Yuddy N, Fall 2023
     drawFoodTruck(x, y, direction = RIGHT, rotation, widthPercent = 1, heightPercent = 1) {
-        canvas.canvas.translate(x, y);
-        canvas.canvas.scale(widthPercent, heightPercent);
+        this.canvas.translate(x, y);
+        this.canvas.scale(widthPercent, heightPercent);
         if (rotation) rotation = { x: 0, y: 0, amount: rotation };
-        canvas.setBorderColor("black");
-        canvas.setFillColor("white");
-        canvas.drawRectangle(0, 0, 150, 75, FILLFRAME, rotation);
-        canvas.setFillColor("black");
-        canvas.drawRectangle(-(69 * direction), 0, 0.5, 70, FILLFRAME, rotation);
-        canvas.setFillColor("red");
-        canvas.drawCircle(0, 5, 20, FILLFRAME, rotation);
-        canvas.setFillColor("green");
-        canvas.drawCircle(-(5 * direction), -20, 5, FILLFRAME, rotation);
-        canvas.setFillColor("brown");
-        canvas.drawRectangle(0, -15, 2, 5, FILLFRAME, rotation);
-        canvas.setFillColor("red");
-        canvas.drawRectangle((110 * direction), 7, 50, 61, FILLFRAME, rotation);
-        canvas.setFillColor("lightblue");
-        canvas.drawRectangle((100 * direction), -33, 5, 13, FILLFRAME, rotation);
-        canvas.drawRectangle((97 * direction), -40, 8, 3, FILLFRAME, rotation);
-        canvas.setFillColor("lightblue");
-        canvas.drawRectangle((120 * direction), -2, 25, 23, FILLFRAME, rotation);
-        canvas.setFillColor("lightblue");
-        canvas.drawRectangle((30 * direction), 40, 210, 5, FILLFRAME, rotation);
-        canvas.setFillColor("yellow");
-        canvas.drawRectangle((130 * direction), 23, 5, 5, FILLFRAME, rotation);
-        canvas.setFillColor("orange");
-        canvas.drawRectangle((130 * direction), 30, 5, 5, FILLFRAME, rotation);
-        canvas.setFillColor("white");
-        canvas.drawRectangle((107 * direction), 23, 25, 15, FILLFRAME, rotation);
-        canvas.setFillColor("red");
-        canvas.drawRectangle((100 * direction), 21, 4, 2, FILLFRAME, rotation);
-        canvas.setFillColor("brown");
-        canvas.drawCircle(-(55 * direction), 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle(-(21 * direction), 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle((13 * direction), 55, 15, FILLFRAME, rotation);
-        canvas.drawCircle((85 * direction), 55, 14, FILLFRAME, rotation);
-        canvas.drawCircle((116 * direction), 55, 14, FILLFRAME, rotation);
-        canvas.setFillColor("black");
-        canvas.drawCircle(-(55 * direction), 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle(-(21 * direction), 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle((13 * direction), 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle((85 * direction), 55, 1, FILLFRAME, rotation);
-        canvas.drawCircle((116 * direction), 55, 1, FILLFRAME, rotation);
-        canvas.resetCanvasRotation();
+        this.setBorderColor("black");
+        this.setFillColor("white");
+        this.drawRectangle(0, 0, 150, 75, FILLFRAME, rotation);
+        this.setFillColor("black");
+        this.drawRectangle(-(69 * direction), 0, 0.5, 70, FILLFRAME, rotation);
+        this.setFillColor("red");
+        this.drawCircle(0, 5, 20, FILLFRAME, rotation);
+        this.setFillColor("green");
+        this.drawCircle(-(5 * direction), -20, 5, FILLFRAME, rotation);
+        this.setFillColor("brown");
+        this.drawRectangle(0, -15, 2, 5, FILLFRAME, rotation);
+        this.setFillColor("red");
+        this.drawRectangle((110 * direction), 7, 50, 61, FILLFRAME, rotation);
+        this.setFillColor("lightblue");
+        this.drawRectangle((100 * direction), -33, 5, 13, FILLFRAME, rotation);
+        this.drawRectangle((97 * direction), -40, 8, 3, FILLFRAME, rotation);
+        this.setFillColor("lightblue");
+        this.drawRectangle((120 * direction), -2, 25, 23, FILLFRAME, rotation);
+        this.setFillColor("lightblue");
+        this.drawRectangle((30 * direction), 40, 210, 5, FILLFRAME, rotation);
+        this.setFillColor("yellow");
+        this.drawRectangle((130 * direction), 23, 5, 5, FILLFRAME, rotation);
+        this.setFillColor("orange");
+        this.drawRectangle((130 * direction), 30, 5, 5, FILLFRAME, rotation);
+        this.setFillColor("white");
+        this.drawRectangle((107 * direction), 23, 25, 15, FILLFRAME, rotation);
+        this.setFillColor("red");
+        this.drawRectangle((100 * direction), 21, 4, 2, FILLFRAME, rotation);
+        this.setFillColor("brown");
+        this.drawCircle(-(55 * direction), 55, 15, FILLFRAME, rotation);
+        this.drawCircle(-(21 * direction), 55, 15, FILLFRAME, rotation);
+        this.drawCircle((13 * direction), 55, 15, FILLFRAME, rotation);
+        this.drawCircle((85 * direction), 55, 14, FILLFRAME, rotation);
+        this.drawCircle((116 * direction), 55, 14, FILLFRAME, rotation);
+        this.setFillColor("black");
+        this.drawCircle(-(55 * direction), 55, 1, FILLFRAME, rotation);
+        this.drawCircle(-(21 * direction), 55, 1, FILLFRAME, rotation);
+        this.drawCircle((13 * direction), 55, 1, FILLFRAME, rotation);
+        this.drawCircle((85 * direction), 55, 1, FILLFRAME, rotation);
+        this.drawCircle((116 * direction), 55, 1, FILLFRAME, rotation);
+        this.resetCanvasRotation();
     }
 
     dibujaCamionDeComida = (x, y, direction = RIGHT, rotation, widthPercent, heightPercent) => this.drawFoodTruck(x, y, direction, rotation, widthPercent, heightPercent);
@@ -678,7 +678,7 @@ class RotationAnchor {
     constructor(x, y, rotation) {
         this.x = x;
         this.y = y;
-        this.rotation = rotation;
+        this.amount = rotation;
     }
 }
 
@@ -1947,6 +1947,7 @@ class BearcatTowerDefense {
     };
     TOWER_TYPES = {
         basic: "Tower",
+        crossbow: "CrossbowTower",
         cannon: "CannonTower",              // TODO all these
         flamethrower: "FlamethrowerTower",
         acid: "AcidTower",
@@ -2649,7 +2650,7 @@ class Tower extends GameObjectTD {
     }
 }
 
-class CannonTower extends Tower{
+class CrossbowTower extends Tower{
     damage = 1;
     size = 25;
     cost = 5;
@@ -2671,7 +2672,7 @@ class CannonTower extends Tower{
     #shoot() {
         this.cooldown = this.cooldownTimer * 1000;
         if (this.target){
-            this.game.addObject(new Cannonball(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
+            this.game.addObject(new CrossbowBolt(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
         }
     }
 }
@@ -2684,14 +2685,15 @@ class TowerProjectileTD extends GameObjectTD{
     canCollideWith = (type) => type === BearcatTowerDefense.COLLISION_TYPES.ENEMY;
 }
 
-class Cannonball extends TowerProjectileTD{
-    movementSpeed = 5;
+class CrossbowBolt extends TowerProjectileTD{
+    movementSpeed = 10;
     constructor(x, y, targetX, targetY, damage, game){
         super(x, y, 5);
         this.vector = this.#createVector(this.x, this.y, targetX, targetY);
+        this.rotation = this.#calculateRotation();
         this.damage = damage;
         this.game = game;
-        setTimeout(this.destroy.bind(this), 500);
+        setTimeout(this.destroy.bind(this), 300);
     }
 
     process(deltaTime){
@@ -2699,9 +2701,10 @@ class Cannonball extends TowerProjectileTD{
     }
 
     draw(){
-        this.game.canvas.setFillColor("gray");
-        this.game.canvas.setBorderColor("black");
-        this.game.canvas.drawCircle(this.x, this.y, this.size);
+        this.game.canvas.setColors("brown");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size,this.size*4, FILL, this.rotation);
+        this.game.canvas.setColors("gray");
+        this.game.canvas.drawIsoscelesTriangle(this.x, this.y-this.size, this.size*2, this.size*3, FILL, new RotationAnchor(this.x, this.y, this.rotation));
     }
 
     destroy(){
@@ -2723,4 +2726,6 @@ class Cannonball extends TowerProjectileTD{
         let dist = Math.sqrt(xDist**2 + yDist**2);
         return {x: xDist/dist, y: yDist/dist};
     }
+
+    #calculateRotation = () => Math.atan2(this.vector.x, -this.vector.y) * (180 / Math.PI);
 }
