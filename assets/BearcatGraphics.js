@@ -2655,11 +2655,11 @@ class CrossbowTower extends Tower{
     damage = 1;
     size = 25;
     cost = 5;
-    range = 50;
+    range = 75;
 
     constructor(x = -100, y = -100, game) {
         super(x, y, game, 25);
-        this.cooldownTimer = 5;
+        this.cooldownTimer = 2.5;
         this.cooldown = this.cooldownTimer * 1000;
         super.drawTowerFunc = this.#drawTower;
         super.shootFunc = this.#shoot;
@@ -2722,6 +2722,7 @@ class CrossbowBolt extends TowerProjectileTD{
         this.rotation = this.#calculateRotation();
         this.damage = damage;
         this.game = game;
+        this.enemiesAlreadyHit = [];
         setTimeout(this.destroy.bind(this), 300);
     }
 
@@ -2735,7 +2736,11 @@ class CrossbowBolt extends TowerProjectileTD{
     process = (deltaTime) => this.#handleMovement(deltaTime);
 
     handleCollision(enemy){
-        enemy.handleDamageEffects(this);
+        if(this.enemiesAlreadyHit.indexOf(enemy) == -1){
+            this.enemiesAlreadyHit.push(enemy);
+            this.damage = 4 / (this.enemiesAlreadyHit.length + 4);
+            enemy.handleDamageEffects(this);
+        }
     }
 
     #handleMovement(){
