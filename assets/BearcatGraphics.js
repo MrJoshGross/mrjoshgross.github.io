@@ -1945,6 +1945,14 @@ class BearcatTowerDefense {
         demon: "DemonEnemyTD",
         boss: "BossEnemyTD"
     };
+
+    ENEMY_EFFECTS = {
+        fire: "FireEffect",
+        acid: "AcidEffect",
+        ice: "IceEffect", 
+        water: "WaterEffect",
+    }
+
     TOWER_TYPES = {
         basic: "Tower",
         crossbow: "CrossbowTower",
@@ -1957,6 +1965,7 @@ class BearcatTowerDefense {
         beacon: "BeaconTower",
         chapel: "ChapelTower"
     };
+
     pivotPoints = [];
     GAME_STATES = { PLAYING: 0, PAUSED: 1, GAME_OVER: 2, VICTORY: 3 };
     currentGameState = this.GAME_STATES.PAUSED;
@@ -2120,9 +2129,8 @@ class BearcatTowerDefense {
     }
 
     drawObjects(){
-        for(let object of this.objects){
+        for(let object of this.objects)
             object.draw();
-        }
     }
 
     drawPaused() {
@@ -2157,6 +2165,12 @@ class BearcatTowerDefense {
     handleEnemies(deltaTime) {
         this.handleEnemySpawning();
         this.handleEnemyMoving();
+        this.handleEnemyEffects(deltaTime);
+    }
+
+    handleEnemyEffects(deltaTime){
+        for(let enemy of this.activeEnemies)
+            enemy.handleEffects(deltaTime);
     }
 
     handleEnemyDeath(enemy) {
@@ -2272,6 +2286,7 @@ class BasicEnemyTD extends GameObjectTD {
         this.time = time;
         this.game = game;
         this.movementSpeed = 2;
+        this.towerEffects = [];
         this.calculateSize();
     }
 
@@ -2287,18 +2302,34 @@ class BasicEnemyTD extends GameObjectTD {
     draw() {
         this.game.canvas.setColors("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size);
+        this.#drawEffects();
     }
 
+    #drawEffects(){
+        for(let towerEffect of this.towerEffects)
+            towerEffect.draw(this.x, this.y, this.size);
+    }
+
+    addTowerEffect (damageDealer){
+        let effect = damageDealer.effect;
+        this.towerEffects.push(new effect(this, damageDealer.damage));
+    }
+    removeTowerEffect = (effect) => this.towerEffects.splice(this.towerEffects.indexOf(effect), 1);
+
     handleDamageEffects(damageDealer) {
-
         this.health -= damageDealer.damage;
-        this.calculateSize();
-        // effects
-
+        if(damageDealer.effect)
+            this.addTowerEffect(damageDealer);
         if (this.isDead()) 
             this.game.handleEnemyDeath(this);
         else 
             this.drawDamage();
+        this.calculateSize();
+    }
+
+    handleEffects(deltaTime){
+        for(let effect of this.towerEffects)
+            effect.process(deltaTime);
     }
 
     // size of sprite and damage done is based off of remaining health
@@ -2705,6 +2736,81 @@ class CannonBallTower extends Tower{
     }
 }
 
+class FlamethrowerTower extends Tower{
+    damage = 0.1;
+    size = 25;
+    cost = 5;
+    range = 45;
+
+    constructor(x = -100, y = -100, game) {
+        super(x, y, game, 25);
+        this.cooldownTimer = 2;
+        this.cooldown = this.cooldownTimer * 1000;
+        super.drawTowerFunc = this.#drawTower;
+        super.shootFunc = this.#shoot;
+    }
+
+    #drawTower() {
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    #shoot() {
+        this.cooldown = this.cooldownTimer * 1000;
+        if (this.target){
+            this.game.addObject(new FlameRing(this.x, this.y, this.damage, this.game));
+        }
+    }
+}
+
+class TowerEffect{
+    
+    constructor(duration, timeBetweenTicks, game){
+        this.currentTime = 0;
+        this.duration = duration * 1000;
+        this.game = game;
+        this.timeBetweenTicks = timeBetweenTicks * 1000;
+    }
+
+    process(deltaTime){
+        this.currentTime += deltaTime;
+        if(this.currentTime > this.timeBetweenTicks){
+            this.doEffect();
+            this.currentTime = 0;
+            this.duration -= this.timeBetweenTicks;
+        }
+
+        if(this.currentTime > this.duration)
+            this.destroy();
+    }
+
+    destroy = () => console.error("TOWER EFFECT DESTRUCTION MUST BE OVERRIDE IN SUB CLASSES");
+    doEffect(){
+        console.error("TOWER EFFECT HANDLING MUST BE OVERRIDED IN SUB CLASSES")
+    }
+    draw = (x, y, size) => console.error("TOWER EFFECT DRAWING MUST BE OVERRIDED IN SUB CLASSES");
+}
+
+class FireEffect extends TowerEffect{
+    constructor(enemy, damage){
+        super(2, 0.5, enemy.game);
+        this.damage = damage;
+        this.enemy = enemy;
+        super.doEffect = this.doEffect;
+    }
+
+    destroy = () => this.enemy.removeTowerEffect(this);
+    doEffect(){
+        console.log(this.currentTime);
+        this.enemy.handleDamageEffects(this);
+    }
+
+    draw(x, y, size){
+        this.game.canvas.setFillColor("F4610577");
+        this.game.canvas.drawCircle(x, y, size);
+    }
+}
+
 class TowerProjectileTD extends GameObjectTD{
     constructor(x, y, size){
         super(x, y, size);
@@ -2712,6 +2818,30 @@ class TowerProjectileTD extends GameObjectTD{
 
     canCollideWith = (type) => type === BearcatTowerDefense.COLLISION_TYPES.ENEMY;
     destroy = () => this.game.removeObject(this);
+}
+
+class FlameRing extends TowerProjectileTD{
+    constructor(x, y, damage, game){
+        super(x, y, 45);
+        this.damage = damage;
+        this.game = game;
+        this.enemiesAlreadyHit = [];
+        setTimeout(this.destroy.bind(this), 100);
+        this.effect = FireEffect;
+    }
+
+    draw(){
+        this.game.canvas.setFillColor("#F4610577");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+
+    process = (deltaTime) => {};
+    handleCollision(enemy){
+        if(this.enemiesAlreadyHit.indexOf(enemy) == -1){
+            this.enemiesAlreadyHit.push(enemy);
+            enemy.handleDamageEffects(this);
+        }
+    }
 }
 
 class CrossbowBolt extends TowerProjectileTD{
