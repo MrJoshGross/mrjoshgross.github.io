@@ -1951,16 +1951,17 @@ class BearcatTowerDefense {
         acid: "AcidEffect",
         ice: "IceEffect", 
         water: "WaterEffect",
+        acid: "AcidEffect"
     }
 
     TOWER_TYPES = {
-        basic: "Tower",
+        basic: "BasicTower",
         crossbow: "CrossbowTower",
         cannon: "CannonBallTower",          
-        flamethrower: "FlamethrowerTower",  // TODO all these
-        acid: "AcidTower",
-        ice: "IceTower",
-        water: "WaterTower",
+        flamethrower: "FlamethrowerTower",  
+        acid: "AcidTower",                  
+        ice: "IceTower",                    // TODO all these
+        water: "WaterTower",    
         farm: "FarmTower",
         beacon: "BeaconTower",
         chapel: "ChapelTower"
@@ -2208,7 +2209,7 @@ class BearcatTowerDefense {
     handleEnemyAtEndOfMap(enemy) {
         this.activeEnemies.splice(this.activeEnemies.indexOf(enemy), 1);
         this.lives -= enemy.damage;
-        if (this.lives <= 0)
+        if (this.lives < 0.1)
             this.handleGameOver();
     }
 
@@ -2300,9 +2301,13 @@ class BasicEnemyTD extends GameObjectTD {
     }
 
     draw() {
+        this.drawSprite();
+        this.#drawEffects();
+    }
+
+    drawSprite(){
         this.game.canvas.setColors("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size);
-        this.#drawEffects();
     }
 
     #drawEffects(){
@@ -2398,7 +2403,7 @@ class ScoutEnemyTD extends BasicEnemyTD{
        super(time, game);
     }
 
-    draw() {
+    drawSprite() {
         this.game.canvas.setColors("#F8F8FF");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
 
@@ -2448,7 +2453,7 @@ class CrazyEnemyTD extends BasicEnemyTD {
         }
     }
 
-    draw() {
+    drawSprite() {
         this.game.canvas.setFillColor("blue");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
 
@@ -2483,7 +2488,7 @@ class SpyEnemyTD extends BasicEnemyTD {
         this.sneakYLength = 0;
     }
 
-    draw() {
+    drawSprite() {
         this.game.canvas.setFillColor("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
 
@@ -2527,7 +2532,7 @@ class RegenSlimeEnemyTD extends BasicEnemyTD {
         this.initializeHealCycleLength();
     }
 
-    draw() {
+    drawSprite() {
         // x = 100 y = 100 size = 100
         this.game.canvas.setFillColor("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
@@ -2582,7 +2587,7 @@ class GhostEnemyTD extends BasicEnemyTD {
             this.setTargetPivotPoint(this.game.pivotPoints[this.game.pivotPoints.length - 1]);
     }
 
-    draw() {
+    drawSprite() {
         this.game.canvas.setFillColor("black");
         this.game.canvas.drawCircle(this.x, this.y, this.size, FILL);
 
@@ -2606,19 +2611,16 @@ class GhostEnemyTD extends BasicEnemyTD {
 }
 
 class Tower extends GameObjectTD {
-    cooldownTimer = 3;
     damage = 1;
-    cooldown = this.cooldownTimer * 1000;
     target;
     cost = 3;
     range = 60;
+    cooldownTimer = 3;
 
-    constructor(x = -100, y = -100, game, size=20) {
+    constructor(x = -100, y = -100, size=20, game) {
         super(x, y, size);
         this.game = game;
-        this.cooldownTimer = 3;
-        this.drawTowerFunc = this.#drawTower;
-        this.shootFunc = this.shoot;
+        this.cooldown = this.cooldownTimer*1000;
     }
 
     canShoot = () => this.target && this.cooldown <= 0;
@@ -2626,14 +2628,12 @@ class Tower extends GameObjectTD {
     setTarget = (enemy) => this.target = enemy;
 
     draw() {
-        this.drawTowerFunc();
         this.#drawRangeRing();
-        this.#drawSightLine();
+        this.drawTower();  
     }
 
-    #drawTower() {
-        this.game.canvas.setColors("blue");
-        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    drawTower(){
+        console.error("DRAW TOWER MUST BE OVERRIDED IN SUBCLASS");
     }
 
     #drawRangeRing() {
@@ -2642,7 +2642,7 @@ class Tower extends GameObjectTD {
         this.game.canvas.drawCircle(this.x, this.y, this.range);
     }
 
-    #drawSightLine() {
+    drawSightLine() {
         if (this.target) {
             let cooldownPercentage = Math.round(255 * this.cooldown / 1000 / this.cooldownTimer);
             this.game.canvas.setColors(colorRGB(cooldownPercentage, 255 - cooldownPercentage, 0));
@@ -2653,8 +2653,10 @@ class Tower extends GameObjectTD {
     process(deltaTime){
         this.decreaseCooldown(deltaTime);
         if (this.target && this.isInRange(this.target)) {
-            if (this.canShoot())
-                this.shootFunc();
+            if (this.canShoot()){
+                this.shoot();
+                this.cooldown = this.cooldownTimer * 1000;
+            }
         } else {
             this.loseTarget();
             for (let enemy of this.game.activeEnemies) {
@@ -2676,6 +2678,32 @@ class Tower extends GameObjectTD {
     }
 
     shoot() {
+        if (this.target)
+            this.target.handleDamageEffects(this);
+    }
+}
+
+class BasicTower extends Tower{
+    cooldownTimer = 3;
+    damage = 1;
+    cooldown = this.cooldownTimer * 1000;
+    target;
+    cost = 3;
+    range = 60;
+
+    constructor(x = -100, y = -100, game, size=20) {
+        super(x, y, size, game);
+        this.game = game;
+        this.cooldownTimer = 3;
+    }
+
+    drawTower() {
+        this.game.canvas.setColors("blue");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+        super.drawSightLine();
+    }
+
+    shoot() {
         this.cooldown = this.cooldownTimer * 1000;
         if (this.target)
             this.target.handleDamageEffects(this);
@@ -2684,24 +2712,22 @@ class Tower extends GameObjectTD {
 
 class CrossbowTower extends Tower{
     damage = 1;
-    size = 25;
     cost = 5;
     range = 75;
 
     constructor(x = -100, y = -100, game) {
-        super(x, y, game, 25);
+        super(x, y, 25, game);
         this.cooldownTimer = 2.5;
         this.cooldown = this.cooldownTimer * 1000;
-        super.drawTowerFunc = this.#drawTower;
-        super.shootFunc = this.#shoot;
     }
 
-    #drawTower() {
+    drawTower() {
         this.game.canvas.setColors("black");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+        super.drawSightLine();
     }
 
-    #shoot() {
+    shoot() {
         this.cooldown = this.cooldownTimer * 1000;
         if (this.target){
             this.game.addObject(new CrossbowBolt(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
@@ -2711,24 +2737,22 @@ class CrossbowTower extends Tower{
 
 class CannonBallTower extends Tower{
     damage = 1;
-    size = 25;
     cost = 5;
     range = 50;
 
     constructor(x = -100, y = -100, game) {
-        super(x, y, game, 25);
+        super(x, y, 25, game);
         this.cooldownTimer = 5;
         this.cooldown = this.cooldownTimer * 1000;
-        super.drawTowerFunc = this.#drawTower;
-        super.shootFunc = this.#shoot;
     }
 
-    #drawTower() {
+    drawTower() {
         this.game.canvas.setColors("white");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+        super.drawSightLine();
     }
 
-    #shoot() {
+    shoot() {
         this.cooldown = this.cooldownTimer * 1000;
         if (this.target){
             this.game.addObject(new CannonBall(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
@@ -2738,27 +2762,50 @@ class CannonBallTower extends Tower{
 
 class FlamethrowerTower extends Tower{
     damage = 0.1;
+    cost = 5;
+    range = 45;
+
+    constructor(x = -100, y = -100, game) {
+        super(x, y, 25, game);
+        this.cooldownTimer = 2;
+        this.cooldown = this.cooldownTimer * 1000;
+    }
+
+    drawTower() {
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    shoot() {
+        this.cooldown = this.cooldownTimer * 1000;
+        if (this.target){
+            this.game.addObject(new FlameRing(this.x, this.y, this.damage, this.game));
+        }
+    }
+}
+
+class AcidTower extends Tower{
+    damage = 0.05;
     size = 25;
     cost = 5;
     range = 45;
 
     constructor(x = -100, y = -100, game) {
-        super(x, y, game, 25);
+        super(x, y, 25, game);
         this.cooldownTimer = 2;
         this.cooldown = this.cooldownTimer * 1000;
-        super.drawTowerFunc = this.#drawTower;
-        super.shootFunc = this.#shoot;
     }
 
-    #drawTower() {
-        this.game.canvas.setColors("red");
+    drawTower() {
+        this.game.canvas.setColors("green");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+        super.drawSightLine();
     }
 
-    #shoot() {
+    shoot() {
         this.cooldown = this.cooldownTimer * 1000;
         if (this.target){
-            this.game.addObject(new FlameRing(this.x, this.y, this.damage, this.game));
+            this.game.addObject(new AcidBall(this.x, this.y, this.target.x, this.target.y, this.damage, this.game));
         }
     }
 }
@@ -2784,30 +2831,48 @@ class TowerEffect{
             this.destroy();
     }
 
-    destroy = () => console.error("TOWER EFFECT DESTRUCTION MUST BE OVERRIDE IN SUB CLASSES");
+    destroy(){
+        console.error("TOWER EFFECT DESTRUCTION MUST BE OVERRIDE IN SUB CLASSES");
+    }
     doEffect(){
         console.error("TOWER EFFECT HANDLING MUST BE OVERRIDED IN SUB CLASSES")
     }
-    draw = (x, y, size) => console.error("TOWER EFFECT DRAWING MUST BE OVERRIDED IN SUB CLASSES");
+    draw(x, y, size){
+        console.error("TOWER EFFECT DRAWING MUST BE OVERRIDED IN SUB CLASSES");
+    }
 }
 
-class FireEffect extends TowerEffect{
-    constructor(enemy, damage){
-        super(2, 0.5, enemy.game);
+class DamageTowerEffect extends TowerEffect{
+    constructor(duration, timeBetweenTicks, enemy, damage){
+        super(duration, timeBetweenTicks, enemy.game);
         this.damage = damage;
         this.enemy = enemy;
-        super.doEffect = this.doEffect;
     }
-
     destroy = () => this.enemy.removeTowerEffect(this);
     doEffect(){
-        console.log(this.currentTime);
         this.enemy.handleDamageEffects(this);
+    }
+}
+
+class FireEffect extends DamageTowerEffect{
+    constructor(enemy, damage){
+        super(2, 0.5, enemy, damage);
     }
 
     draw(x, y, size){
-        this.game.canvas.setFillColor("F4610577");
-        this.game.canvas.drawCircle(x, y, size);
+        this.game.canvas.setColors("#F4610577");
+        this.game.canvas.drawCircle(x, y, size/2);
+    }
+}
+
+class AcidEffect extends DamageTowerEffect{
+    constructor(enemy, damage){
+        super(5, 0.4, enemy, damage);
+    }
+
+    draw(x, y, size){
+        this.game.canvas.setColors("#00770077");
+        this.game.canvas.drawCircle(x, y, size/2);
     }
 }
 
@@ -2816,8 +2881,25 @@ class TowerProjectileTD extends GameObjectTD{
         super(x, y, size);
     }
 
+    setLifeTime(time){
+        setTimeout(this.destroy.bind(this), time);
+    }
+
+    createVector(x1, y1, x2, y2){
+        let xDist = (x2-x1);
+        let yDist = (y2-y1);
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        return {x: xDist/dist, y: yDist/dist};
+    }
+
+    process = () => {};
+
+    calculateRotation = (x, y) => Math.atan2(x, -y) * (180 / Math.PI);
+
     canCollideWith = (type) => type === BearcatTowerDefense.COLLISION_TYPES.ENEMY;
-    destroy = () => this.game.removeObject(this);
+    destroy(){
+        this.game.removeObject(this);
+    }
 }
 
 class FlameRing extends TowerProjectileTD{
@@ -2826,7 +2908,7 @@ class FlameRing extends TowerProjectileTD{
         this.damage = damage;
         this.game = game;
         this.enemiesAlreadyHit = [];
-        setTimeout(this.destroy.bind(this), 100);
+        this.setLifeTime(100);
         this.effect = FireEffect;
     }
 
@@ -2836,6 +2918,7 @@ class FlameRing extends TowerProjectileTD{
     }
 
     process = (deltaTime) => {};
+
     handleCollision(enemy){
         if(this.enemiesAlreadyHit.indexOf(enemy) == -1){
             this.enemiesAlreadyHit.push(enemy);
@@ -2848,12 +2931,12 @@ class CrossbowBolt extends TowerProjectileTD{
     movementSpeed = 10;
     constructor(x, y, targetX, targetY, damage, game){
         super(x, y, 5);
-        this.vector = this.#createVector(this.x, this.y, targetX, targetY);
-        this.rotation = this.#calculateRotation();
+        this.vector = this.createVector(this.x, this.y, targetX, targetY);
+        this.rotation = this.calculateRotation(this.vector.x, this.vector.y);
         this.damage = damage;
         this.game = game;
         this.enemiesAlreadyHit = [];
-        setTimeout(this.destroy.bind(this), 300);
+        super.setLifeTime(300);
     }
 
     draw(){
@@ -2877,15 +2960,66 @@ class CrossbowBolt extends TowerProjectileTD{
         this.x += this.vector.x*this.movementSpeed;
         this.y += this.vector.y*this.movementSpeed;
     }
+}
 
-    #createVector(x1, y1, x2, y2){
-        let xDist = (x2-x1);
-        let yDist = (y2-y1);
-        let dist = Math.sqrt(xDist**2 + yDist**2);
-        return {x: xDist/dist, y: yDist/dist};
+class AcidBall extends TowerProjectileTD{
+    movementSpeed = 7;
+    constructor(x, y, targetX, targetY, damage, game){
+        super(x, y, 5);
+        this.damage = damage;
+        this.game = game;
+        this.vector = this.createVector(x, y, targetX, targetY);
+        this.rotation = this.calculateRotation(this.vector.x, this.vector.y);
+        this.effect = AcidEffect;
+        super.setLifeTime(1000);
     }
 
-    #calculateRotation = () => Math.atan2(this.vector.x, -this.vector.y) * (180 / Math.PI);
+    draw(){
+        this.game.canvas.setColors("lightgreen");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+
+    handleCollision(enemy){
+        this.destroy();
+        enemy.handleDamageEffects(this);
+    }
+
+    destroy(){
+        this.game.addObject(new AcidBallExplosion(this.x, this.y, this.damage, this.game));
+        super.destroy();
+    }
+
+    process = (deltaTime) => this.#handleMovement(deltaTime);
+
+    #handleMovement(){
+        this.x += this.vector.x*this.movementSpeed;
+        this.y += this.vector.y*this.movementSpeed;
+    }
+}
+
+class AcidBallExplosion extends TowerProjectileTD{
+    constructor(x, y, damage, game){
+        super(x, y, 35);
+        this.game = game;
+        this.effect = AcidEffect;
+        this.damage = damage;
+        this.enemiesInArea = [];
+        super.setLifeTime(1000);
+    }
+
+    process = () => {this.size *= 0.95};
+
+    handleCollision(enemy){
+        if(this.enemiesInArea.indexOf(enemy) == -1){
+            this.enemiesInArea.push(enemy);
+            enemy.handleDamageEffects(this);
+        }
+    }
+
+    draw(){
+        this.game.canvas.setColors("#00AA0077");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
 }
 
 class CannonBall extends TowerProjectileTD{
@@ -2894,9 +3028,9 @@ class CannonBall extends TowerProjectileTD{
         super(x, y, 7);
         this.damage = damage;
         this.game = game;
-        this.vector = this.#createVector(this.x, this.y, targetX, targetY);
-        this.rotation = this.#calculateRotation();
-        setTimeout(this.destroy.bind(this), 500);
+        this.vector = this.createVector(this.x, this.y, targetX, targetY);
+        this.rotation = this.calculateRotation(this.vector.x, this.vector.y);
+        super.setLifeTime(500);
     }
 
     draw(){
@@ -2910,33 +3044,22 @@ class CannonBall extends TowerProjectileTD{
         this.game.addObject(new CannonBallExplosion(this.x, this.y, this.damage, this.game));
     }
 
-    #createVector(x1, y1, x2, y2){
-        let xDist = (x2-x1);
-        let yDist = (y2-y1);
-        let dist = Math.sqrt(xDist**2 + yDist**2);
-        return {x: xDist/dist, y: yDist/dist};
-    }
-
     process = (deltaTime) => this.#handleMovement(deltaTime);
 
     #handleMovement(){
         this.x += this.vector.x*this.movementSpeed;
         this.y += this.vector.y*this.movementSpeed;
     }
-
-    #calculateRotation = () => Math.atan2(this.vector.x, -this.vector.y) * (180 / Math.PI);
 }
 
 class CannonBallExplosion extends TowerProjectileTD{
     constructor(x, y, damage, game){
         super(x, y, 20);
-        setTimeout(this.destroy.bind(this), 100); // buggish - good enough
+        super.setLifeTime(100);
         this.game = game;
         this.damage = damage;
         this.enemiesInExplosion = [];
     }
-
-    process = () => {};
 
     handleCollision(enemy){
         if(this.enemiesInExplosion.indexOf(enemy) == -1){
