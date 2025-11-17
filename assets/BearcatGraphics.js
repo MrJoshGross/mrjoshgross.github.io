@@ -1960,9 +1960,9 @@ class BearcatTowerDefense {
         cannon: "CannonBallTower",          
         flamethrower: "FlamethrowerTower",  
         acid: "AcidTower",                  
-        ice: "IceTower",                    // TODO all these
-        water: "WaterTower",    
-        farm: "FarmTower",
+        ice: "IceTower",                    
+        water: "WaterTower",                
+        farm: "FarmTower",                  // TODO all these
         beacon: "BeaconTower",
         chapel: "ChapelTower"
     };
@@ -2698,7 +2698,7 @@ class BasicTower extends Tower{
     }
 
     drawTower() {
-        this.game.canvas.setColors("blue");
+        this.game.canvas.setColors("black");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
         super.drawSightLine();
     }
@@ -2796,7 +2796,8 @@ class IceTower extends Tower{
     }
 
     drawTower() {
-        this.game.canvas.setColors("lightblue");
+        this.game.canvas.setFillColor("lightblue");
+        this.game.canvas.setBorderColor("blue");
         this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
     }
 
@@ -2805,6 +2806,27 @@ class IceTower extends Tower{
         if (this.target){
             this.game.addObject(new IceRing(this.x, this.y, this.damage, this.game));
         }
+    }
+}
+
+class WaterTower extends Tower{
+    damage = 0;
+    cost = 5;
+    range = 70;
+
+    constructor(x = -100, y = -100, game) {
+        super(x, y, 25, game);
+        this.cooldownTimer = 1;
+        this.cooldown = this.cooldownTimer * 1000;
+    }
+
+    drawTower() {
+        this.game.canvas.setColors("darkblue");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    shoot() {
+        this.game.addObject(new WaterAOE(this.x, this.y, this.damage, this.game));
     }
 }
 
@@ -2876,7 +2898,6 @@ class IceEffect extends TowerEffect{
 
     doEffect(){
         this.enemy.movementSpeed = 0;
-        console.log("fried");
     }
 
     destroy(){
@@ -2886,6 +2907,30 @@ class IceEffect extends TowerEffect{
 
     draw(x, y, size){
         this.game.canvas.setColors("#58E9FFAA");
+        this.game.canvas.drawCircle(x, y, size/2);
+    }
+}
+
+class WaterEffect extends TowerEffect{
+    constructor(enemy, damage){
+        super(0.5, 0.25, enemy.game);
+        this.damage = damage;
+        this.enemy = enemy;
+        this.timesApplied = 0;
+    }
+
+    doEffect(){
+        this.enemy.movementSpeed /= 2;
+        this.timesApplied++;
+    }
+
+    destroy(){
+        super.destroy();
+        this.enemy.movementSpeed *= 2 * this.timesApplied;
+    }
+
+    draw(x, y, size){
+        this.game.canvas.setColors("#585bffaa");
         this.game.canvas.drawCircle(x, y, size/2);
     }
 }
@@ -2987,6 +3032,31 @@ class IceRing extends TowerProjectileTD{
 
     draw(){
         this.game.canvas.setFillColor("#AAAAFFAA");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+
+    process = (deltaTime) => {};
+
+    handleCollision(enemy){
+        if(this.enemiesAlreadyHit.indexOf(enemy) == -1){
+            this.enemiesAlreadyHit.push(enemy);
+            enemy.handleDamageEffects(this);
+        }
+    }
+}
+
+class WaterAOE extends TowerProjectileTD{
+    constructor(x, y, damage, game){
+        super(x, y, 70);
+        this.damage = damage;
+        this.game = game;
+        this.enemiesAlreadyHit = [];
+        this.setLifeTime(2000);
+        this.effect = WaterEffect;
+    }
+
+    draw(){
+        this.game.canvas.setColors("#3333FF55");
         this.game.canvas.drawCircle(this.x, this.y, this.size);
     }
 
