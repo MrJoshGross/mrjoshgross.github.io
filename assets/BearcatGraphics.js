@@ -1958,7 +1958,7 @@ class BearcatTowerDefense {
         basic: "BasicTower",
         crossbow: "CrossbowTower",
         cannon: "CannonBallTower",          
-        flamethrower: "FlamethrowerTower",  
+        fire: "FlamethrowerTower",  
         acid: "AcidTower",                  
         ice: "IceTower",                    
         water: "WaterTower",                
@@ -2798,7 +2798,7 @@ class IceTower extends Tower{
     drawTower() {
         this.game.canvas.setFillColor("lightblue");
         this.game.canvas.setBorderColor("blue");
-        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size);
     }
 
     shoot() {
@@ -2892,7 +2892,9 @@ class IceEffect extends TowerEffect{
     constructor(enemy, damage){
         super(2, 0.1, enemy.game);
         this.damage = damage;
-        this.cachedSpeed = enemy.movementSpeed;
+        // TODO known bug when interacting with other slowing towers ex. water
+        // TODO caching speeds can lead to crazy speed boosts when water effect ends
+        this.cachedSpeed = enemy.movementSpeed; 
         this.enemy = enemy;
     }
 
