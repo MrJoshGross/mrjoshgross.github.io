@@ -2784,6 +2784,30 @@ class FlamethrowerTower extends Tower{
     }
 }
 
+class IceTower extends Tower{
+    damage = 0.01;
+    cost = 5;
+    range = 40;
+
+    constructor(x = -100, y = -100, game) {
+        super(x, y, 25, game);
+        this.cooldownTimer = 5;
+        this.cooldown = this.cooldownTimer * 1000;
+    }
+
+    drawTower() {
+        this.game.canvas.setColors("lightblue");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size, FILL);
+    }
+
+    shoot() {
+        this.cooldown = this.cooldownTimer * 1000;
+        if (this.target){
+            this.game.addObject(new IceRing(this.x, this.y, this.damage, this.game));
+        }
+    }
+}
+
 class AcidTower extends Tower{
     damage = 0.05;
     size = 25;
@@ -2832,7 +2856,7 @@ class TowerEffect{
     }
 
     destroy(){
-        console.error("TOWER EFFECT DESTRUCTION MUST BE OVERRIDE IN SUB CLASSES");
+        this.enemy.removeTowerEffect(this);
     }
     doEffect(){
         console.error("TOWER EFFECT HANDLING MUST BE OVERRIDED IN SUB CLASSES")
@@ -2842,13 +2866,37 @@ class TowerEffect{
     }
 }
 
+class IceEffect extends TowerEffect{
+    constructor(enemy, damage){
+        super(2, 0.1, enemy.game);
+        this.damage = damage;
+        this.cachedSpeed = enemy.movementSpeed;
+        this.enemy = enemy;
+    }
+
+    doEffect(){
+        this.enemy.movementSpeed = 0;
+        console.log("fried");
+    }
+
+    destroy(){
+        super.destroy();
+        this.enemy.movementSpeed = this.cachedSpeed;
+    }
+
+    draw(x, y, size){
+        this.game.canvas.setColors("#58E9FFAA");
+        this.game.canvas.drawCircle(x, y, size/2);
+    }
+}
+
 class DamageTowerEffect extends TowerEffect{
     constructor(duration, timeBetweenTicks, enemy, damage){
         super(duration, timeBetweenTicks, enemy.game);
         this.damage = damage;
         this.enemy = enemy;
     }
-    destroy = () => this.enemy.removeTowerEffect(this);
+
     doEffect(){
         this.enemy.handleDamageEffects(this);
     }
@@ -2914,6 +2962,31 @@ class FlameRing extends TowerProjectileTD{
 
     draw(){
         this.game.canvas.setFillColor("#F4610577");
+        this.game.canvas.drawCircle(this.x, this.y, this.size);
+    }
+
+    process = (deltaTime) => {};
+
+    handleCollision(enemy){
+        if(this.enemiesAlreadyHit.indexOf(enemy) == -1){
+            this.enemiesAlreadyHit.push(enemy);
+            enemy.handleDamageEffects(this);
+        }
+    }
+}
+
+class IceRing extends TowerProjectileTD{
+    constructor(x, y, damage, game){
+        super(x, y, 45);
+        this.damage = damage;
+        this.game = game;
+        this.enemiesAlreadyHit = [];
+        this.setLifeTime(100);
+        this.effect = IceEffect;
+    }
+
+    draw(){
+        this.game.canvas.setFillColor("#AAAAFFAA");
         this.game.canvas.drawCircle(this.x, this.y, this.size);
     }
 
