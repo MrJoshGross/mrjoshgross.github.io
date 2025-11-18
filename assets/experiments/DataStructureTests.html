@@ -1,0 +1,161 @@
+<script src="DataStructures.js"></script>
+<script src="TestingUtils.js"></script>
+
+<script>
+
+    // LinkedList 
+
+    let list = new LinkedList();
+
+    function testLinkedListAdd(){
+        console.log("Beginning ADD tests");
+
+        for(let i = 0; i < 10; i++){
+            list.add(i);
+        }
+
+        console.log("List is 0 through 9");
+        assertEquals("List length", 10, list.length);
+
+        for(let i = 0; i < list.length; i+=2){
+            list.add(-1, i);
+        }
+        console.log("Inserting -1 at even indices");
+        assertEquals("List length", 20, list.length);
+
+        list.add(100, list.length);
+        console.log("Inserting 100 at end of list");
+        assertEquals("List length", 21, list.length);
+
+        expectError("Inserting at negative index", ()=>{list.add(100, -1)});
+        expectError("Inserting at index outside bounds of list", ()=>{list.add(100, 1000)});
+
+        console.log("Final state of array after all insertions: ");
+        console.log(list.toString());
+
+        console.log("Ending ADD tests");
+        console.log("");
+    }
+    
+    function testLinkedListContains(){
+        console.log("Beginning CONTAINS test");
+
+        assertEquals("List contains 1", true, list.contains(1));
+        assertEquals("List contains 3", true, list.contains(3));
+        assertEquals("List contains 9", true, list.contains(9));
+        assertEquals("List contains -1", true, list.contains(-1));
+        assertEquals("List contains 100", true, list.contains(100));
+        assertEquals("List contains -2", false, list.contains(-2));
+        assertEquals("List contains 19", false, list.contains(19));
+        assertEquals("List contains 'F'", false, list.contains('F'));
+
+        console.log("Ending CONTAINS test");
+        console.log("");
+    }
+
+    function testLinkedListGet(){
+        console.log("Beginning GET test");
+        assertEquals("list[0]", -1, list.get(0));
+        assertEquals("list[1]", 0, list.get(1));
+        assertEquals("list[2]", -1, list.get(2));
+        assertEquals("list[4]", -1, list.get(4));
+        assertEquals("list[7]", 3, list.get(7));
+        assertEquals("list[10]", -1, list.get(10));
+        assertEquals("list[15]", 7, list.get(15));
+        assertEquals("list[19]", 9, list.get(19));
+        assertEquals("Last element", 100, list.get(list.length-1));
+        expectError("Getting from negative index", () => {list.get(-1)});
+        expectError("Getting from index out of bounds", () => {list.get(100)});
+        console.log("Ending GET test");
+        console.log("");
+    }
+        
+    function testLinkedListSet(){
+        console.log("Beginning SET test");
+
+        console.log("Ending SET test");
+        console.log("");
+    }
+        
+    function testLinkedListRemoveAtIndex(){
+        console.log("Beginning REMOVEATINDEX test");
+
+        console.log("Ending REMOVEATINDEX test");
+        console.log("");
+    }
+        
+    function testLinkedListRemoveValue(){
+        console.log("Beginning REMOVEVALUE test");
+
+        console.log("Ending REMOVEVALUE test");
+        console.log("");
+    }
+
+    function linkedListTests(){
+        testLinkedListAdd();
+        testLinkedListContains();
+        testLinkedListGet();
+        testLinkedListSet();
+        testLinkedListRemoveAtIndex();
+        testLinkedListRemoveValue();
+    }
+
+
+
+    // linkedListTests();
+    
+    // LinkedList Stack
+
+    function testPeek(){
+        console.log("Beginning PEEK test");
+
+        console.log("Ending PEEK test");
+        console.log("");
+    }
+    
+    function testIsEmpty(){
+        console.log("Beginning ISEMPTY test");
+
+        console.log("Ending ISEMPTY test");
+        console.log("");
+    }
+    function testSize(){
+        console.log("Beginning SIZE test");
+
+        console.log("Ending SIZE test");
+        console.log("");
+    }
+    
+    function testPush(){
+        console.log("Beginning PUSH test");
+
+        console.log("Ending PUSH test");
+        console.log("");
+    }
+    
+    function testPop(){
+        console.log("Beginning POP test");
+
+        console.log("Ending POP test");
+        console.log("");
+    }
+        
+    function testContains(){
+        console.log("Beginning CONTAINS test");
+
+        console.log("Ending CONTAINS test");
+        console.log("");
+    }
+
+    function llStackTests(){
+        testPeek();
+        testIsEmpty();
+        testSize();
+        testPush();
+        testPop();
+        testContains();
+    }
+
+    llStackTests();
+
+</script>
