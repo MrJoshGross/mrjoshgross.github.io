@@ -2280,6 +2280,7 @@ class BasicEnemyTD extends GameObjectTD {
     damage = 1;
     game;
     worth = 1;
+    armorReduction = 0;
     isAlive = true;
 
     constructor(time, game) {
@@ -2322,7 +2323,7 @@ class BasicEnemyTD extends GameObjectTD {
     removeTowerEffect = (effect) => this.towerEffects.splice(this.towerEffects.indexOf(effect), 1);
 
     handleDamageEffects(damageDealer) {
-        this.health -= damageDealer.damage;
+        this.health -= damageDealer.damage * (1-this.armorReduction);
         if(damageDealer.effect)
             this.addTowerEffect(damageDealer);
         if (this.isDead()) 
@@ -2433,18 +2434,14 @@ class ScoutEnemyTD extends BasicEnemyTD{
 
 class TankEnemyTD extends BasicEnemyTD{
     size = 50;
-    health = 8;
+    health = 9;
     damage = 1;
-    movementSpeed = 0.5;
+    movementSpeed = 0.6;
+    
 
     constructor(time, game) {
        super(time, game);
-    }
-
-    handleDamageEffects(damageDealer){
-        damageDealer.damage *= 0.6;
-        super.handleDamageEffects(damageDealer);
-        damageDealer.damage /= 0.6;
+       super.armorReduction = 0.30;
     }
 
     drawSprite() {
