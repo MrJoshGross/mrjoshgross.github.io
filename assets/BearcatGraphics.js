@@ -2431,6 +2431,75 @@ class ScoutEnemyTD extends BasicEnemyTD{
     }
 }
 
+class TankEnemyTD extends BasicEnemyTD{
+    size = 50;
+    health = 8;
+    damage = 1;
+    movementSpeed = 0.5;
+
+    constructor(time, game) {
+       super(time, game);
+    }
+
+    handleDamageEffects(damageDealer){
+        damageDealer.damage *= 0.6;
+        super.handleDamageEffects(damageDealer);
+        damageDealer.damage /= 0.6;
+    }
+
+    drawSprite() {
+        this.game.canvas.setColors("#3982b8");
+        this.game.canvas.drawRectangle(this.x, this.y, this.size, this.size);
+        this.game.canvas.drawRectangle(this.x - this.size*0.7, this.y+this.size/10, this.size/5, this.size/5);
+        this.game.canvas.drawRectangle(this.x + 0.7*this.size, this.y+this.size/10, this.size/5, this.size/5);
+        this.game.canvas.setColors("#52B2BF");
+
+        // face mask
+        this.game.canvas.drawPolygon([
+            new Point(this.x + this.size*0.30, this.y - this.size*0.10),
+            new Point(this.x + this.size*0.30, this.y + this.size*0.04), 
+            new Point(this.x + this.size*0.30, this.y + this.size*0.04),
+            new Point(this.x + this.size*0.30, this.y + this.size*0.20),
+            new Point(this.x + this.size*0.30, this.y + this.size*0.45),
+            new Point(this.x - this.size*0.20, this.y + this.size*0.45),
+            new Point(this.x - this.size*0.20, this.y + this.size*0.20),
+            new Point(this.x - this.size*0.30, this.y + this.size*0.04),
+            new Point(this.x - this.size*0.30, this.y - this.size*0.10),
+            new Point(this.x, this.y - this.size*0.04)
+        ]);
+    
+        this.game.canvas.setColors("blue");
+        // left eye
+        this.game.canvas.drawPolygon([
+            new Point(this.x - this.size*0.25, this.y - this.size*0.03),
+            new Point(this.x - this.size*0.05, this.y + this.size*0.03),
+            new Point(this.x - this.size*0.05, this.y + this.size*0.13),
+            new Point(this.x - this.size*0.25, this.y + this.size*0.05)
+        ]);
+        // right eye
+        this.game.canvas.drawPolygon([
+            new Point(this.x + this.size*0.25, this.y - this.size * 0.03),
+            new Point(this.x + this.size*0.05, this.y + this.size*0.03),
+            new Point(this.x + this.size*0.05, this.y + this.size*0.13),
+            new Point(this.x + this.size*0.25, this.y + this.size*0.05)
+        ]);
+
+        // left helmet
+        this.game.canvas.drawPolygon([
+            new Point(this.x - this.size*0.6, this.y - this.size * 0.6),
+            new Point(this.x - this.size*0.6, this.y - this.size*0.2),
+            new Point(this.x - this.size*0.7, this.y - this.size*0.4)
+        ]);
+
+        // right helmet
+        this.game.canvas.drawPolygon([
+            new Point(this.x + this.size*0.6, this.y - this.size * 0.6),
+            new Point(this.x + this.size*0.6, this.y - this.size*0.2),
+            new Point(this.x + this.size*0.7, this.y - this.size*0.4)
+        ]);
+    }
+}
+
 class CrazyEnemyTD extends BasicEnemyTD {
     size = 15;
     health = 2;
