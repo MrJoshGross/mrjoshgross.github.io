@@ -2497,6 +2497,114 @@ class TankEnemyTD extends BasicEnemyTD{
     }
 }
 
+class BossEnemyTD extends BasicEnemyTD{
+    size = 95;
+    health = 18;
+    damage = 1;
+    movementSpeed = 0.5;
+    
+
+    constructor(time, game) {
+       super(time, game);
+       super.armorReduction = 0.80;
+    }
+
+    drawSprite() {
+        let scale = this.size/95;
+        this.game.canvas.canvas.scale(scale, scale);
+        this.game.canvas.canvas.translate(-150 + this.x / scale, -200 + this.y / scale);
+        this.game.canvas.setColors("#004b66");
+        this.game.canvas.drawPolygon([
+            new Point(90, 290),
+            new Point(20, 250),
+            new Point(170, 100)
+        ]);
+
+        this.game.canvas.drawRectangle(130, 240, 80, 100);
+
+        this.game.canvas.setColors("#e6e6e6");
+        this.game.canvas.drawPolygon([
+            new Point(240, 190),
+            new Point(290, 220),
+            new Point(350, 100)
+        ]);
+
+        this.game.canvas.setColors("#cccccc");
+        this.game.canvas.drawPolygon([
+            new Point(240, 190),
+            new Point(265, 205),
+            new Point(350, 100)
+        ]);
+
+        this.game.canvas.setColors("#e6e6e6");
+        this.game.canvas.drawPolygon([
+            new Point(275, 207.5),
+            new Point(255, 197.5),
+            new Point(235, 230),
+            new Point(250, 240)
+        ]);
+
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawOval(150,200,45,72);
+        this.game.canvas.drawPolygon([
+            new Point(185, 250),
+            new Point(150, 250),
+            new Point(190, 300)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(150, 250),
+            new Point(115, 250),
+            new Point(110, 300)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(185, 180),
+            new Point(150, 210),
+            new Point(250, 240)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(190, 180),
+            new Point(110, 180),
+            new Point(70, 270)
+        ]);
+
+        // head
+        this.game.canvas.setColors("#f2f2f2");
+        this.game.canvas.drawRectangle(150, 130, 100, 85);
+        this.game.canvas.drawOval(150, 100, 50, 25);
+        this.game.canvas.drawPolygon([
+            new Point(110, 74),
+            new Point(85, 74),
+            new Point(100, 100),
+            new Point(120, 100)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(110, 70),
+            new Point(85, 70),
+            new Point(100, 40),
+            new Point(120, 40)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(217, 74),
+            new Point(195, 70),
+            new Point(177, 100),
+            new Point(200, 100)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(218, 70),
+            new Point(195, 70),
+            new Point(177, 40),
+            new Point(205, 40)
+        ]);
+        this.game.canvas.setColors("#0d0d0d");
+        this.game.canvas.drawOval(125, 120, 10, 23);
+        this.game.canvas.drawOval(175, 120, 10, 23);
+
+        this.game.canvas.setColors("#004b66");
+        this.game.canvas.drawRectangle(150, 187, 100, 10);
+        this.game.canvas.resetCanvasRotation();
+    }
+}
+
 class CrazyEnemyTD extends BasicEnemyTD {
     size = 15;
     health = 2;
