@@ -533,7 +533,7 @@ class BearcatGraphics {
     }
 
     #rotate(x, y, rotation) {
-        if (rotation.x && rotation.y) {
+        if (rotation?.x && rotation.y) {
             this.canvas.translate(rotation.x, rotation.y);
             this.canvas.rotate(rotation.amount * BearcatGraphics.RADTODEG);
             this.canvas.translate(-rotation.x, -rotation.y);
@@ -541,6 +541,10 @@ class BearcatGraphics {
         this.canvas.translate(x, y);
         this.canvas.rotate(rotation * BearcatGraphics.RADTODEG);
         this.canvas.translate(-x, -y);
+    }
+
+    rotate(x, y, rotation){
+        this.#rotate(x, y, rotation);
     }
 
     resetCanvasRotation = () => this.canvas.setTransform(1, 0, 0, 1, 0, 0);
@@ -2601,6 +2605,116 @@ class BossEnemyTD extends BasicEnemyTD{
 
         this.game.canvas.setColors("#004b66");
         this.game.canvas.drawRectangle(150, 187, 100, 10);
+        this.game.canvas.resetCanvasRotation();
+    }
+}
+
+class DemonEnemyTD extends BasicEnemyTD{
+    size = 30;
+    health = 7;
+    damage = 1;
+    movementSpeed = 0.8;
+    
+
+    constructor(time, game) {
+       super(time, game);
+       super.armorReduction = 0.40;
+    }
+
+    findNextTarget(){
+        let dist = Infinity;
+        let target = null;
+        for(let tower of this.game.towers){
+            let currentDist = (this.x-tower.x)**2+(this.y-tower.y)**2;
+            if(currentDist < dist){
+                dist = currentDist;
+                target = tower;
+            }
+        }
+        this.setTargetPivotPoint(target);
+    }
+
+    targetNextPoint(){
+        // if current pivot point is tower, destroy it
+        // if no towers remain, target end
+        // if at end, handle accordingly
+        // otherwise, target 0th tower
+
+        let currentPivotIndex = this.game.towers.indexOf(this.targetPivotPoint);
+        
+        if(currentPivotIndex != -1){
+            this.game.towers.splice(currentPivotIndex, 1);
+            if(this.game.towers.length == 0)
+                this.setTargetPivotPoint(this.game.pivotPoints[this.game.pivotPoints.length - 1]);
+            else 
+                this.findNextTarget();
+        }
+        else
+            if(this.game.towers.length != 0)
+                this.findNextTarget();
+            else if(this.targetPivotPoint == this.game.pivotPoints[this.game.pivotPoints.length - 1])
+                this.game.handleEnemyAtEndOfMap(this);
+        
+        if(this.targetPivotPoint){
+            this.vector = this.createVector(this.x, this.y - this.size*2, this.targetPivotPoint.x, this.targetPivotPoint.x);
+            this.rotation = this.calculateRotation(this.vector.x, this.vector.y);
+        }
+    }
+
+    createVector(x1, y1, x2, y2){
+        let xDist = (x2-x1);
+        let yDist = (y2-y1);
+        let dist = Math.sqrt(xDist**2 + yDist**2);
+        return {x: xDist/dist, y: yDist/dist};
+    }
+
+    calculateRotation = (x, y) => Math.atan2(x, -y) * (180 / Math.PI);
+
+    drawSprite() {
+        let scale = this.size/50;
+        let centerX = -200 + this.x / scale;
+        let centerY = -225 + this.y / scale;
+        console.log(this.rotation);
+        this.game.canvas.rotate(this.x, this.y, this.game.timeSinceWaveStarted/5); // eff it
+        this.game.canvas.canvas.scale(scale, scale);
+        this.game.canvas.canvas.translate(centerX, centerY);
+        
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawRectangle(200, 225, 60, 90);
+        this.game.canvas.drawCircle(200, 150, 30);
+
+        this.game.canvas.setColors("orange");
+        this.game.canvas.drawCircle(190, 140, 5);
+        this.game.canvas.drawCircle(210, 140, 5)
+
+        this.game.canvas.setColors("black");
+        this.game.canvas.drawPolygon([
+            new Point(190, 120),
+            new Point(180, 135),
+            new Point(195, 135)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(210, 120),
+            new Point(205, 135),
+            new Point(220, 135)
+        ]);
+        this.game.canvas.setColors("red");
+        this.game.canvas.drawPolygon([
+            new Point(170, 230),
+            new Point(110, 200),
+            new Point(130, 250)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(230, 230),
+            new Point(290, 200),
+            new Point(270, 250)
+        ]);
+        this.game.canvas.drawPolygon([
+            new Point(200, 270),
+            new Point(240, 290),
+            new Point(230, 300),
+            new Point(220, 290)
+        ]);
         this.game.canvas.resetCanvasRotation();
     }
 }
