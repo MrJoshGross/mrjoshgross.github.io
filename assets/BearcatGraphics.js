@@ -691,10 +691,10 @@ class Point {
         this.x = x;
         this.y = y;
     }
-    distanceTo = (other) => Math.sqrt(((other.y - this.y) * (other.y - this.y)) + ((other.x - this.x) * (other.x - this.x)));
+    distanceTo = (other) => Math.sqrt((other.y - this.y)**2 + (other.x - this.x)**2);
 }
 
-
+distance = (p1, p2) => Math.sqrt((p1.y - p2.y)**2 + (p1.x - p2.x)**2);
 
 class BearcatPlatformer {
 
@@ -2946,8 +2946,47 @@ class Tower extends GameObjectTD {
         }
     }
 
+    findClosestTarget(){
+        let furthestPivotPointIndex = -1;
+        let closestDistance = Infinity;
+        let currentEnemy = null;
+        for(let enemy of this.game.activeEnemies){
+            if(!this.isInRange(enemy)) continue;
+            let currentPivotPointIndex = this.game.pivotPoints.indexOf(enemy.targetPivotPoint);
+            // case: demon, attack immediately
+            if(currentPivotPointIndex == -1){
+                this.setTarget(enemy);
+                return;
+            }
+            else if(currentPivotPointIndex > furthestPivotPointIndex){
+                closestDistance = distance(enemy, enemy.targetPivotPoint);
+                furthestPivotPointIndex = currentPivotPointIndex;
+                currentEnemy = enemy;
+            }
+            else if(currentPivotPointIndex == furthestPivotPointIndex){
+                let enemyDistToPivotPoint = distance(enemy, enemy.targetPivotPoint);
+                if(enemyDistToPivotPoint < closestDistance){
+                    closestDistance = enemyDistToPivotPoint;
+                    currentEnemy = enemy;
+                }
+            }
+        }
+        if(currentEnemy)
+            this.setTarget(currentEnemy);
+    }    
+
     process(deltaTime){
         this.decreaseCooldown(deltaTime);
+        this.loseTarget();
+        this.findClosestTarget();
+        if (this.target && this.isInRange(this.target)) {
+            if (this.canShoot()){
+                this.shoot();
+                this.cooldown = this.cooldownTimer * 1000;
+            }
+        }
+       /*
+       OLD
         if (this.target && this.isInRange(this.target)) {
             if (this.canShoot()){
                 this.shoot();
@@ -2961,6 +3000,7 @@ class Tower extends GameObjectTD {
                 }
             }
         }
+        */
     }
 
     decreaseCooldown(deltaTime) {
@@ -3272,7 +3312,7 @@ class TowerProjectileTD extends GameObjectTD{
         super(x, y, size);
     }
 
-    setLifeTime(time){
+    setLifeTime(time, destroyFunc = this.destroy){
         setTimeout(this.destroy.bind(this), time);
     }
 
@@ -3412,7 +3452,7 @@ class AcidBall extends TowerProjectileTD{
         this.vector = this.createVector(x, y, targetX, targetY);
         this.rotation = this.calculateRotation(this.vector.x, this.vector.y);
         this.effect = AcidEffect;
-        super.setLifeTime(1000);
+        super.setLifeTime(200);
     }
 
     draw(){
