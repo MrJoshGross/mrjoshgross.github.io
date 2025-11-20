@@ -1945,7 +1945,7 @@ class BearcatTowerDefense {
         crazy: "CrazyEnemyTD",
         regen: "RegenSlimeEnemyTD",
         spy: "SpyEnemyTD",
-        tank: "TankEnemyTD",                // TODO all these 
+        tank: "TankEnemyTD",  
         demon: "DemonEnemyTD",
         boss: "BossEnemyTD"
     };
@@ -2610,15 +2610,15 @@ class BossEnemyTD extends BasicEnemyTD{
 }
 
 class DemonEnemyTD extends BasicEnemyTD{
-    size = 30;
-    health = 7;
+    size = 25;
+    health = 4;
     damage = 1;
     movementSpeed = 0.8;
     
 
     constructor(time, game) {
        super(time, game);
-       super.armorReduction = 0.40;
+       super.armorReduction = 0.10;
     }
 
     findNextTarget(){
@@ -2716,6 +2716,14 @@ class DemonEnemyTD extends BasicEnemyTD{
             new Point(220, 290)
         ]);
         this.game.canvas.resetCanvasRotation();
+        if(this.targetPivotPoint && this.targetPivotPoint.size){
+            this.game.canvas.setColors("white");
+            this.game.canvas.drawRectangle(this.targetPivotPoint.x, this.targetPivotPoint.y, this.targetPivotPoint.size, this.targetPivotPoint.size);
+            this.game.canvas.setColors("black");
+            this.game.canvas.drawRectangle(this.targetPivotPoint.x-this.targetPivotPoint.size/3, this.targetPivotPoint.y-this.targetPivotPoint.size/3, this.targetPivotPoint.size/5, this.targetPivotPoint.size/5);
+            this.game.canvas.drawRectangle(this.targetPivotPoint.x+this.targetPivotPoint.size/3, this.targetPivotPoint.y-this.targetPivotPoint.size/3, this.targetPivotPoint.size/5, this.targetPivotPoint.size/5);
+            this.game.canvas.drawRectangle(this.targetPivotPoint.x, this.targetPivotPoint.y+this.targetPivotPoint.size/3, this.targetPivotPoint.size/1.5, this.targetPivotPoint.size/5);
+        }
     }
 }
 
