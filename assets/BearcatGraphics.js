@@ -2946,7 +2946,7 @@ class Tower extends GameObjectTD {
         }
     }
 
-    findBlue(){
+    findClosestTarget(){
         let furthestPivotPointIndex = -1;
         let closestDistance = Infinity;
         let currentEnemy = null;
