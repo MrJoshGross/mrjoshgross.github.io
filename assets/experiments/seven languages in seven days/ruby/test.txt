@@ -1,0 +1,6 @@
+blue is here
+red is here
+blue is also here
+red is also here
+blue and red are both here
+neither of them are here
